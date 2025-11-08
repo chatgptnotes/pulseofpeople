@@ -286,6 +286,129 @@
   .hero-cancel a:active {
     background-color: rgba(255, 255, 255, 0.2);
   }
+}
+
+/* ChatGPT-style Animations */
+@layer utilities {
+  /* Fade animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* Scale animations */
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes scaleOut {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+  }
+
+  /* Slide animations */
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Animation classes */
+  .animate-fadeIn {
+    animation: fadeIn 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-fadeOut {
+    animation: fadeOut 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-scaleIn {
+    animation: scaleIn 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-scaleOut {
+    animation: scaleOut 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-slideDown {
+    animation: slideDown 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-slideUp {
+    animation: slideUp 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-slideInRight {
+    animation: slideInRight 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-slideInLeft {
+    animation: slideInLeft 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
   
   .hero-symbol::before, .hero-symbol::after {
     position: absolute;
