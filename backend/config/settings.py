@@ -227,10 +227,31 @@ SIMPLE_JWT = {
 }
 
 # CORS Settings
-CORS_ALLOWED_ORIGINS = os.environ.get(
+# Parse and clean CORS origins, ensuring they have proper URL schemes
+cors_origins_raw = os.environ.get(
     'CORS_ALLOWED_ORIGINS',
     'http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174'
 ).split(',')
+
+CORS_ALLOWED_ORIGINS = []
+for origin in cors_origins_raw:
+    origin = origin.strip()  # Remove whitespace
+    if origin:
+        # Add scheme if missing
+        if not origin.startswith(('http://', 'https://')):
+            # Use https for Railway domains, http for localhost
+            if 'railway.app' in origin or 'pulseofpeople.com' in origin:
+                origin = f'https://{origin}'
+            elif 'localhost' in origin or '127.0.0.1' in origin:
+                origin = f'http://{origin}'
+            else:
+                origin = f'https://{origin}'
+        CORS_ALLOWED_ORIGINS.append(origin)
+
+# Always allow Railway frontend (for development/testing)
+CORS_ALLOWED_ORIGINS.extend([
+    'https://pulseofpeople-production.up.railway.app',
+])
 
 # Production domains
 if not DEBUG:
