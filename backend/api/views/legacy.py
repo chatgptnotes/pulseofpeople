@@ -80,6 +80,54 @@ def debug_users(request):
     })
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_admin_user(request):
+    """Emergency endpoint to create default admin user"""
+    from django.contrib.auth.models import User
+    from api.models import UserProfile
+
+    # Check if admin already exists
+    if User.objects.filter(username='admin').exists():
+        return Response({
+            'status': 'error',
+            'message': 'Admin user already exists'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Create superuser
+        user = User.objects.create_superuser(
+            username='admin',
+            email='admin@tvk.com',
+            password='admin123',
+            first_name='Super',
+            last_name='Admin'
+        )
+
+        # Create profile
+        profile = UserProfile.objects.create(
+            user=user,
+            role='superadmin',
+            phone='9876543210',
+        )
+
+        return Response({
+            'status': 'success',
+            'message': 'Admin user created successfully',
+            'user': {
+                'username': user.username,
+                'email': user.email,
+                'role': profile.role
+            }
+        }, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def profile_me(request):

@@ -2,7 +2,7 @@
 Views package
 Exports legacy views and role-based views
 """
-from .legacy import UserViewSet, UserProfileViewSet, TaskViewSet, NotificationViewSet, UploadedFileViewSet, health_check, debug_users, profile_me
+from .legacy import UserViewSet, UserProfileViewSet, TaskViewSet, NotificationViewSet, UploadedFileViewSet, health_check, debug_users, create_admin_user, profile_me
 from .auth import FlexibleLoginView, RegisterView, UserProfileView, LogoutView, UserListView
 
 __all__ = [
@@ -14,6 +14,7 @@ __all__ = [
     "UploadedFileViewSet",
     "health_check",
     "debug_users",
+    "create_admin_user",
     "profile_me",
     # Auth views
     "FlexibleLoginView",

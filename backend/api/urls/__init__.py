@@ -9,6 +9,7 @@ from api.views import (
     UploadedFileViewSet,
     health_check,
     debug_users,
+    create_admin_user,
     profile_me,
     FlexibleLoginView,
     RegisterView,
@@ -37,6 +38,7 @@ urlpatterns = [
     # Health check
     path('health/', health_check, name='health-check'),
     path('debug/users/', debug_users, name='debug-users'),  # Temporary debug endpoint
+    path('debug/create-admin/', create_admin_user, name='create-admin-user'),  # Emergency user creation
 
     # JWT Authentication - Supports both email and username
     path('auth/login/', FlexibleLoginView.as_view(), name='token_obtain_pair'),
