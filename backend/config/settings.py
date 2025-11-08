@@ -13,20 +13,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
-import socket
-
-# CRITICAL FIX: Force IPv4 for Supabase connections on Railway
-# Railway's IPv6 cannot reach Supabase's Asia region reliably
-# This must be at the TOP before any database connections
-_original_getaddrinfo = socket.getaddrinfo
-def _getaddrinfo_ipv4_only(*args, **kwargs):
-    """Force IPv4-only DNS resolution for Railway + Supabase compatibility"""
-    responses = _original_getaddrinfo(*args, **kwargs)
-    # Filter to only IPv4 addresses
-    ipv4_responses = [r for r in responses if r[0] == socket.AF_INET]
-    # If no IPv4 found, fall back to original (better than crashing)
-    return ipv4_responses if ipv4_responses else responses
-socket.getaddrinfo = _getaddrinfo_ipv4_only
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -72,6 +58,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
 
     # Local apps
@@ -196,6 +183,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
 SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY', '')
 SUPABASE_JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET', '')
+SUPABASE_SERVICE_KEY = os.environ.get('SUPABASE_SERVICE_KEY', '')
 
 # REST Framework configuration
 REST_FRAMEWORK = {
