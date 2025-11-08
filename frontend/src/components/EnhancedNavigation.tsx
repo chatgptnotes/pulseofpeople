@@ -150,7 +150,7 @@ export function EnhancedNavigation() {
       categoryIcon: DashboardIcon,
       categoryColor: 'indigo',
       items: [
-        { name: 'Pulse of People Dashboard', href: '/dashboard/legacy', icon: DashboardIcon, badge: 'Live' },
+        { name: 'POP Dashboard', href: '/dashboard/legacy', icon: DashboardIcon, badge: 'Live' },
       ],
     },
     {
