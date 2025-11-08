@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-from decouple import config
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-$)&g%4l4397-t65+w0mx%!=4x@a86ft7^d6okk&oxho2vt*et(')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-$)&g%4l4397-t65+w0mx%!=4x@a86ft7^d6okk&oxho2vt*et(')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Production domains
 if not DEBUG:
@@ -97,7 +97,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Temporarily using SQLite for local development
 # Switch back to PostgreSQL once Supabase connection is resolved
 
-USE_SQLITE = config('USE_SQLITE', default=True, cast=bool)
+USE_SQLITE = os.environ.get('USE_SQLITE', 'True') == 'True'
 
 if USE_SQLITE:
     # SQLite (Local Development)
@@ -108,20 +108,30 @@ if USE_SQLITE:
         }
     }
 else:
-    # PostgreSQL with Supabase
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default='postgres'),
-            'USER': config('DB_USER', default='postgres'),
-            'PASSWORD': config('DB_PASSWORD'),
-            'HOST': config('DB_HOST', default='db.iwtgbseaoztjbnvworyq.supabase.com'),
-            'PORT': config('DB_PORT', default='5432'),
-            'OPTIONS': {
-                'sslmode': config('DB_SSLMODE', default='prefer'),
-            },
+    # PostgreSQL with Supabase or Railway
+    # Railway provides DATABASE_URL automatically
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    if DATABASE_URL:
+        # Parse Railway DATABASE_URL
+        import dj_database_url
+        DATABASES = {
+            'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
         }
-    }
+    else:
+        # Manual PostgreSQL configuration
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.environ.get('DB_NAME', 'postgres'),
+                'USER': os.environ.get('DB_USER', 'postgres'),
+                'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+                'HOST': os.environ.get('DB_HOST', 'db.iwtgbseaoztjbnvworyq.supabase.com'),
+                'PORT': os.environ.get('DB_PORT', '5432'),
+                'OPTIONS': {
+                    'sslmode': os.environ.get('DB_SSLMODE', 'prefer'),
+                },
+            }
+        }
 
 
 # Password validation
@@ -170,9 +180,9 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Supabase Configuration
-SUPABASE_URL = config('SUPABASE_URL', default='')
-SUPABASE_ANON_KEY = config('SUPABASE_ANON_KEY', default='')
-SUPABASE_JWT_SECRET = config('SUPABASE_JWT_SECRET', default='')
+SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
+SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY', '')
+SUPABASE_JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET', '')
 
 # REST Framework configuration
 REST_FRAMEWORK = {
@@ -210,11 +220,10 @@ SIMPLE_JWT = {
 }
 
 # CORS Settings
-CORS_ALLOWED_ORIGINS = config(
+CORS_ALLOWED_ORIGINS = os.environ.get(
     'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174',
-    cast=lambda v: [s.strip() for s in v.split(',')]
-)
+    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174'
+).split(',')
 
 # Production domains
 if not DEBUG:
@@ -249,7 +258,7 @@ CORS_ALLOW_HEADERS = [
 
 # Security Settings for Production
 if not DEBUG:
-    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
@@ -260,11 +269,10 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 # CSRF trusted origins
-CSRF_TRUSTED_ORIGINS = config(
+CSRF_TRUSTED_ORIGINS = os.environ.get(
     'CSRF_TRUSTED_ORIGINS',
-    default='http://localhost:5173,http://127.0.0.1:5173',
-    cast=lambda v: [s.strip() for s in v.split(',')]
-)
+    'http://localhost:5173,http://127.0.0.1:5173'
+).split(',')
 
 if not DEBUG:
     CSRF_TRUSTED_ORIGINS.extend([
@@ -279,11 +287,11 @@ if not DEBUG:
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
-    EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-    EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-    EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+    EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@pulseofpeople.com')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@pulseofpeople.com')
