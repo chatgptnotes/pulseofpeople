@@ -27,7 +27,14 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-$)&g%4l4397-t65+w0mx%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
+# ALLOWED_HOSTS with Railway domain hardcoded as fallback
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
+# Always add Railway domain (works even if env vars aren't loaded)
+ALLOWED_HOSTS.extend([
+    'pulseofpeople-production.up.railway.app',
+    '.railway.app',  # Allow all Railway domains
+])
 
 # Production domains
 if not DEBUG:
