@@ -256,7 +256,12 @@ if not DEBUG:
         'https://api.pulseofpeople.com',
     ])
 
+# Remove duplicates and print for debugging
+CORS_ALLOWED_ORIGINS = list(set(CORS_ALLOWED_ORIGINS))
+print(f"🔧 CORS_ALLOWED_ORIGINS configured: {CORS_ALLOWED_ORIGINS}")
+
 CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = False  # Explicitly set to False for security
 
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -278,6 +283,10 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
+# Additional CORS settings for reliability
+CORS_PREFLIGHT_MAX_AGE = 86400  # 24 hours
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 
 # Security Settings for Production
 if not DEBUG:
