@@ -119,10 +119,15 @@ else:
     # Railway provides DATABASE_URL automatically
     DATABASE_URL = os.environ.get('DATABASE_URL')
     if DATABASE_URL:
-        # Parse Railway DATABASE_URL
+        # Parse Railway DATABASE_URL using dj_database_url
         import dj_database_url
         DATABASES = {
-            'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+            'default': dj_database_url.config(
+                default=DATABASE_URL,
+                conn_max_age=600,
+                conn_health_checks=True,
+                ssl_require=True
+            )
         }
     else:
         # Manual PostgreSQL configuration
@@ -135,7 +140,8 @@ else:
                 'HOST': os.environ.get('DB_HOST', 'db.iwtgbseaoztjbnvworyq.supabase.com'),
                 'PORT': os.environ.get('DB_PORT', '5432'),
                 'OPTIONS': {
-                    'sslmode': os.environ.get('DB_SSLMODE', 'prefer'),
+                    'sslmode': 'require',
+                    'connect_timeout': 10,
                 },
             }
         }
@@ -175,7 +181,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
