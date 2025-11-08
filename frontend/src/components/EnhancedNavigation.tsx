@@ -245,45 +245,46 @@ export function EnhancedNavigation() {
 
   return (
     <>
-      {/* Mobile Header */}
-      <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center">
+      {/* Mobile Header - ChatGPT style */}
+      <div className="md:hidden bg-bg-primary border-b border-border-light px-5 py-4 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-gray-600 hover:text-gray-900 mr-3"
+            className="text-text-secondary hover:text-text-primary transition-colors duration-200 p-1 rounded-lg hover:bg-bg-hover"
           >
             {sidebarOpen ? <CloseIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
           </button>
           <Logo size="small" variant="horizontal" />
         </div>
         {user && (
-          <div className="text-sm text-gray-600">{user.name || user.email}</div>
+          <div className="text-sm text-text-secondary font-medium truncate max-w-[120px]">{user.name || user.email}</div>
         )}
       </div>
 
-      {/* Sidebar */}
+      {/* Sidebar - ChatGPT style */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out
-        flex flex-col
+        fixed inset-y-0 left-0 z-50 w-64 bg-bg-primary border-r border-border-light
+        transform transition-all duration-300 ease-smooth
+        flex flex-col shadow-lg
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         md:translate-x-0
       `}>
         {/* Logo */}
-        <div className="h-16 flex items-center px-4 border-b border-gray-200">
+        <div className="h-18 flex items-center px-6 border-b border-border-light">
           <Logo size="medium" variant="horizontal" />
         </div>
 
-        {/* User Info & Tenant Switcher */}
-        <div className="flex-shrink-0 p-4 border-b border-gray-200">
+        {/* User Info & Tenant Switcher - ChatGPT style */}
+        <div className="flex-shrink-0 p-5 border-b border-border-light">
           {user && (
-            <div className="mb-3">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <PeopleIcon className="w-6 h-6 text-blue-600" />
+            <div className="mb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 h-11 w-11 bg-accent-light rounded-xl flex items-center justify-center">
+                  <PeopleIcon className="w-6 h-6 text-accent" />
                 </div>
-                <div className="ml-3 flex-1">
-                  <p className="text-sm font-medium text-gray-900">{user.name || user.email}</p>
-                  <p className="text-xs text-gray-500 capitalize">{user.role || 'User'}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-text-primary truncate">{user.name || user.email}</p>
+                  <p className="text-xs text-text-tertiary capitalize mt-0.5">{user.role || 'User'}</p>
                 </div>
               </div>
             </div>
@@ -324,36 +325,37 @@ export function EnhancedNavigation() {
           )}
         </div>
 
-        {/* Navigation Sections */}
-        <nav className="flex-1 px-4 py-4 space-y-6 overflow-y-auto">
+        {/* Navigation Sections - ChatGPT style with generous spacing */}
+        <nav className="flex-1 px-5 py-6 space-y-8 overflow-y-auto scrollbar-thin">
           {getMenuSections().map((section, idx) => {
             const CategoryIcon = section.categoryIcon;
             const colorClass = section.categoryColor || 'gray';
 
-            // Map color names to Tailwind classes (for build-time detection)
+            // ChatGPT-inspired color styles - more subtle
             const colorStyles = {
-              blue: { icon: 'text-blue-600', header: 'text-blue-600', activeBg: 'bg-blue-50', activeText: 'text-blue-700', activeBorder: 'border-blue-600' },
-              green: { icon: 'text-green-600', header: 'text-green-600', activeBg: 'bg-green-50', activeText: 'text-green-700', activeBorder: 'border-green-600' },
-              orange: { icon: 'text-orange-600', header: 'text-orange-600', activeBg: 'bg-orange-50', activeText: 'text-orange-700', activeBorder: 'border-orange-600' },
-              purple: { icon: 'text-purple-600', header: 'text-purple-600', activeBg: 'bg-purple-50', activeText: 'text-purple-700', activeBorder: 'border-purple-600' },
-              red: { icon: 'text-red-600', header: 'text-red-600', activeBg: 'bg-red-50', activeText: 'text-red-700', activeBorder: 'border-red-600' },
-              gray: { icon: 'text-gray-600', header: 'text-gray-600', activeBg: 'bg-gray-50', activeText: 'text-gray-700', activeBorder: 'border-gray-600' }
+              blue: { icon: 'text-blue-600', header: 'text-text-primary', activeBg: 'bg-accent-light', activeText: 'text-accent', activeBorder: 'border-accent' },
+              green: { icon: 'text-green-600', header: 'text-text-primary', activeBg: 'bg-green-50', activeText: 'text-green-700', activeBorder: 'border-green-600' },
+              orange: { icon: 'text-orange-600', header: 'text-text-primary', activeBg: 'bg-orange-50', activeText: 'text-orange-700', activeBorder: 'border-orange-600' },
+              purple: { icon: 'text-purple-600', header: 'text-text-primary', activeBg: 'bg-purple-50', activeText: 'text-purple-700', activeBorder: 'border-purple-600' },
+              red: { icon: 'text-red-600', header: 'text-text-primary', activeBg: 'bg-red-50', activeText: 'text-red-700', activeBorder: 'border-red-600' },
+              indigo: { icon: 'text-indigo-600', header: 'text-text-primary', activeBg: 'bg-indigo-50', activeText: 'text-indigo-700', activeBorder: 'border-indigo-600' },
+              gray: { icon: 'text-gray-600', header: 'text-text-primary', activeBg: 'bg-bg-tertiary', activeText: 'text-text-primary', activeBorder: 'border-text-secondary' }
             };
 
             const styles = colorStyles[colorClass as keyof typeof colorStyles] || colorStyles.gray;
 
             return (
               <div key={idx}>
-                {/* Category Header with Icon */}
-                <div className="flex items-center px-3 mb-2">
+                {/* Category Header with Icon - more prominent */}
+                <div className="flex items-center px-3 mb-3">
                   {CategoryIcon && (
-                    <CategoryIcon className={`w-4 h-4 mr-2 ${styles.icon}`} />
+                    <CategoryIcon className={`w-4 h-4 mr-2.5 ${styles.icon}`} />
                   )}
-                  <h3 className={`text-xs font-semibold ${styles.header} uppercase tracking-wider`}>
+                  <h3 className={`text-xs font-semibold ${styles.header} uppercase tracking-wide`}>
                     {section.title}
                   </h3>
                 </div>
-                <div className="mt-2 space-y-1">
+                <div className="space-y-1.5">
                   {section.items
                     .filter((item) => !item.permission || usePermission(item.permission))
                     .map((item) => {
@@ -367,16 +369,18 @@ export function EnhancedNavigation() {
                             navigate(item.href);
                             setSidebarOpen(false);
                           }}
-                          className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all border-l-4 ${
+                          className={`w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg
+                            transition-all duration-200 ease-smooth
+                            ${
                             active
-                              ? `${styles.activeBg} ${styles.activeText} ${styles.activeBorder}`
-                              : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-transparent'
+                              ? `${styles.activeBg} ${styles.activeText} shadow-sm`
+                              : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
                           }`}
                         >
-                          <Icon className={`w-5 h-5 mr-3 ${active ? styles.icon : 'text-gray-400'}`} />
-                          {item.name}
+                          <Icon className={`w-5 h-5 mr-3.5 ${active ? styles.icon : 'text-text-tertiary'}`} />
+                          <span className="flex-1 text-left">{item.name}</span>
                           {item.badge && (
-                            <span className="ml-auto px-2 py-0.5 text-xs font-medium bg-red-100 text-red-600 rounded-full">
+                            <span className="ml-2 px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-600 rounded-full">
                               {item.badge}
                             </span>
                           )}
@@ -388,12 +392,12 @@ export function EnhancedNavigation() {
             );
           })}
 
-          {/* Settings & Logout */}
+          {/* Settings & Logout - ChatGPT style */}
           <div>
-            <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <h3 className="px-3 text-xs font-semibold text-text-primary uppercase tracking-wide mb-3">
               Account
             </h3>
-            <div className="mt-2 space-y-1">
+            <div className="space-y-1.5">
               {settingsMenu.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
@@ -405,13 +409,15 @@ export function EnhancedNavigation() {
                       navigate(item.href);
                       setSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg ${
+                    className={`w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-lg
+                      transition-all duration-200 ease-smooth
+                      ${
                       active
-                        ? 'bg-blue-50 text-blue-600'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-accent-light text-accent shadow-sm'
+                        : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
                     }`}
                   >
-                    <Icon className={`w-5 h-5 mr-3 ${active ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <Icon className={`w-5 h-5 mr-3.5 ${active ? 'text-accent' : 'text-text-tertiary'}`} />
                     {item.name}
                   </button>
                 );
@@ -422,21 +428,22 @@ export function EnhancedNavigation() {
                   logout();
                   navigate('/login');
                 }}
-                className="w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg"
+                className="w-full flex items-center px-4 py-2.5 text-sm font-medium text-red-600
+                  hover:bg-red-50 rounded-lg transition-all duration-200 ease-smooth"
               >
-                <LogoutIcon className="w-5 h-5 mr-3 text-red-600" />
+                <LogoutIcon className="w-5 h-5 mr-3.5 text-red-600" />
                 Logout
               </button>
             </div>
           </div>
         </nav>
 
-        {/* Role Badge */}
+        {/* Role Badge - ChatGPT style */}
         {isSuperAdmin && (
-          <div className="flex-shrink-0 p-4 border-t border-gray-200">
-            <div className="flex items-center px-3 py-2 bg-purple-50 rounded-lg">
-              <SuperAdminIcon className="w-5 h-5 text-purple-600 mr-2" />
-              <span className="text-sm font-medium text-purple-600">Super Admin</span>
+          <div className="flex-shrink-0 p-5 border-t border-border-light">
+            <div className="flex items-center px-4 py-3 bg-purple-50 rounded-xl shadow-sm">
+              <SuperAdminIcon className="w-5 h-5 text-purple-600 mr-3" />
+              <span className="text-sm font-semibold text-purple-600">Super Admin</span>
             </div>
           </div>
         )}
