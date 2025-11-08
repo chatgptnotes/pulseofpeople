@@ -1,0 +1,6 @@
+# BACKUP of /backend/api/views.py - Created 2025-11-07
+# This file was orphaned (Django uses views/__init__.py instead)
+# All important code has been moved to /backend/api/views/auth.py
+# This backup is for reference only
+
+# See /backend/api/views/auth.py for the active code

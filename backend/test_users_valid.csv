@@ -1,0 +1,11 @@
+name,email,role,phone,state_id,district_id
+Ravi Kumar,ravi.kumar@example.com,user,+91 9876543210,1,5
+Priya Sharma,priya.sharma@example.com,user,+91 9876543211,1,5
+Amit Patel,amit.patel@example.com,analyst,+91 9876543212,1,6
+Sneha Reddy,sneha.reddy@example.com,analyst,+91 9876543213,1,6
+Vikram Singh,vikram.singh@example.com,manager,+91 9876543214,1,7
+Anjali Desai,anjali.desai@example.com,user,+91 9876543215,,
+Rajesh Kumar,rajesh.kumar@example.com,volunteer,+91 9876543216,1,5
+Meera Nair,meera.nair@example.com,volunteer,+91 9876543217,1,5
+Karthik Rao,karthik.rao@example.com,viewer,+91 9876543218,1,6
+Divya Iyer,divya.iyer@example.com,user,+91 9876543219,1,7

@@ -1,0 +1,11 @@
+name,email,role,phone,state_id,district_id
+Ravi Kumar,ravi.kumar@example.com,user,+91 9876543210,1,5
+,missing.name@example.com,user,+91 9876543211,1,5
+John Doe,invalid-email,user,+91 9876543212,1,6
+Jane Smith,jane.smith@example.com,invalidrole,+91 9876543213,1,6
+Bob Johnson,bob.johnson@example.com,superadmin,+91 9876543214,1,7
+Alice Brown,alice.brown@example.com,user,+91 9876543215,999,888
+Charlie Wilson,charlie.wilson@example.com,user,,1,5
+Valid User,valid.user@example.com,analyst,+91 9876543217,1,5
+Another Valid,another.valid@example.com,manager,+91 9876543218,1,6
+Last Valid,last.valid@example.com,user,+91 9876543219,1,7

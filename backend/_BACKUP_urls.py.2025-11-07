@@ -1,0 +1,6 @@
+# BACKUP of /backend/api/urls.py - Created 2025-11-07
+# This file was orphaned (Django uses urls/__init__.py instead)
+# All important URL patterns have been moved to /backend/api/urls/__init__.py
+# This backup is for reference only
+
+# See /backend/api/urls/__init__.py for the active URL configuration

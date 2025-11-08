@@ -1,0 +1,162 @@
+# ===================================
+# PULSE OF PEOPLE - MONOREPO GITIGNORE
+# ===================================
+
+# ============ PYTHON / DJANGO ============
+# Byte-compiled / optimized / DLL files
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.py[cod]
+backend/**/*.py[cod]
+backend/*$py.class
+
+# C extensions
+backend/*.so
+
+# Distribution / packaging
+backend/.Python
+backend/build/
+backend/develop-eggs/
+backend/dist/
+backend/downloads/
+backend/eggs/
+backend/.eggs/
+backend/lib/
+backend/lib64/
+backend/parts/
+backend/sdist/
+backend/var/
+backend/wheels/
+backend/*.egg-info/
+backend/.installed.cfg
+backend/*.egg
+
+# Virtual environments
+backend/venv/
+backend/env/
+backend/ENV/
+backend/.venv/
+
+# Django
+backend/*.log
+backend/local_settings.py
+backend/db.sqlite3
+backend/db.sqlite3-journal
+backend/media/
+backend/staticfiles/
+backend/static/
+
+# ============ NODE / REACT ============
+# Dependencies
+frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+
+# Production build
+frontend/dist/
+frontend/build/
+
+# Misc
+frontend/.DS_Store
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
+
+# Editor directories and files
+frontend/.vscode/*
+frontend/!.vscode/extensions.json
+frontend/.idea
+frontend/*.suo
+frontend/*.ntvs*
+frontend/*.njsproj
+frontend/*.sln
+frontend/*.sw?
+
+# Vite
+frontend/.vite/
+
+# ============ ENVIRONMENT VARIABLES ============
+.env
+*.env
+!.env.example
+backend/.env
+frontend/.env
+
+# ============ IDE & EDITORS ============
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.bak
+*.backup
+*.orig
+
+# ============ OS SPECIFIC ============
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ============ TESTING & COVERAGE ============
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+coverage/
+*.cover
+
+# ============ LOGS ============
+*.log
+logs/
+*.log.*
+
+# ============ TEMPORARY FILES ============
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# ============ PROJECT SPECIFIC ============
+# Screenshots and temp items
+**/Screenshot*.png
+**/Screenshot*.jpg
+**/TemporaryItems/
+/var/folders/
+
+# Backup files
+sqlite_users_backup.json
+sqlite_users_export.json
+*.csv
+!backend/test_users_valid.csv
+!backend/test_users_with_errors.csv
+
+# Server logs
+backend_server.log
+frontend_server.log
+
+# ============ KEEP THESE ============
+!README.md
+!CLAUDE.md
+!.gitignore
+!Makefile
+!CHANGELOG.md

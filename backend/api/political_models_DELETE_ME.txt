@@ -1,0 +1,4 @@
+This file (political_models.py) should be deleted.
+All models are now in api/models.py to avoid circular imports.
+
+The political_models.py file is causing duplicate model conflicts.
