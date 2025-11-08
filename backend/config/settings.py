@@ -245,6 +245,7 @@ for origin in cors_origins_raw:
 # Always allow Railway frontend (for development/testing)
 CORS_ALLOWED_ORIGINS.extend([
     'https://pulseofpeople-production.up.railway.app',
+    'https://tvk.pulseofpeople.com',  # Custom frontend domain
 ])
 
 # Production domains
@@ -280,7 +281,13 @@ CORS_ALLOW_HEADERS = [
 
 # Security Settings for Production
 if not DEBUG:
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
+    # Trust Railway's proxy headers for HTTPS detection
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # Disable SSL redirect to avoid CORS preflight issues
+    # Railway already handles HTTPS at the proxy level
+    SECURE_SSL_REDIRECT = False
+
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
@@ -295,6 +302,12 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
     'CSRF_TRUSTED_ORIGINS',
     'http://localhost:5173,http://127.0.0.1:5173'
 ).split(',')
+
+# Always trust custom frontend domain
+CSRF_TRUSTED_ORIGINS.extend([
+    'https://tvk.pulseofpeople.com',
+    'https://pulseofpeople-production.up.railway.app',
+])
 
 if not DEBUG:
     CSRF_TRUSTED_ORIGINS.extend([
