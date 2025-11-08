@@ -234,6 +234,13 @@ export const djangoApi = {
   },
 
   /**
+   * Get all issues (alias for getIssueCategories)
+   */
+  async getIssues() {
+    return this.getIssueCategories();
+  },
+
+  /**
    * Get all voter segments
    */
   async getVoterSegments() {

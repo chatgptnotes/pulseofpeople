@@ -91,7 +91,7 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
 
     const tour = ONBOARDING_TOURS[tourId];
     if (!tour) {
-      console.error(`Tour not found: ${tourId}`);
+      console.warn(`Tour not found: ${tourId}. Available tours:`, Object.keys(ONBOARDING_TOURS));
       return;
     }
 
