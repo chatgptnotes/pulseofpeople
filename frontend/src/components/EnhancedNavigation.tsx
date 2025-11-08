@@ -269,9 +269,11 @@ export function EnhancedNavigation() {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         md:translate-x-0
       `}>
-        {/* Logo */}
-        <div className="h-18 flex items-center px-6 border-b border-border-light">
-          <Logo size="medium" variant="horizontal" />
+        {/* Logo - Reduced to 60% size */}
+        <div className="h-18 flex items-center justify-center px-6 border-b border-border-light">
+          <div className="scale-[0.6] origin-center">
+            <Logo size="medium" variant="horizontal" />
+          </div>
         </div>
 
         {/* User Info & Tenant Switcher - ChatGPT style */}
