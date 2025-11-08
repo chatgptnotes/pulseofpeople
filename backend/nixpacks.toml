@@ -5,7 +5,7 @@ nixPkgs = ["python311", "postgresql"]
 cmds = ["pip install -r requirements.txt"]
 
 [phases.build]
-cmds = ["echo 'Skipping collectstatic - will run on startup'"]
+cmds = ["echo 'Skipping build commands'"]
 
 [start]
-cmd = "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+cmd = "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
