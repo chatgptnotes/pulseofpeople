@@ -49,3 +49,4 @@ urllib3==2.5.0
 websockets==15.0.1
 yarl==1.22.0
 gunicorn==23.0.0
+dj-database-url==2.3.0
