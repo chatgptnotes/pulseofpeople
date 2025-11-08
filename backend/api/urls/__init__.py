@@ -63,6 +63,9 @@ urlpatterns = [
     # Political Platform APIs (NEW)
     path('', include('api.urls.political_urls')),
 
+    # Permission Management APIs
+    path('', include('api.urls.permission_urls')),
+
     # Router URLs (legacy)
     path('', include(router.urls)),
 ]

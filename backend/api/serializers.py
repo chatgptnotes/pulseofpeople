@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from .models import UserProfile, Task, Permission, Notification, UploadedFile
+from .models import UserProfile, Task, Permission, Notification, UploadedFile, AuditLog
 
 
 # ==================== AUTHENTICATION SERIALIZERS ====================
@@ -314,3 +314,33 @@ class UploadedFileSerializer(serializers.ModelSerializer):
 
     def get_is_document(self, obj):
         return obj.is_document()
+
+
+class AuditLogSerializer(serializers.ModelSerializer):
+    """Serializer for audit logs"""
+    username = serializers.CharField(source='user.username', read_only=True)
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    action_display = serializers.CharField(source='get_action_display', read_only=True)
+
+    class Meta:
+        model = AuditLog
+        fields = [
+            'id', 'user', 'username', 'user_email', 'action', 'action_display',
+            'target_model', 'target_id', 'changes', 'ip_address', 'user_agent',
+            'timestamp'
+        ]
+        read_only_fields = ['id', 'user', 'timestamp']
+
+
+class AuditLogListSerializer(serializers.ModelSerializer):
+    """Simplified serializer for audit log lists (without changes field)"""
+    username = serializers.CharField(source='user.username', read_only=True)
+    action_display = serializers.CharField(source='get_action_display', read_only=True)
+
+    class Meta:
+        model = AuditLog
+        fields = [
+            'id', 'user', 'username', 'action', 'action_display',
+            'target_model', 'target_id', 'ip_address', 'timestamp'
+        ]
+        read_only_fields = ['id', 'user', 'timestamp']

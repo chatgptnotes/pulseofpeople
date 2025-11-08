@@ -7,6 +7,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth.models import User
 from api.models import UserProfile, Task, Notification, UploadedFile
 from api.serializers import UserSerializer, UserProfileSerializer, TaskSerializer, NotificationSerializer, UploadedFileSerializer
+from api.permissions.role_permissions import IsOwnerOrAdminOrAbove, IsAdminOrAbove
 import os
 import uuid
 from supabase import create_client, Client
@@ -25,24 +26,38 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
-    """ViewSet for user profile management"""
+    """
+    ViewSet for user profile management
+
+    Permissions: Users can manage their own profile, admins can manage all profiles
+    """
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrAdminOrAbove]
 
     def get_queryset(self):
-        """Users can only see their own profile"""
+        """Users can only see their own profile, admins can see all"""
+        user = self.request.user
+        if hasattr(user, 'profile') and user.profile.role in ['admin', 'superadmin']:
+            return UserProfile.objects.all()
         return UserProfile.objects.filter(user=self.request.user)
 
 
 class TaskViewSet(viewsets.ModelViewSet):
-    """ViewSet for task management"""
+    """
+    ViewSet for task management
+
+    Permissions: Users can manage their own tasks, admins can manage all tasks
+    """
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrAdminOrAbove]
 
     def get_queryset(self):
-        """Users can only see their own tasks"""
+        """Users can only see their own tasks, admins can see all"""
+        user = self.request.user
+        if hasattr(user, 'profile') and user.profile.role in ['admin', 'superadmin']:
+            return Task.objects.all()
         return Task.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
@@ -76,18 +91,29 @@ def profile_me(request):
 
 
 class NotificationViewSet(viewsets.ModelViewSet):
-    """ViewSet for notification management"""
+    """
+    ViewSet for notification management
+
+    Permissions: Users can see their own notifications, admins can create for others
+    """
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Users can only see their own notifications"""
+        """Users can only see their own notifications, admins can see all"""
+        user = self.request.user
+        if hasattr(user, 'profile') and user.profile.role in ['admin', 'superadmin']:
+            return Notification.objects.all()
         return Notification.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        """Auto-assign user when creating notification"""
-        serializer.save(user=self.request.user)
+        """Auto-assign user when creating notification (unless admin specifies otherwise)"""
+        if 'user' not in serializer.validated_data:
+            serializer.save(user=self.request.user)
+        else:
+            # Allow admins to create notifications for other users
+            serializer.save()
 
     @action(detail=True, methods=['post'])
     def mark_read(self, request, pk=None):
@@ -121,14 +147,21 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
 
 class UploadedFileViewSet(viewsets.ModelViewSet):
-    """ViewSet for file upload management with Supabase Storage"""
+    """
+    ViewSet for file upload management with Supabase Storage
+
+    Permissions: Users can manage their own files, admins can manage all files
+    """
     queryset = UploadedFile.objects.all()
     serializer_class = UploadedFileSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrAdminOrAbove]
     parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
-        """Users can only see their own files"""
+        """Users can only see their own files, admins can see all"""
+        user = self.request.user
+        if hasattr(user, 'profile') and user.profile.role in ['admin', 'superadmin']:
+            return UploadedFile.objects.all()
         return UploadedFile.objects.filter(user=self.request.user)
 
     def get_supabase_client(self):

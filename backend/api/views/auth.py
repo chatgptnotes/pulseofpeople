@@ -9,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from api.models import UserProfile
 from api.serializers import RegisterSerializer, UserProfileSerializer, FlexibleLoginSerializer
+from api.utils.audit import log_action, ACTION_LOGIN_SUCCESS, ACTION_LOGIN_FAILED, ACTION_USER_CREATED, ACTION_LOGOUT, ACTION_USER_UPDATED, capture_model_state, get_field_changes
 
 
 # ==================== ROLE HIERARCHY HELPER ====================
@@ -76,8 +77,47 @@ class FlexibleLoginView(APIView):
 
     def post(self, request):
         serializer = FlexibleLoginSerializer(data=request.data)
+
+        # Get username/email for logging
+        username = request.data.get('username', '') or request.data.get('email', '')
+
         if serializer.is_valid():
+            # Login successful - log it
+            # The FlexibleLoginSerializer validates and finds the user
+            try:
+                email = request.data.get('email', '').strip()
+                uname = request.data.get('username', '').strip()
+                user = None
+
+                if email:
+                    user = User.objects.filter(email=email).first()
+                elif uname:
+                    user = User.objects.filter(username=uname).first()
+
+                if user:
+                    log_action(
+                        user=user,
+                        action=ACTION_LOGIN_SUCCESS,
+                        resource_type='Authentication',
+                        resource_id='',
+                        changes={'username': user.username, 'email': user.email},
+                        request=request
+                    )
+            except Exception:
+                pass  # Don't break login if audit logging fails
+
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+        # Login failed - log it
+        log_action(
+            user=None,
+            action=ACTION_LOGIN_FAILED,
+            resource_type='Authentication',
+            resource_id='',
+            changes={'username': username, 'errors': str(serializer.errors)},
+            request=request
+        )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -146,6 +186,22 @@ class RegisterView(generics.CreateAPIView):
         # Get user profile
         profile = user.profile if hasattr(user, 'profile') else None
 
+        # Log user creation
+        log_action(
+            user=requesting_user,
+            action=ACTION_USER_CREATED,
+            resource_type='User',
+            resource_id=str(user.id),
+            changes={
+                'username': user.username,
+                'email': user.email,
+                'role': profile.role if profile else 'user',
+                'created_by': requesting_user.username,
+                'created_by_role': requesting_role
+            },
+            request=request
+        )
+
         return Response({
             'user': {
                 'id': user.id,
@@ -191,6 +247,35 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         )
         return profile
 
+    def update(self, request, *args, **kwargs):
+        # Capture before state
+        profile = self.get_object()
+        before_state = capture_model_state(profile)
+
+        # Perform update
+        response = super().update(request, *args, **kwargs)
+
+        # Capture after state and log changes
+        if response.status_code < 400:
+            profile.refresh_from_db()
+            after_state = capture_model_state(profile)
+            field_changes = get_field_changes(before_state, after_state)
+
+            if field_changes:
+                log_action(
+                    user=request.user,
+                    action=ACTION_USER_UPDATED,
+                    resource_type='UserProfile',
+                    resource_id=str(profile.id),
+                    changes={
+                        'fields_changed': field_changes,
+                        'change_count': len(field_changes)
+                    },
+                    request=request
+                )
+
+        return response
+
 
 class LogoutView(APIView):
     """
@@ -209,6 +294,17 @@ class LogoutView(APIView):
             if refresh_token:
                 token = RefreshToken(refresh_token)
                 token.blacklist()
+
+            # Log logout action
+            log_action(
+                user=request.user,
+                action=ACTION_LOGOUT,
+                resource_type='Authentication',
+                resource_id='',
+                changes={'username': request.user.username},
+                request=request
+            )
+
             return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

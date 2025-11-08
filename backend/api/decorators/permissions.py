@@ -386,3 +386,139 @@ class BelongsToTenant(BasePermission):
 
         # Check if user's organization matches tenant
         return request.user.profile.organization == request.tenant
+
+
+class CanSubmitFieldReports(BasePermission):
+    """
+    DRF permission class for field report submission
+    Allows: Volunteer and above
+
+    Usage:
+        class FieldReportViewSet(viewsets.ModelViewSet):
+            permission_classes = [CanSubmitFieldReports]
+    """
+
+    def has_permission(self, request, view):
+        """Check if user can submit field reports"""
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if not hasattr(request.user, 'profile'):
+            return False
+
+        # Allow POST/create for volunteer and above
+        if view.action == 'create':
+            allowed_roles = ['volunteer', 'user', 'analyst', 'manager', 'admin', 'superadmin']
+            return request.user.profile.role in allowed_roles
+
+        # Other actions handled by other permission checks
+        return True
+
+
+class CanViewFieldReports(BasePermission):
+    """
+    DRF permission class for viewing field reports
+    Allows: User and above
+
+    Usage:
+        class FieldReportViewSet(viewsets.ModelViewSet):
+            permission_classes = [CanViewFieldReports]
+    """
+
+    def has_permission(self, request, view):
+        """Check if user can view field reports"""
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if not hasattr(request.user, 'profile'):
+            return False
+
+        # Allow viewing for user and above
+        allowed_roles = ['user', 'analyst', 'manager', 'admin', 'superadmin']
+        return request.user.profile.role in allowed_roles
+
+
+class CanReviewFieldReports(BasePermission):
+    """
+    DRF permission class for reviewing field reports
+    Allows: Manager and above
+
+    Usage:
+        class FieldReportViewSet(viewsets.ModelViewSet):
+            permission_classes = [CanReviewFieldReports]
+    """
+
+    def has_permission(self, request, view):
+        """Check if user can review field reports"""
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if not hasattr(request.user, 'profile'):
+            return False
+
+        # Allow review for manager and above
+        allowed_roles = ['manager', 'admin', 'superadmin']
+        return request.user.profile.role in allowed_roles
+
+
+class CanDeleteFieldReports(BasePermission):
+    """
+    DRF permission class for deleting field reports
+    Allows: Admin and above
+
+    Usage:
+        class FieldReportViewSet(viewsets.ModelViewSet):
+            permission_classes = [CanDeleteFieldReports]
+    """
+
+    def has_permission(self, request, view):
+        """Check if user can delete field reports"""
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if not hasattr(request.user, 'profile'):
+            return False
+
+        # Allow delete for admin and above
+        allowed_roles = ['admin', 'superadmin']
+        return request.user.profile.role in allowed_roles
+
+    def has_object_permission(self, request, view, obj):
+        """Check object-level permissions"""
+        if not hasattr(request.user, 'profile'):
+            return False
+
+        # Superadmin can delete anything
+        if request.user.profile.role == 'superadmin':
+            return True
+
+        # Admin can delete within their state
+        if request.user.profile.role == 'admin':
+            if request.user.profile.assigned_state:
+                return obj.state == request.user.profile.assigned_state
+            return True
+
+        return False
+
+
+class CanViewStatistics(BasePermission):
+    """
+    DRF permission class for viewing statistics
+    Allows: Analyst and above
+
+    Usage:
+        class FieldReportViewSet(viewsets.ModelViewSet):
+            permission_classes = [CanViewStatistics]
+    """
+
+    def has_permission(self, request, view):
+        """Check if user can view statistics"""
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if not hasattr(request.user, 'profile'):
+            return False
+
+        # Allow stats for analyst and above
+        allowed_roles = ['analyst', 'manager', 'admin', 'superadmin']
+        return request.user.profile.role in allowed_roles

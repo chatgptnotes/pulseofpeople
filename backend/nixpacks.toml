@@ -8,4 +8,5 @@ cmds = ["pip install -r requirements.txt"]
 cmds = ["echo 'Skipping build commands'"]
 
 [start]
-cmd = "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+# Start gunicorn without migrations - database connection not required at startup
+cmd = "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --timeout 120"
