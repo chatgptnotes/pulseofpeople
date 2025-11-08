@@ -115,36 +115,31 @@ if USE_SQLITE:
         }
     }
 else:
-    # PostgreSQL with Supabase or Railway
-    # Railway provides DATABASE_URL automatically
-    DATABASE_URL = os.environ.get('DATABASE_URL')
-    if DATABASE_URL:
-        # Parse Railway DATABASE_URL using dj_database_url
-        import dj_database_url
-        DATABASES = {
-            'default': dj_database_url.config(
-                default=DATABASE_URL,
-                conn_max_age=600,
-                conn_health_checks=True,
-                ssl_require=True
-            )
+    # PostgreSQL with Supabase - Force IPv4 for Railway compatibility
+    import socket
+
+    # Monkey patch socket.getaddrinfo to force IPv4 only (fixes Railway IPv6 issue)
+    _original_getaddrinfo = socket.getaddrinfo
+    def getaddrinfo_ipv4(*args, **kwargs):
+        responses = _original_getaddrinfo(*args, **kwargs)
+        return [response for response in responses if response[0] == socket.AF_INET]
+    socket.getaddrinfo = getaddrinfo_ipv4
+
+    # Supabase PostgreSQL configuration
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'postgres'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'db.iwtgbseaoztjbnvworyq.supabase.co'),
+            'PORT': os.environ.get('DB_PORT', '6543'),
+            'OPTIONS': {
+                'sslmode': 'require',
+                'connect_timeout': 10,
+            },
         }
-    else:
-        # Manual PostgreSQL configuration
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': os.environ.get('DB_NAME', 'postgres'),
-                'USER': os.environ.get('DB_USER', 'postgres'),
-                'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-                'HOST': os.environ.get('DB_HOST', 'db.iwtgbseaoztjbnvworyq.supabase.com'),
-                'PORT': os.environ.get('DB_PORT', '5432'),
-                'OPTIONS': {
-                    'sslmode': 'require',
-                    'connect_timeout': 10,
-                },
-            }
-        }
+    }
 
 
 # Password validation
