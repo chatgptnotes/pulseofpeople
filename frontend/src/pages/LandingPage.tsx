@@ -27,7 +27,7 @@ import {
   MessageCircle,
   Heart,
   Flag,
-  Handshake
+  Scale
 } from 'lucide-react';
 import {
   Event as CalendarIcon,
@@ -123,7 +123,7 @@ export default function LandingPage() {
       description: 'Preserving and promoting Tamil language, culture, and heritage across all aspects of governance.'
     },
     {
-      icon: Handshake,
+      icon: Scale,
       title: 'Secular Governance',
       description: 'Equal respect and opportunities for all religions, castes, and communities in Tamil Nadu.'
     },
