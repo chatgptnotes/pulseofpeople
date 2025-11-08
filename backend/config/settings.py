@@ -13,6 +13,20 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
+import socket
+
+# CRITICAL FIX: Force IPv4 for Supabase connections on Railway
+# Railway's IPv6 cannot reach Supabase's Asia region reliably
+# This must be at the TOP before any database connections
+_original_getaddrinfo = socket.getaddrinfo
+def _getaddrinfo_ipv4_only(*args, **kwargs):
+    """Force IPv4-only DNS resolution for Railway + Supabase compatibility"""
+    responses = _original_getaddrinfo(*args, **kwargs)
+    # Filter to only IPv4 addresses
+    ipv4_responses = [r for r in responses if r[0] == socket.AF_INET]
+    # If no IPv4 found, fall back to original (better than crashing)
+    return ipv4_responses if ipv4_responses else responses
+socket.getaddrinfo = _getaddrinfo_ipv4_only
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -115,17 +129,7 @@ if USE_SQLITE:
         }
     }
 else:
-    # PostgreSQL with Supabase - Force IPv4 for Railway compatibility
-    import socket
-
-    # Monkey patch socket.getaddrinfo to force IPv4 only (fixes Railway IPv6 issue)
-    _original_getaddrinfo = socket.getaddrinfo
-    def getaddrinfo_ipv4(*args, **kwargs):
-        responses = _original_getaddrinfo(*args, **kwargs)
-        return [response for response in responses if response[0] == socket.AF_INET]
-    socket.getaddrinfo = getaddrinfo_ipv4
-
-    # Supabase PostgreSQL configuration
+    # PostgreSQL with Supabase (IPv4 forced at top of file)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
