@@ -209,115 +209,56 @@ class DirectFeedbackListSerializer(serializers.ModelSerializer):
 # =====================================================
 
 class FieldReportSerializer(serializers.ModelSerializer):
-    """Full serializer for FieldReport with nested user info"""
-    # Submitted by user info
-    submitted_by_username = serializers.CharField(source='submitted_by.username', read_only=True)
-    submitted_by_name = serializers.SerializerMethodField()
-    submitted_by_email = serializers.CharField(source='submitted_by.email', read_only=True)
-    submitted_by_role = serializers.SerializerMethodField()
-
-    # Reviewed by user info
-    reviewed_by_username = serializers.CharField(source='reviewed_by.username', read_only=True, allow_null=True)
-    reviewed_by_name = serializers.SerializerMethodField()
-
-    # Location info
-    state_name = serializers.CharField(source='state.name', read_only=True, allow_null=True)
-    district_name = serializers.CharField(source='district.name', read_only=True, allow_null=True)
-    constituency_name = serializers.CharField(source='constituency.name', read_only=True, allow_null=True)
+    """Full serializer for FieldReport"""
+    volunteer_name = serializers.CharField(source='volunteer.get_full_name', read_only=True)
+    volunteer_username = serializers.CharField(source='volunteer.username', read_only=True)
+    state_name = serializers.CharField(source='state.name', read_only=True)
+    district_name = serializers.CharField(source='district.name', read_only=True)
+    constituency_name = serializers.CharField(source='constituency.name', read_only=True)
+    key_issues_list = IssueCategorySerializer(source='key_issues', many=True, read_only=True)
+    voter_segments_list = VoterSegmentSerializer(source='voter_segments_met', many=True, read_only=True)
+    competitor_party_name = serializers.CharField(source='competitor_party.short_name', read_only=True, allow_null=True)
+    verified_by_name = serializers.CharField(source='verified_by.get_full_name', read_only=True, allow_null=True)
 
     class Meta:
         model = FieldReport
         fields = [
-            'id', 'report_id',
-            # Basic info
-            'report_type', 'title', 'description',
-            # Location
+            'id', 'report_id', 'volunteer', 'volunteer_name', 'volunteer_username',
             'state', 'state_name', 'district', 'district_name',
-            'constituency', 'constituency_name', 'ward', 'latitude', 'longitude',
-            # Submission
-            'submitted_by', 'submitted_by_username', 'submitted_by_name',
-            'submitted_by_email', 'submitted_by_role',
-            'status', 'attachments',
-            # Sentiment and priority
-            'voter_sentiment', 'priority',
-            # Review
-            'reviewed_by', 'reviewed_by_username', 'reviewed_by_name',
-            'review_notes', 'reviewed_at',
-            # Timestamps
+            'constituency', 'constituency_name', 'ward', 'booth_number',
+            'location_lat', 'location_lng', 'address',
+            'report_type', 'title', 'positive_reactions', 'negative_reactions',
+            'key_issues', 'key_issues_list', 'voter_segments_met', 'voter_segments_list',
+            'crowd_size', 'quotes', 'notes',
+            'competitor_party', 'competitor_party_name', 'competitor_activity_description',
+            'media_urls', 'verification_status', 'verified_by', 'verified_by_name',
+            'verified_at', 'verification_notes', 'report_date', 'timestamp',
             'created_at', 'updated_at'
         ]
         read_only_fields = [
-            'id', 'report_id', 'submitted_by', 'reviewed_by', 'reviewed_at',
-            'created_at', 'updated_at'
+            'id', 'report_id', 'volunteer', 'report_date', 'timestamp',
+            'created_at', 'updated_at', 'verified_at'
         ]
 
-    def get_submitted_by_name(self, obj):
-        """Get full name of submitter"""
-        if obj.submitted_by:
-            return f"{obj.submitted_by.first_name} {obj.submitted_by.last_name}".strip() or obj.submitted_by.username
-        return None
-
-    def get_submitted_by_role(self, obj):
-        """Get role of submitter"""
-        if obj.submitted_by and hasattr(obj.submitted_by, 'profile'):
-            return obj.submitted_by.profile.role
-        return None
-
-    def get_reviewed_by_name(self, obj):
-        """Get full name of reviewer"""
-        if obj.reviewed_by:
-            return f"{obj.reviewed_by.first_name} {obj.reviewed_by.last_name}".strip() or obj.reviewed_by.username
-        return None
-
-    def validate(self, attrs):
-        """Validate field report data"""
-        # Ensure title is provided
-        if not attrs.get('title', '').strip():
-            raise serializers.ValidationError({'title': 'Title is required'})
-
-        # Ensure description is provided
-        if not attrs.get('description', '').strip():
-            raise serializers.ValidationError({'description': 'Description is required'})
-
-        # Ensure ward is provided
-        if not attrs.get('ward', '').strip():
-            raise serializers.ValidationError({'ward': 'Ward is required'})
-
-        # Validate coordinates if provided
-        latitude = attrs.get('latitude')
-        longitude = attrs.get('longitude')
-        if latitude is not None and (latitude < -90 or latitude > 90):
-            raise serializers.ValidationError({'latitude': 'Latitude must be between -90 and 90'})
-        if longitude is not None and (longitude < -180 or longitude > 180):
-            raise serializers.ValidationError({'longitude': 'Longitude must be between -180 and 180'})
-
-        return attrs
-
     def create(self, validated_data):
-        """Auto-assign submitted_by from request user"""
-        validated_data['submitted_by'] = self.context['request'].user
+        # Auto-assign volunteer from request user
+        validated_data['volunteer'] = self.context['request'].user
         return super().create(validated_data)
 
 
 class FieldReportListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for report lists"""
-    submitted_by_name = serializers.SerializerMethodField()
-    constituency_name = serializers.CharField(source='constituency.name', read_only=True, allow_null=True)
-    district_name = serializers.CharField(source='district.name', read_only=True, allow_null=True)
+    volunteer_name = serializers.CharField(source='volunteer.get_full_name', read_only=True)
+    constituency_name = serializers.CharField(source='constituency.name', read_only=True)
+    district_name = serializers.CharField(source='district.name', read_only=True)
 
     class Meta:
         model = FieldReport
         fields = [
-            'id', 'report_id', 'report_type', 'title', 'ward',
-            'submitted_by_name', 'constituency_name', 'district_name',
-            'status', 'priority', 'voter_sentiment', 'created_at'
+            'id', 'report_id', 'volunteer_name', 'ward', 'booth_number',
+            'constituency_name', 'district_name', 'report_type',
+            'verification_status', 'report_date', 'timestamp'
         ]
-
-    def get_submitted_by_name(self, obj):
-        """Get full name of submitter"""
-        if obj.submitted_by:
-            return f"{obj.submitted_by.first_name} {obj.submitted_by.last_name}".strip() or obj.submitted_by.username
-        return None
 
 
 # =====================================================

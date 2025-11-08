@@ -130,7 +130,6 @@ if USE_SQLITE:
     }
 else:
     # PostgreSQL with Supabase (IPv4 forced at top of file)
-    # Use hostaddr to force IPv4 connection, bypassing IPv6 DNS resolution
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -142,8 +141,6 @@ else:
             'OPTIONS': {
                 'sslmode': 'require',
                 'connect_timeout': 10,
-                # Force IPv4 by using hostaddr option (psycopg2-specific)
-                'hostaddr': os.environ.get('DB_HOSTADDR', ''),
             },
         }
     }

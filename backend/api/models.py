@@ -229,41 +229,10 @@ class AuditLog(models.Model):
         ('logout', 'Logout'),
         ('permission_change', 'Permission Change'),
         ('role_change', 'Role Change'),
-        # User actions
-        ('user_created', 'User Created'),
-        ('user_updated', 'User Updated'),
-        ('user_deleted', 'User Deleted'),
-        ('role_changed', 'Role Changed'),
-        # Permission actions
-        ('permission_granted', 'Permission Granted'),
-        ('permission_revoked', 'Permission Revoked'),
-        # Polling booth actions
-        ('booth_created', 'Booth Created'),
-        ('booth_uploaded', 'Booth Uploaded'),
-        ('booth_deleted', 'Booth Deleted'),
-        # Report actions
-        ('report_submitted', 'Report Submitted'),
-        ('report_reviewed', 'Report Reviewed'),
-        # Authentication actions
-        ('login_success', 'Login Success'),
-        ('login_failed', 'Login Failed'),
-        ('password_changed', 'Password Changed'),
-        # Organization actions
-        ('organization_created', 'Organization Created'),
-        ('organization_updated', 'Organization Updated'),
-        ('settings_updated', 'Settings Updated'),
-        # Bulk operations
-        ('bulk_upload_started', 'Bulk Upload Started'),
-        ('bulk_upload_completed', 'Bulk Upload Completed'),
-        ('bulk_create', 'Bulk Create'),
-        ('bulk_update', 'Bulk Update'),
-        ('bulk_delete', 'Bulk Delete'),
-        # Generic actions
-        ('upload', 'Upload'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    action = models.CharField(max_length=50)
+    action = models.CharField(max_length=50, choices=ACTION_TYPES)
     target_model = models.CharField(max_length=100, blank=True)
     target_id = models.CharField(max_length=100, blank=True)
     changes = models.JSONField(default=dict, blank=True)
@@ -756,88 +725,68 @@ class DirectFeedback(models.Model):
 
 
 class FieldReport(models.Model):
-    """Ground-level reports from volunteers and party workers"""
+    """Ground-level reports from party workers"""
     REPORT_TYPES = [
-        ('voter_interaction', 'Voter Interaction'),
-        ('event_attendance', 'Event Attendance'),
+        ('daily_summary', 'Daily Summary'),
+        ('event_feedback', 'Event Feedback'),
         ('issue_report', 'Issue Report'),
-        ('sentiment_feedback', 'Sentiment Feedback'),
+        ('competitor_activity', 'Competitor Activity'),
+        ('booth_report', 'Booth Report'),
     ]
-    STATUS_CHOICES = [
+    VERIFICATION_STATUS = [
         ('pending', 'Pending'),
-        ('reviewed', 'Reviewed'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
+        ('verified', 'Verified'),
+        ('disputed', 'Disputed'),
     ]
-    VOTER_SENTIMENT = [
-        ('positive', 'Positive'),
-        ('neutral', 'Neutral'),
-        ('negative', 'Negative'),
-        ('very_negative', 'Very Negative'),
-    ]
-    PRIORITY_CHOICES = [
-        ('low', 'Low'),
-        ('medium', 'Medium'),
-        ('high', 'High'),
-        ('urgent', 'Urgent'),
-    ]
-
     report_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-
-    # Basic Information
-    report_type = models.CharField(max_length=50, choices=REPORT_TYPES)
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-
-    # Location Information
+    volunteer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='field_reports')
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True, related_name='field_reports')
     district = models.ForeignKey(District, on_delete=models.SET_NULL, null=True, related_name='field_reports')
-    constituency = models.ForeignKey(Constituency, on_delete=models.SET_NULL, null=True, blank=True, related_name='field_reports')
+    constituency = models.ForeignKey(Constituency, on_delete=models.SET_NULL, null=True, related_name='field_reports')
     ward = models.CharField(max_length=100)
-    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
-
-    # Submission and Status
-    submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submitted_field_reports')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-
-    # File attachments
-    attachments = models.JSONField(default=list, blank=True, help_text="List of attachment URLs")
-
-    # Sentiment and Priority
-    voter_sentiment = models.CharField(max_length=20, choices=VOTER_SENTIMENT, blank=True, null=True)
-    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
-
-    # Review Information
-    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_field_reports')
-    review_notes = models.TextField(blank=True)
-    reviewed_at = models.DateTimeField(null=True, blank=True)
-
-    # Timestamps
+    booth_number = models.CharField(max_length=20, blank=True)
+    location_lat = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
+    location_lng = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+    address = models.TextField(blank=True)
+    report_type = models.CharField(max_length=50, choices=REPORT_TYPES)
+    title = models.CharField(max_length=200, blank=True)
+    positive_reactions = models.JSONField(default=list, blank=True)
+    negative_reactions = models.JSONField(default=list, blank=True)
+    key_issues = models.ManyToManyField(IssueCategory, related_name='field_reports', blank=True)
+    voter_segments_met = models.ManyToManyField(VoterSegment, related_name='field_reports', blank=True)
+    crowd_size = models.IntegerField(null=True, blank=True)
+    quotes = models.JSONField(default=list, blank=True)
+    notes = models.TextField(blank=True)
+    competitor_party = models.ForeignKey(PoliticalParty, on_delete=models.SET_NULL, null=True, blank=True, related_name='competitor_reports')
+    competitor_activity_description = models.TextField(blank=True)
+    media_urls = models.JSONField(default=list, blank=True)
+    verification_status = models.CharField(max_length=20, choices=VERIFICATION_STATUS, default='pending')
+    verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='verified_reports')
+    verified_at = models.DateTimeField(null=True, blank=True)
+    verification_notes = models.TextField(blank=True)
+    report_date = models.DateField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    # Legacy fields for compatibility
     supabase_id = models.UUIDField(null=True, blank=True, unique=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['-timestamp']
         verbose_name = "Field Report"
         verbose_name_plural = "Field Reports"
         indexes = [
-            models.Index(fields=['submitted_by', '-created_at']),
+            models.Index(fields=['volunteer', '-timestamp']),
             models.Index(fields=['ward']),
+            models.Index(fields=['booth_number']),
             models.Index(fields=['constituency']),
-            models.Index(fields=['status']),
+            models.Index(fields=['verification_status']),
             models.Index(fields=['report_type']),
-            models.Index(fields=['priority']),
-            models.Index(fields=['-created_at']),
-            models.Index(fields=['district']),
-            models.Index(fields=['voter_sentiment']),
+            models.Index(fields=['-timestamp']),
+            models.Index(fields=['report_date']),
         ]
 
     def __str__(self):
-        return f"{self.get_report_type_display()} - {self.title} ({self.status})"
+        return f"{self.get_report_type_display()} - {self.ward} ({self.report_date})"
 
 
 class SentimentData(models.Model):

@@ -9,7 +9,6 @@ from django.contrib.auth.models import User
 
 from api.models import UserProfile
 from api.serializers import UserProfileSerializer, UserSerializer
-from api.permissions.role_permissions import IsOwnerOrAdminOrAbove
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
@@ -19,20 +18,14 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     - Update own profile information
     - Cannot change role
     - Cannot see other users
-    - Admins can view all profiles
-
-    Permissions: Users can manage their own profile, admins can manage all
     """
     serializer_class = UserProfileSerializer
-    permission_classes = [IsOwnerOrAdminOrAbove]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         """
-        Users can only see their own profile, admins can see all
+        Users can only see their own profile
         """
-        user = self.request.user
-        if hasattr(user, 'profile') and user.profile.role in ['admin', 'superadmin']:
-            return UserProfile.objects.all()
         return UserProfile.objects.filter(user=self.request.user)
 
     @action(detail=False, methods=['get'])

@@ -21,7 +21,6 @@ from .political_serializers import (
     FieldReportSerializer, FieldReportListSerializer,
     SentimentDataSerializer, BoothAgentSerializer
 )
-from .permissions.role_permissions import ReadOnlyOrAdmin, IsAdminOrAbove, IsUser, IsAnalystOrAbove, IsManagerOrAbove
 
 
 # =====================================================
@@ -33,12 +32,10 @@ class StateViewSet(viewsets.ReadOnlyModelViewSet):
     API endpoint for States
     GET /api/states/ - List all states
     GET /api/states/{id}/ - Get state details
-
-    Permissions: Read-only, authenticated users only
     """
     queryset = State.objects.all()
     serializer_class = StateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 class DistrictViewSet(viewsets.ReadOnlyModelViewSet):
@@ -47,12 +44,10 @@ class DistrictViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/districts/ - List all districts
     GET /api/districts/{id}/ - Get district details
     Filter by: ?state=TN
-
-    Permissions: Read-only, authenticated users only
     """
     queryset = District.objects.select_related('state').all()
     serializer_class = DistrictSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'code']
     pagination_class = None  # Disable pagination - return all districts
@@ -71,11 +66,9 @@ class ConstituencyViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/constituencies/ - List all (use list serializer for performance)
     GET /api/constituencies/{id}/ - Get constituency details
     Filter by: ?state=TN&type=assembly&district=1
-
-    Permissions: Read-only, authenticated users only
     """
     queryset = Constituency.objects.select_related('state', 'district').all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'code']
     pagination_class = None  # Disable pagination - return all constituencies
@@ -110,36 +103,30 @@ class PoliticalPartyViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint for Political Parties
     GET /api/political-parties/ - List all parties
-
-    Permissions: Read-only, authenticated users only
     """
     queryset = PoliticalParty.objects.all()
     serializer_class = PoliticalPartySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 class IssueCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint for Issue Categories (TVK's priorities)
     GET /api/issue-categories/ - List all issues
-
-    Permissions: Read-only, authenticated users only
     """
     queryset = IssueCategory.objects.filter(is_active=True)
     serializer_class = IssueCategorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 class VoterSegmentViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint for Voter Segments (Fishermen, Farmers, etc.)
     GET /api/voter-segments/ - List all segments
-
-    Permissions: Read-only, authenticated users only
     """
     queryset = VoterSegment.objects.filter(is_active=True)
     serializer_class = VoterSegmentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 class PollingBoothViewSet(viewsets.ReadOnlyModelViewSet):
@@ -148,11 +135,9 @@ class PollingBoothViewSet(viewsets.ReadOnlyModelViewSet):
     GET /api/polling-booths/ - List all booths
     GET /api/polling-booths/{id}/ - Get booth details
     Filter by: ?constituency=<name>&district=<name>&state=TN
-
-    Permissions: Read-only, authenticated users only
     """
     queryset = PollingBooth.objects.select_related('state', 'district', 'constituency').filter(is_active=True)
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'booth_number', 'area', 'building_name']
     pagination_class = None  # Disable pagination - return all booths
@@ -266,13 +251,11 @@ class DirectFeedbackViewSet(viewsets.ModelViewSet):
         """
         serializer.save()
 
-    @action(detail=True, methods=['post'], permission_classes=[IsManagerOrAbove])
+    @action(detail=True, methods=['post'])
     def mark_reviewed(self, request, pk=None):
         """
         Mark feedback as reviewed
         POST /api/feedback/{id}/mark_reviewed/
-
-        Permissions: Manager and above
         """
         feedback = self.get_object()
         feedback.status = 'reviewed'
@@ -281,13 +264,11 @@ class DirectFeedbackViewSet(viewsets.ModelViewSet):
         feedback.save()
         return Response({'status': 'marked as reviewed'})
 
-    @action(detail=True, methods=['post'], permission_classes=[IsManagerOrAbove])
+    @action(detail=True, methods=['post'])
     def escalate(self, request, pk=None):
         """
         Escalate feedback to higher level
         POST /api/feedback/{id}/escalate/
-
-        Permissions: Manager and above
         """
         feedback = self.get_object()
         feedback.status = 'escalated'
@@ -317,280 +298,69 @@ class DirectFeedbackViewSet(viewsets.ModelViewSet):
 
 class FieldReportViewSet(viewsets.ModelViewSet):
     """
-    API endpoint for Field Reports with role-based access control
+    API endpoint for Field Reports (Party Worker Reports)
 
-    POST /api/field-reports/ - Submit new report (Volunteer+)
-    GET /api/field-reports/ - List reports (User+, filtered by role)
-    GET /api/field-reports/{id}/ - Get report details (User+)
-    PATCH /api/field-reports/{id}/ - Update report (Owner or Manager+)
-    DELETE /api/field-reports/{id}/ - Delete report (Admin+)
-    POST /api/field-reports/{id}/review/ - Review/approve report (Manager+)
-    GET /api/field-reports/stats/ - Get statistics (Analyst+)
+    POST /api/field-reports/ - Submit report (auto-assigns to logged-in user)
+    GET /api/field-reports/ - List reports (role-filtered)
+    GET /api/field-reports/{id}/ - Get report details
+    PATCH /api/field-reports/{id}/ - Update report
     """
     serializer_class = FieldReportSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['title', 'description', 'ward']
-    ordering_fields = ['created_at', 'priority', 'status']
-    ordering = ['-created_at']
+    search_fields = ['ward', 'booth_number', 'title', 'notes']
+    ordering_fields = ['timestamp', 'report_date', 'verification_status']
+    ordering = ['-timestamp']
 
     def get_serializer_class(self):
-        """Return appropriate serializer based on action"""
         if self.action == 'list':
             return FieldReportListSerializer
         return FieldReportSerializer
 
-    def get_permissions(self):
-        """
-        Apply different permissions based on action
-        """
-        from api.decorators.permissions import (
-            CanSubmitFieldReports, CanViewFieldReports, CanReviewFieldReports,
-            CanDeleteFieldReports, CanViewStatistics
-        )
-
-        if self.action == 'create':
-            return [CanSubmitFieldReports()]
-        elif self.action in ['list', 'retrieve']:
-            return [CanViewFieldReports()]
-        elif self.action == 'review':
-            return [CanReviewFieldReports()]
-        elif self.action == 'destroy':
-            return [CanDeleteFieldReports()]
-        elif self.action == 'stats':
-            return [CanViewStatistics()]
-        else:
-            return [IsAuthenticated()]
-
     def get_queryset(self):
         """
-        Role-based filtering of field reports with data isolation
-        - Volunteers/Users: Only see their own reports
-        - Analysts: See reports in their constituency
-        - Managers: See reports in their district
-        - Admins: See reports in their state
-        - Superadmins: See all reports
+        Role-based filtering of field reports
         """
         user = self.request.user
         queryset = FieldReport.objects.select_related(
-            'submitted_by', 'submitted_by__profile', 'state', 'district', 'constituency',
-            'reviewed_by'
-        ).all()
+            'volunteer', 'state', 'district', 'constituency', 'competitor_party'
+        ).prefetch_related('key_issues', 'voter_segments_met').all()
 
         # Superadmin sees everything
         if user.is_superuser or (hasattr(user, 'profile') and user.profile.role == 'superadmin'):
-            queryset = self._apply_filters(queryset)
             return queryset
 
         # Get user profile
         if not hasattr(user, 'profile'):
-            return queryset.filter(submitted_by=user)
+            return queryset.filter(volunteer=user)
 
         profile = user.profile
 
-        # Admin - sees reports in their state
-        if profile.role == 'admin':
-            if profile.assigned_state:
-                queryset = queryset.filter(state=profile.assigned_state)
-            queryset = self._apply_filters(queryset)
-            return queryset
+        # Admin1 (State level) - sees entire state
+        if profile.role == 'admin' and profile.assigned_state:
+            return queryset.filter(state=profile.assigned_state)
 
-        # Manager - sees reports in their district
-        if profile.role == 'manager':
-            if profile.assigned_district:
-                queryset = queryset.filter(district=profile.assigned_district)
-            queryset = self._apply_filters(queryset)
-            return queryset
+        # Admin2 (District level) - sees their district
+        if profile.role == 'manager' and profile.assigned_district:
+            return queryset.filter(district=profile.assigned_district)
 
-        # Analyst - sees reports in their constituency
-        if profile.role == 'analyst':
-            if profile.constituency:
-                queryset = queryset.filter(constituency__name=profile.constituency)
-            queryset = self._apply_filters(queryset)
-            return queryset
+        # Admin3 or regular user - sees only their own reports
+        return queryset.filter(volunteer=user)
 
-        # Volunteers and Users - see only their own reports
-        queryset = queryset.filter(submitted_by=user)
-        queryset = self._apply_filters(queryset)
-        return queryset
-
-    def _apply_filters(self, queryset):
-        """Apply query parameter filters"""
-        # Filter by report type
-        report_type = self.request.query_params.get('report_type')
-        if report_type:
-            queryset = queryset.filter(report_type=report_type)
-
-        # Filter by status
-        status_filter = self.request.query_params.get('status')
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
-
-        # Filter by priority
-        priority = self.request.query_params.get('priority')
-        if priority:
-            queryset = queryset.filter(priority=priority)
-
-        # Filter by voter sentiment
-        sentiment = self.request.query_params.get('voter_sentiment')
-        if sentiment:
-            queryset = queryset.filter(voter_sentiment=sentiment)
-
-        # Filter by date range
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
-        if start_date:
-            queryset = queryset.filter(created_at__gte=start_date)
-        if end_date:
-            queryset = queryset.filter(created_at__lte=end_date)
-
-        # Filter by district
-        district_id = self.request.query_params.get('district')
-        if district_id:
-            queryset = queryset.filter(district_id=district_id)
-
-        # Filter by constituency
-        constituency_id = self.request.query_params.get('constituency')
-        if constituency_id:
-            queryset = queryset.filter(constituency_id=constituency_id)
-
-        return queryset
-
-    def perform_create(self, serializer):
-        """Save field report with submitted_by set to current user"""
-        serializer.save(submitted_by=self.request.user)
-
-    def perform_update(self, serializer):
-        """Update field report (only owner or manager+ can update)"""
-        instance = self.get_object()
-        user = self.request.user
-
-        # Check if user can update
-        if instance.submitted_by != user:
-            # Only managers and above can update others' reports
-            if hasattr(user, 'profile'):
-                if user.profile.role not in ['manager', 'admin', 'superadmin']:
-                    from rest_framework.exceptions import PermissionDenied
-                    raise PermissionDenied("You can only update your own reports")
-
-        serializer.save()
-
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def review(self, request, pk=None):
+    @action(detail=True, methods=['post'])
+    def verify(self, request, pk=None):
         """
-        Review and approve/reject a field report (Manager+ only)
-        POST /api/field-reports/{id}/review/
-
-        Body:
-        {
-            "status": "approved",  // or "rejected"
-            "review_notes": "Verified with local sources"
-        }
+        Verify a field report
+        POST /api/field-reports/{id}/verify/
+        Body: {"verification_notes": "Looks good"}
         """
-        from api.decorators.permissions import CanReviewFieldReports
-
-        # Check permission
-        if not CanReviewFieldReports().has_permission(request, self):
-            return Response(
-                {'error': 'You do not have permission to review reports'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
         report = self.get_object()
-        new_status = request.data.get('status')
-        review_notes = request.data.get('review_notes', '')
-
-        # Validate status
-        if new_status not in ['approved', 'rejected', 'reviewed']:
-            return Response(
-                {'error': 'Invalid status. Must be "approved", "rejected", or "reviewed"'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Update report
-        report.status = new_status
-        report.reviewed_by = request.user
-        report.reviewed_at = timezone.now()
-        report.review_notes = review_notes
+        report.verification_status = 'verified'
+        report.verified_by = request.user
+        report.verified_at = timezone.now()
+        report.verification_notes = request.data.get('verification_notes', '')
         report.save()
-
-        serializer = self.get_serializer(report)
-        return Response({
-            'message': f'Report {new_status} successfully',
-            'report': serializer.data
-        })
-
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
-    def stats(self, request):
-        """
-        Get field report statistics (Analyst+ only)
-        GET /api/field-reports/stats/
-
-        Returns aggregated statistics based on user's access level
-        """
-        from api.decorators.permissions import CanViewStatistics
-
-        # Check permission
-        if not CanViewStatistics().has_permission(request, self):
-            return Response(
-                {'error': 'You do not have permission to view statistics'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        queryset = self.get_queryset()
-
-        # Total count
-        total = queryset.count()
-
-        # Count by report type
-        by_type = dict(
-            queryset.values('report_type')
-            .annotate(count=Count('id'))
-            .values_list('report_type', 'count')
-        )
-
-        # Count by status
-        by_status = dict(
-            queryset.values('status')
-            .annotate(count=Count('id'))
-            .values_list('status', 'count')
-        )
-
-        # Count by priority
-        by_priority = dict(
-            queryset.values('priority')
-            .annotate(count=Count('id'))
-            .values_list('priority', 'count')
-        )
-
-        # Count by voter sentiment
-        by_sentiment = dict(
-            queryset.values('voter_sentiment')
-            .annotate(count=Count('id'))
-            .values_list('voter_sentiment', 'count')
-        )
-
-        # Recent activity (last 7 days)
-        seven_days_ago = timezone.now() - timedelta(days=7)
-        recent_count = queryset.filter(created_at__gte=seven_days_ago).count()
-
-        # Pending reports
-        pending_count = queryset.filter(status='pending').count()
-
-        # Urgent reports
-        urgent_count = queryset.filter(priority='urgent').count()
-
-        return Response({
-            'total': total,
-            'by_type': by_type,
-            'by_status': by_status,
-            'by_priority': by_priority,
-            'by_sentiment': by_sentiment,
-            'recent_count': recent_count,
-            'pending_count': pending_count,
-            'urgent_count': urgent_count,
-            'last_updated': timezone.now()
-        })
+        return Response({'status': 'verified'})
 
     @action(detail=False, methods=['get'])
     def my_reports(self, request):
@@ -598,95 +368,9 @@ class FieldReportViewSet(viewsets.ModelViewSet):
         Get current user's reports
         GET /api/field-reports/my_reports/
         """
-        queryset = self.get_queryset().filter(submitted_by=request.user)
+        queryset = self.get_queryset().filter(volunteer=request.user)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def upload_attachment(self, request, pk=None):
-        """
-        Upload attachment to a field report
-        POST /api/field-reports/{id}/upload_attachment/
-
-        Supports: multipart/form-data with 'file' field
-        Multiple files can be uploaded sequentially
-        """
-        report = self.get_object()
-
-        # Check if user can upload (owner or manager+)
-        if report.submitted_by != request.user:
-            if hasattr(request.user, 'profile'):
-                if request.user.profile.role not in ['manager', 'admin', 'superadmin']:
-                    return Response(
-                        {'error': 'You can only upload attachments to your own reports'},
-                        status=status.HTTP_403_FORBIDDEN
-                    )
-
-        # Get uploaded file
-        uploaded_file = request.FILES.get('file')
-        if not uploaded_file:
-            return Response(
-                {'error': 'No file provided'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Validate file size (max 10MB)
-        max_size = 10 * 1024 * 1024  # 10MB
-        if uploaded_file.size > max_size:
-            return Response(
-                {'error': 'File size exceeds 10MB limit'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Validate file type
-        allowed_types = [
-            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-            'application/pdf', 'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'video/mp4', 'video/quicktime'
-        ]
-        if uploaded_file.content_type not in allowed_types:
-            return Response(
-                {'error': f'File type {uploaded_file.content_type} not allowed'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Save file to media directory
-        import os
-        from django.conf import settings
-        from django.core.files.storage import default_storage
-
-        # Create unique filename
-        import uuid
-        file_extension = os.path.splitext(uploaded_file.name)[1]
-        unique_filename = f"field_reports/{report.id}/{uuid.uuid4()}{file_extension}"
-
-        # Save file
-        file_path = default_storage.save(unique_filename, uploaded_file)
-        file_url = request.build_absolute_uri(settings.MEDIA_URL + file_path)
-
-        # Add to report attachments
-        if not report.attachments:
-            report.attachments = []
-
-        report.attachments.append({
-            'url': file_url,
-            'filename': uploaded_file.name,
-            'size': uploaded_file.size,
-            'content_type': uploaded_file.content_type,
-            'uploaded_at': timezone.now().isoformat(),
-            'uploaded_by': request.user.username
-        })
-        report.save()
-
-        return Response({
-            'message': 'File uploaded successfully',
-            'file': {
-                'url': file_url,
-                'filename': uploaded_file.name,
-                'size': uploaded_file.size
-            }
-        })
 
 
 # =====================================================
@@ -694,13 +378,11 @@ class FieldReportViewSet(viewsets.ModelViewSet):
 # =====================================================
 
 @api_view(['GET'])
-@permission_classes([IsAnalystOrAbove])
+@permission_classes([IsAuthenticated])
 def constituency_analytics(request, code):
     """
     Get analytics for a specific constituency
     GET /api/analytics/constituency/{code}/
-
-    Permissions: Analyst and above
     """
     try:
         constituency = Constituency.objects.get(code=code)
@@ -743,13 +425,11 @@ def constituency_analytics(request, code):
 
 
 @api_view(['GET'])
-@permission_classes([IsAnalystOrAbove])
+@permission_classes([IsAuthenticated])
 def district_analytics(request, district_id):
     """
     Get analytics for a specific district
     GET /api/analytics/district/{district_id}/
-
-    Permissions: Analyst and above
     """
     try:
         district = District.objects.get(id=district_id)
@@ -790,13 +470,11 @@ def district_analytics(request, district_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAnalystOrAbove])
+@permission_classes([IsAuthenticated])
 def state_analytics(request, state_code):
     """
     Get analytics for entire state
     GET /api/analytics/state/{state_code}/
-
-    Permissions: Analyst and above
     """
     try:
         state = State.objects.get(code=state_code)
@@ -844,13 +522,10 @@ def state_analytics(request, state_code):
 
 
 @api_view(['GET'])
-@permission_classes([IsAnalystOrAbove])
 def dashboard_overview(request):
     """
     Get overall dashboard statistics
     GET /api/analytics/overview/
-
-    Permissions: Analyst and above
     """
     # Recent feedback (last 7 days)
     week_ago = timezone.now() - timedelta(days=7)

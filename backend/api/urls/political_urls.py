@@ -4,13 +4,11 @@ URL routing for Political Platform APIs
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from api.political_views import (
-    StateViewSet, DistrictViewSet, ConstituencyViewSet,
+    StateViewSet, DistrictViewSet, ConstituencyViewSet, PollingBoothViewSet,
     PoliticalPartyViewSet, IssueCategoryViewSet, VoterSegmentViewSet,
     DirectFeedbackViewSet, FieldReportViewSet,
     constituency_analytics, district_analytics, state_analytics, dashboard_overview
 )
-# Import the new enhanced PollingBoothViewSet
-from api.views.polling_booths import PollingBoothViewSet
 
 # Create router for viewsets
 router = DefaultRouter()

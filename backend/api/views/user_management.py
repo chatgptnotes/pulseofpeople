@@ -15,12 +15,10 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from api.models import BulkUploadJob, BulkUploadError
 from api.services.bulk_user_import import BulkUserImportService, start_bulk_upload_processing
-from api.permissions.role_permissions import IsAdminOrAbove, IsManagerOrAbove
-from api.utils.audit import log_action, ACTION_BULK_UPLOAD_STARTED, ACTION_BULK_UPLOAD_COMPLETED
 
 
 @api_view(['POST'])
-@permission_classes([IsManagerOrAbove])
+@permission_classes([IsAuthenticated])
 def bulk_upload_users(request):
     """
     Upload CSV file for bulk user creation
@@ -29,8 +27,6 @@ def bulk_upload_users(request):
     Headers: Authorization: Bearer <token>
     Body: multipart/form-data with 'file' field
 
-    Permissions: Manager and above
-
     Returns:
         {
             "job_id": "uuid",
@@ -38,12 +34,11 @@ def bulk_upload_users(request):
             "total_rows": 100
         }
     """
-    # Permission already checked by IsManagerOrAbove decorator
+    # Check if user has permission to create users
     user_profile = getattr(request.user, 'profile', None)
     user_role = user_profile.role if user_profile else 'user'
 
-    # Additional validation (should not be needed due to permission class)
-    allowed_roles = ['superadmin', 'admin', 'manager']
+    allowed_roles = ['superadmin', 'admin', 'manager', 'analyst']
     if user_role not in allowed_roles:
         return Response({
             'error': f'Your role ({user_role}) does not have permission to bulk upload users.'
@@ -88,20 +83,6 @@ def bulk_upload_users(request):
 
         # Start background processing
         start_bulk_upload_processing(job, file_content, request.user)
-
-        # Log bulk upload start
-        log_action(
-            user=request.user,
-            action=ACTION_BULK_UPLOAD_STARTED,
-            resource_type='BulkUploadJob',
-            resource_id=str(job.job_id),
-            changes={
-                'file_name': uploaded_file.name,
-                'file_size': uploaded_file.size,
-                'status': 'pending'
-            },
-            request=request
-        )
 
         return Response({
             'job_id': str(job.job_id),
@@ -212,14 +193,12 @@ def bulk_upload_errors(request, job_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsManagerOrAbove])
+@permission_classes([IsAuthenticated])
 def cancel_bulk_upload(request, job_id):
     """
     Cancel a bulk upload job
 
     DELETE /api/users/bulk-upload/{job_id}/
-
-    Permissions: Manager and above
 
     Returns:
         {
@@ -250,14 +229,12 @@ def cancel_bulk_upload(request, job_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsManagerOrAbove])
+@permission_classes([IsAuthenticated])
 def download_user_template(request):
     """
     Download CSV template for bulk user upload
 
     GET /api/users/bulk-upload/template/
-
-    Permissions: Manager and above
 
     Returns: CSV file with sample data
     """

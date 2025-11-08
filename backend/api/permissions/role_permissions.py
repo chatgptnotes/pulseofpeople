@@ -55,40 +55,6 @@ class IsAdmin(permissions.BasePermission):
             return False
 
 
-class IsManagerOrAbove(permissions.BasePermission):
-    """
-    Permission class to allow managers, admins, and superadmins
-    """
-    message = "Only managers and above can perform this action."
-
-    def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        # Check directly from user profile instead of request attribute
-        try:
-            return request.user.profile.role in ['manager', 'admin', 'superadmin']
-        except Exception:
-            return False
-
-
-class IsAnalystOrAbove(permissions.BasePermission):
-    """
-    Permission class to allow analysts, managers, admins, and superadmins
-    """
-    message = "Only analysts and above can perform this action."
-
-    def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        # Check directly from user profile instead of request attribute
-        try:
-            return request.user.profile.role in ['analyst', 'manager', 'admin', 'superadmin']
-        except Exception:
-            return False
-
-
 class IsUser(permissions.BasePermission):
     """
     Permission class to allow authenticated users
@@ -202,58 +168,5 @@ class ReadOnlyOrAdmin(permissions.BasePermission):
         # Write permissions only for admins and above
         try:
             return request.user.profile.role in ['admin', 'superadmin']
-        except Exception:
-            return False
-
-
-class HasManageRolesPermission(permissions.BasePermission):
-    """
-    Permission class to check if user has the 'manage_roles' permission.
-    Used for permission management endpoints.
-    """
-    message = "You need 'manage_roles' permission to perform this action."
-
-    def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        try:
-            # Superadmins always have this permission
-            if request.user.profile.role == 'superadmin':
-                return True
-
-            # Check if user has explicit manage_roles permission
-            return request.user.profile.has_permission('manage_roles')
-        except Exception:
-            return False
-
-
-class CanManagePollingBooths(permissions.BasePermission):
-    """
-    Permission for polling booth management:
-    - Read: Any authenticated user with role-based data isolation
-    - Create/Upload: Admin and above
-    - Update/Delete: Manager and above
-    """
-    message = "You don't have permission to manage polling booths."
-
-    def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        # GET requests - any authenticated user
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        # POST (create/upload) - Admin and above
-        if request.method == 'POST':
-            try:
-                return request.user.profile.role in ['admin', 'superadmin']
-            except Exception:
-                return False
-
-        # PUT/PATCH/DELETE - Manager and above
-        try:
-            return request.user.profile.role in ['manager', 'admin', 'superadmin']
         except Exception:
             return False
