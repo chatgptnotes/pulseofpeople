@@ -246,38 +246,38 @@ export function EnhancedNavigation() {
   return (
     <>
       {/* Mobile Header - ChatGPT style */}
-      <div className="md:hidden bg-bg-primary border-b border-border-light px-5 py-4 flex items-center justify-between shadow-sm">
+      <div className="md:hidden bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-text-secondary hover:text-text-primary transition-colors duration-200 p-1 rounded-lg hover:bg-bg-hover"
+            className="text-gray-600 hover:text-gray-900 transition-colors duration-200 p-1 rounded-lg hover:bg-gray-100"
           >
             {sidebarOpen ? <CloseIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
           </button>
           <Logo size="small" variant="horizontal" />
         </div>
         {user && (
-          <div className="text-sm text-text-secondary font-medium truncate max-w-[120px]">{user.name || user.email}</div>
+          <div className="text-sm text-gray-600 font-medium truncate max-w-[120px]">{user.name || user.email}</div>
         )}
       </div>
 
       {/* Sidebar - ChatGPT style */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-bg-primary border-r border-border-light
+        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200
         transform transition-all duration-300 ease-smooth
         flex flex-col shadow-lg
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         md:translate-x-0
       `}>
         {/* Logo - Reduced to 60% size */}
-        <div className="h-18 flex items-center justify-center px-6 border-b border-border-light">
+        <div className="h-18 flex items-center justify-center px-6 border-b border-gray-200">
           <div className="scale-[0.6] origin-center">
             <Logo size="medium" variant="horizontal" />
           </div>
         </div>
 
         {/* User Info & Tenant Switcher - ChatGPT style */}
-        <div className="flex-shrink-0 p-5 border-b border-border-light">
+        <div className="flex-shrink-0 p-5 border-b border-gray-200">
           {user && (
             <div className="mb-4">
               <div className="flex items-center gap-3">
@@ -285,8 +285,8 @@ export function EnhancedNavigation() {
                   <PeopleIcon className="w-6 h-6 text-accent" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">{user.name || user.email}</p>
-                  <p className="text-xs text-text-tertiary capitalize mt-0.5">{user.role || 'User'}</p>
+                  <p className="text-sm font-medium text-gray-900 truncate">{user.name || user.email}</p>
+                  <p className="text-xs text-gray-400 capitalize mt-0.5">{user.role || 'User'}</p>
                 </div>
               </div>
             </div>
@@ -335,13 +335,13 @@ export function EnhancedNavigation() {
 
             // ChatGPT-inspired color styles - more subtle
             const colorStyles = {
-              blue: { icon: 'text-blue-600', header: 'text-text-primary', activeBg: 'bg-accent-light', activeText: 'text-accent', activeBorder: 'border-accent' },
-              green: { icon: 'text-green-600', header: 'text-text-primary', activeBg: 'bg-green-50', activeText: 'text-green-700', activeBorder: 'border-green-600' },
-              orange: { icon: 'text-orange-600', header: 'text-text-primary', activeBg: 'bg-orange-50', activeText: 'text-orange-700', activeBorder: 'border-orange-600' },
-              purple: { icon: 'text-purple-600', header: 'text-text-primary', activeBg: 'bg-purple-50', activeText: 'text-purple-700', activeBorder: 'border-purple-600' },
-              red: { icon: 'text-red-600', header: 'text-text-primary', activeBg: 'bg-red-50', activeText: 'text-red-700', activeBorder: 'border-red-600' },
-              indigo: { icon: 'text-indigo-600', header: 'text-text-primary', activeBg: 'bg-indigo-50', activeText: 'text-indigo-700', activeBorder: 'border-indigo-600' },
-              gray: { icon: 'text-gray-600', header: 'text-text-primary', activeBg: 'bg-bg-tertiary', activeText: 'text-text-primary', activeBorder: 'border-text-secondary' }
+              blue: { icon: 'text-blue-600', header: 'text-gray-900', activeBg: 'bg-accent-light', activeText: 'text-accent', activeBorder: 'border-accent' },
+              green: { icon: 'text-green-600', header: 'text-gray-900', activeBg: 'bg-green-50', activeText: 'text-green-700', activeBorder: 'border-green-600' },
+              orange: { icon: 'text-orange-600', header: 'text-gray-900', activeBg: 'bg-orange-50', activeText: 'text-orange-700', activeBorder: 'border-orange-600' },
+              purple: { icon: 'text-purple-600', header: 'text-gray-900', activeBg: 'bg-purple-50', activeText: 'text-purple-700', activeBorder: 'border-purple-600' },
+              red: { icon: 'text-red-600', header: 'text-gray-900', activeBg: 'bg-red-50', activeText: 'text-red-700', activeBorder: 'border-red-600' },
+              indigo: { icon: 'text-indigo-600', header: 'text-gray-900', activeBg: 'bg-indigo-50', activeText: 'text-indigo-700', activeBorder: 'border-indigo-600' },
+              gray: { icon: 'text-gray-600', header: 'text-gray-900', activeBg: 'bg-bg-tertiary', activeText: 'text-gray-900', activeBorder: 'border-text-secondary' }
             };
 
             const styles = colorStyles[colorClass as keyof typeof colorStyles] || colorStyles.gray;
@@ -376,10 +376,10 @@ export function EnhancedNavigation() {
                             ${
                             active
                               ? `${styles.activeBg} ${styles.activeText} shadow-sm`
-                              : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                           }`}
                         >
-                          <Icon className={`w-5 h-5 mr-3.5 ${active ? styles.icon : 'text-text-tertiary'}`} />
+                          <Icon className={`w-5 h-5 mr-3.5 ${active ? styles.icon : 'text-gray-400'}`} />
                           <span className="flex-1 text-left">{item.name}</span>
                           {item.badge && (
                             <span className="ml-2 px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-600 rounded-full">
@@ -396,7 +396,7 @@ export function EnhancedNavigation() {
 
           {/* Settings & Logout - ChatGPT style */}
           <div>
-            <h3 className="px-3 text-xs font-semibold text-text-primary uppercase tracking-wide mb-3">
+            <h3 className="px-3 text-xs font-semibold text-gray-900 uppercase tracking-wide mb-3">
               Account
             </h3>
             <div className="space-y-1.5">
@@ -416,10 +416,10 @@ export function EnhancedNavigation() {
                       ${
                       active
                         ? 'bg-accent-light text-accent shadow-sm'
-                        : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                     }`}
                   >
-                    <Icon className={`w-5 h-5 mr-3.5 ${active ? 'text-accent' : 'text-text-tertiary'}`} />
+                    <Icon className={`w-5 h-5 mr-3.5 ${active ? 'text-accent' : 'text-gray-400'}`} />
                     {item.name}
                   </button>
                 );
@@ -442,7 +442,7 @@ export function EnhancedNavigation() {
 
         {/* Role Badge - ChatGPT style */}
         {isSuperAdmin && (
-          <div className="flex-shrink-0 p-5 border-t border-border-light">
+          <div className="flex-shrink-0 p-5 border-t border-gray-200">
             <div className="flex items-center px-4 py-3 bg-purple-50 rounded-xl shadow-sm">
               <SuperAdminIcon className="w-5 h-5 text-purple-600 mr-3" />
               <span className="text-sm font-semibold text-purple-600">Super Admin</span>

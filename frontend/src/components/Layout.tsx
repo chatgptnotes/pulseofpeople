@@ -12,7 +12,7 @@ export default function Layout({ children }: LayoutProps) {
   const [showLoginModal, setShowLoginModal] = useState(false)
 
   return (
-    <div className="min-h-screen bg-bg-secondary">
+    <div className="min-h-screen bg-gray-50">
       {/* Enhanced Navigation Sidebar */}
       <EnhancedNavigation />
 
@@ -33,18 +33,18 @@ export default function Layout({ children }: LayoutProps) {
         </main>
 
         {/* Version Footer - Modern ChatGPT style */}
-        <footer className="bg-bg-primary border-t border-border-light py-5 px-8">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-text-tertiary">
+        <footer className="bg-white border-t border-gray-200 py-5 px-8">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
             <div className="font-medium">
               Pulse of People - Tamil Nadu Voter Platform (TVK 2026)
             </div>
             <div className="flex items-center gap-3 flex-wrap justify-center sm:justify-end text-xs">
-              <span className="font-semibold text-text-secondary px-3 py-1 bg-bg-tertiary rounded-md">
+              <span className="font-semibold text-gray-700 px-3 py-1 bg-gray-100 rounded-md">
                 Version 1.4
               </span>
-              <span className="hidden sm:inline text-text-disabled">•</span>
+              <span className="hidden sm:inline text-gray-400">•</span>
               <span>Updated: November 8, 2025</span>
-              <span className="hidden sm:inline text-text-disabled">•</span>
+              <span className="hidden sm:inline text-gray-400">•</span>
               <span className="text-accent font-medium flex items-center gap-1 px-3 py-1 bg-accent-light rounded-md">
                 Interactive Mapbox Map
                 <CheckIcon className="w-3.5 h-3.5" />

@@ -24,24 +24,31 @@ export default {
 
       // Neutral color palette with subtle accents
       colors: {
-        // Background colors
-        'bg-primary': '#FFFFFF',
-        'bg-secondary': '#F7F7F8',
-        'bg-tertiary': '#ECECF1',
-        'bg-hover': '#F3F3F4',
-        'bg-active': '#E8E8ED',
-
-        // Text colors
-        'text-primary': '#0D0D0D',
-        'text-secondary': '#565869',
-        'text-tertiary': '#8E8EA0',
-        'text-disabled': '#ACACBE',
-
-        // Border colors
-        'border-light': '#ECECF1',
-        'border-medium': '#D9D9E3',
-        'border-dark': '#ACACBE',
-        'border-focus': '#10A37F',
+        // ChatGPT-inspired semantic colors
+        chatgpt: {
+          // Background colors
+          bg: {
+            primary: '#FFFFFF',
+            secondary: '#F7F7F8',
+            tertiary: '#ECECF1',
+            hover: '#F3F3F4',
+            active: '#E8E8ED',
+          },
+          // Text colors
+          text: {
+            primary: '#0D0D0D',
+            secondary: '#565869',
+            tertiary: '#8E8EA0',
+            disabled: '#ACACBE',
+          },
+          // Border colors
+          border: {
+            light: '#ECECF1',
+            medium: '#D9D9E3',
+            dark: '#ACACBE',
+            focus: '#10A37F',
+          },
+        },
 
         // Accent colors (ChatGPT green)
         accent: {
