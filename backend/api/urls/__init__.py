@@ -8,6 +8,7 @@ from api.views import (
     NotificationViewSet,
     UploadedFileViewSet,
     health_check,
+    debug_users,
     profile_me,
     FlexibleLoginView,
     RegisterView,
@@ -35,6 +36,7 @@ router.register(r'files', UploadedFileViewSet, basename='file')
 urlpatterns = [
     # Health check
     path('health/', health_check, name='health-check'),
+    path('debug/users/', debug_users, name='debug-users'),  # Temporary debug endpoint
 
     # JWT Authentication - Supports both email and username
     path('auth/login/', FlexibleLoginView.as_view(), name='token_obtain_pair'),

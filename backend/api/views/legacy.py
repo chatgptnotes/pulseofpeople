@@ -61,6 +61,26 @@ def health_check(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
+def debug_users(request):
+    """Debug endpoint to check if users exist (temporary)"""
+    from django.contrib.auth.models import User
+    users = User.objects.all()
+    user_list = []
+    for user in users:
+        user_list.append({
+            'username': user.username,
+            'email': user.email,
+            'is_superuser': user.is_superuser,
+            'is_active': user.is_active,
+        })
+    return Response({
+        'total_users': users.count(),
+        'users': user_list
+    })
+
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def profile_me(request):
     """Get current user profile"""
