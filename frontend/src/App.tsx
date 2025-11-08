@@ -31,6 +31,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import PressMediaMonitoring from './pages/PressMediaMonitoring'
 import TVBroadcastAnalysis from './pages/TVBroadcastAnalysis'
 import SocialMediaChannels from './pages/SocialMediaChannels'
+import SocialMediaSettings from './pages/SocialMediaSettings'
 import InfluencerTracking from './pages/InfluencerTracking'
 import ConversationBot from './pages/ConversationBot'
 import EnhancedWardHeatmap from './components/EnhancedWardHeatmap'
@@ -52,6 +53,9 @@ import SocialMediaMonitoring from './components/SocialMediaMonitoring'
 import ExportManager from './components/ExportManager'
 import FieldWorkerApp from './components/FieldWorkerApp'
 import CompetitorTracking from './components/CompetitorTracking'
+import CompetitorRegistry from './pages/CompetitorRegistry'
+import CompetitorSocialMonitor from './pages/CompetitorSocialMonitor'
+import CompetitorSentimentDashboard from './pages/CompetitorSentimentDashboard'
 import RegionalMap from './pages/RegionalMap'
 import TamilNaduMapDashboard from './pages/TamilNaduMapDashboard'
 import { MobileContactBar } from './components/MobileResponsive'
@@ -60,8 +64,10 @@ import AdminManagement from './pages/SuperAdmin/AdminManagement'
 import PollingBoothUpload from './pages/SuperAdmin/PollingBoothUpload'
 import TenantRegistry from './pages/SuperAdmin/TenantRegistry'
 import TenantProvisioning from './pages/SuperAdmin/TenantProvisioning'
+import FeatureFlagManager from './pages/SuperAdmin/FeatureFlagManager'
 import BillingDashboard from './pages/SuperAdmin/BillingDashboard'
 import OrganizationDashboard from './pages/Admin/OrganizationDashboard'
+import SubscriptionManagement from './pages/Admin/SubscriptionManagement'
 import TenantManagement from './pages/Admin/TenantManagement'
 import UserManagement from './pages/Admin/UserManagement'
 import AuditLogViewer from './pages/Admin/AuditLogViewer'
@@ -356,6 +362,13 @@ function AppRoutes() {
                   </Layout>
                 </ProtectedRoute>
               } />
+              <Route path="/social-media-settings" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SocialMediaSettings />
+                  </Layout>
+                </ProtectedRoute>
+              } />
               <Route path="/influencer-tracking" element={
                 <ProtectedRoute>
                   <Layout>
@@ -465,6 +478,27 @@ function AppRoutes() {
                   </Layout>
                 </ProtectedRoute>
               } />
+              <Route path="/competitors/registry" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CompetitorRegistry />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/competitors/monitor" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CompetitorSocialMonitor />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/competitors/sentiment" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CompetitorSentimentDashboard />
+                  </Layout>
+                </ProtectedRoute>
+              } />
               <Route path="/regional-map" element={
                 <ProtectedRoute>
                   <Layout>
@@ -559,6 +593,22 @@ function AppRoutes() {
                 <ProtectedRoute requiredPermission="manage_organizations">
                   <Layout>
                     <BillingDashboard />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/super-admin/feature-flags" element={
+                <ProtectedRoute requiredPermission="manage_organizations">
+                  <Layout>
+                    <FeatureFlagManager />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+
+              {/* Admin Subscription Management */}
+              <Route path="/admin/subscriptions" element={
+                <ProtectedRoute requiredPermission="manage_tenants">
+                  <Layout>
+                    <SubscriptionManagement />
                   </Layout>
                 </ProtectedRoute>
               } />

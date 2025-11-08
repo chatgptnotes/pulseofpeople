@@ -46,7 +46,35 @@ import {
   // Alerts Icons
   NotificationsActive as AlertActiveIcon,
   Warning as CrisisIcon,
-  Forum as EngagementIcon
+  Forum as EngagementIcon,
+  // Settings Icons
+  Tune as ConfigIcon,
+  // AI & Automation Icons
+  Psychology as AIIcon,
+  AutoAwesome as MagicIcon,
+  SmartDisplay as PulseDashboardIcon,
+  // Compliance Icons
+  VerifiedUser as ComplianceIcon,
+  Policy as PolicyIcon,
+  // Tools Icons
+  Download as ExportIcon,
+  PhonelinkRing as MobileAppIcon,
+  // Engagement Icons
+  Chat as WhatsAppIcon,
+  FeedbackOutlined as FeedbackIcon,
+  Description as ManifestoIcon,
+  HowToVote as ChoiceIcon,
+  // Subscription
+  Subscriptions as SubscriptionIcon,
+  LocalAtm as BillingIcon,
+  // Competitor Intelligence Icons
+  Monitor as MonitorIcon,
+  SentimentSatisfied as SentimentIcon,
+  BarChart as BarChartIcon,
+  // Additional Super Admin Icons
+  CloudUpload as UploadIcon,
+  AddBusiness as AddTenantIcon,
+  Flag as FeatureFlagIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermission } from '../hooks/usePermission';
@@ -126,7 +154,22 @@ export function EnhancedNavigation() {
         { name: 'Platform Dashboard', href: '/super-admin/dashboard', icon: DashboardIcon },
         { name: 'Admin Management', href: '/super-admin/admins', icon: PeopleIcon },
         { name: 'Tenant Registry', href: '/super-admin/tenants', icon: ApartmentIcon },
+        { name: 'Tenant Provisioning', href: '/super-admin/tenants/new', icon: AddTenantIcon },
+        { name: 'Polling Booth Upload', href: '/super-admin/polling-booth-upload', icon: UploadIcon },
+        { name: 'Feature Flags', href: '/super-admin/feature-flags', icon: FeatureFlagIcon },
         { name: 'Billing & Revenue', href: '/super-admin/billing', icon: MoneyIcon },
+      ],
+    },
+    {
+      title: 'Competitor Intelligence',
+      categoryIcon: ComparisonIcon,
+      categoryColor: 'red',
+      items: [
+        { name: 'Competitor Registry', href: '/competitors/registry', icon: PeopleIcon },
+        { name: 'Social Media Monitor', href: '/competitors/monitor', icon: MonitorIcon },
+        { name: 'Sentiment Dashboard', href: '/competitors/sentiment', icon: BarChartIcon },
+        { name: 'Competitor Analysis', href: '/competitor-analysis', icon: ComparisonIcon },
+        { name: 'Competitor Tracking', href: '/competitor-tracking', icon: ComparisonIcon },
       ],
     },
   ];
@@ -139,6 +182,7 @@ export function EnhancedNavigation() {
         { name: 'Organization Dashboard', href: '/admin/dashboard', icon: BusinessIcon },
         { name: 'Tenant Management', href: '/admin/tenants', icon: ApartmentIcon, permission: 'manage_tenants' },
         { name: 'User Management', href: '/admin/users', icon: PeopleIcon, permission: 'manage_users' },
+        { name: 'Subscription & Billing', href: '/admin/subscriptions', icon: SubscriptionIcon, permission: 'manage_tenants' },
         { name: 'Audit Logs', href: '/admin/audit-logs', icon: HistoryIcon, permission: 'view_audit_logs' },
       ],
     },
@@ -152,6 +196,8 @@ export function EnhancedNavigation() {
       categoryColor: 'indigo',
       items: [
         { name: 'POP Dashboard', href: '/dashboard/legacy', icon: DashboardIcon, badge: 'Live' },
+        { name: 'Pulse Dashboard', href: '/pulse-dashboard', icon: PulseDashboardIcon },
+        { name: 'Analytics Overview', href: '/analytics', icon: AnalyticsIcon },
       ],
     },
     {
@@ -159,12 +205,15 @@ export function EnhancedNavigation() {
       categoryIcon: DataIntelligenceIcon,
       categoryColor: 'blue',
       items: [
-        { name: 'Social Media Monitor', href: '/social-media-channels', icon: TwitterIcon },
+        { name: 'Social Media Channels', href: '/social-media-channels', icon: TwitterIcon },
+        { name: 'Social Media Settings', href: '/social-media-settings', icon: ConfigIcon, badge: 'New' },
+        { name: 'Social Monitoring', href: '/social-monitoring', icon: TwitterIcon },
+        { name: 'Social Media Hub', href: '/social-media', icon: TwitterIcon },
         { name: 'TV Broadcast Analysis', href: '/tv-broadcast-analysis', icon: TvIcon },
         { name: 'Press Monitoring', href: '/press-media-monitoring', icon: NewspaperIcon },
         { name: 'Influencer Tracking', href: '/influencer-tracking', icon: InfluencerIcon },
-        { name: 'Conversation Bot', href: '/conversation-bot', icon: BotIcon },
         { name: 'Political Polling', href: '/political-polling', icon: PollIcon },
+        { name: 'Political Choice', href: '/political-choice', icon: ChoiceIcon },
         { name: 'Data Capture Kit', href: '/data-kit', icon: DataCaptureIcon },
         { name: 'Data Submission', href: '/submit-data', icon: DataCaptureIcon },
       ],
@@ -177,9 +226,21 @@ export function EnhancedNavigation() {
         { name: 'Analytics Dashboard', href: '/analytics-dashboard', icon: AnalyticsIcon },
         { name: 'Advanced Charts', href: '/advanced-charts', icon: AssessmentIcon },
         { name: 'AI Insights', href: '/ai-insights', icon: InsightsIcon },
+        { name: 'AI Insights Engine', href: '/ai-insights-engine', icon: AIIcon },
         { name: 'Reports', href: '/reports', icon: ReportsIcon },
-        { name: 'Competitor Analysis', href: '/competitor-analysis', icon: ComparisonIcon },
         { name: 'Data Tracking', href: '/data-tracking', icon: TimelineIcon },
+      ],
+    },
+    {
+      title: 'Competitor Intelligence',
+      categoryIcon: ComparisonIcon,
+      categoryColor: 'red',
+      items: [
+        { name: 'Competitor Registry', href: '/competitors/registry', icon: PeopleIcon },
+        { name: 'Social Media Monitor', href: '/competitors/monitor', icon: MonitorIcon },
+        { name: 'Sentiment Dashboard', href: '/competitors/sentiment', icon: BarChartIcon },
+        { name: 'Competitor Analysis', href: '/competitor-analysis', icon: ComparisonIcon },
+        { name: 'Competitor Tracking', href: '/competitor-tracking', icon: ComparisonIcon },
       ],
     },
     {
@@ -189,7 +250,9 @@ export function EnhancedNavigation() {
       items: [
         { name: 'Regional Map', href: '/regional-map', icon: GlobalIcon },
         { name: 'Tamil Nadu Map', href: '/tamil-nadu-map', icon: MapIcon },
+        { name: 'Ward Heatmap', href: '/heatmap', icon: MapIcon },
         { name: 'Voter Database', href: '/voter-database', icon: DatabaseIcon },
+        { name: 'Advanced Voter DB', href: '/advanced-voter-database', icon: DatabaseIcon },
         { name: 'My Constituency', href: '/constituency', icon: PlaceIcon },
       ],
     },
@@ -199,18 +262,48 @@ export function EnhancedNavigation() {
       categoryColor: 'purple',
       items: [
         { name: 'Field Workers', href: '/field-workers', icon: FieldWorkerIcon },
-        { name: 'Data Capture Kit', href: '/data-kit', icon: DataCaptureIcon },
-        { name: 'Data Tracking', href: '/data-tracking', icon: TrackingIcon },
+        { name: 'Field Worker Management', href: '/field-worker-management', icon: FieldWorkerIcon },
+        { name: 'Field Worker App', href: '/field-worker-app', icon: MobileAppIcon },
       ],
     },
     {
-      title: 'Alerts & Engagement',
-      categoryIcon: AlertActiveIcon,
-      categoryColor: 'red',
+      title: 'AI & Automation',
+      categoryIcon: AIIcon,
+      categoryColor: 'cyan',
+      items: [
+        { name: 'AI Agents', href: '/agents', icon: AIIcon },
+        { name: 'Conversation Bot', href: '/conversation-bot', icon: BotIcon },
+        { name: 'WhatsApp Bot', href: '/whatsapp-bot', icon: WhatsAppIcon },
+        { name: 'Magic Search', href: '/magic-search', icon: MagicIcon },
+      ],
+    },
+    {
+      title: 'Engagement & Feedback',
+      categoryIcon: EngagementIcon,
+      categoryColor: 'pink',
       items: [
         { name: 'Alert Center', href: '/alerts', icon: AlertsIcon },
-        { name: 'Social Listening', href: '/social-media-channels', icon: TwitterIcon },
-        { name: 'Bot Engagement', href: '/conversation-bot', icon: EngagementIcon },
+        { name: 'Feedback Center', href: '/feedback', icon: FeedbackIcon },
+        { name: 'Manifesto Match', href: '/manifesto', icon: ManifestoIcon },
+      ],
+    },
+    {
+      title: 'Compliance & Privacy',
+      categoryIcon: ComplianceIcon,
+      categoryColor: 'teal',
+      items: [
+        { name: 'DPDP Compliance', href: '/dpdp-compliance', icon: ComplianceIcon },
+        { name: 'Privata Integration', href: '/privata-integration', icon: PolicyIcon },
+      ],
+    },
+    {
+      title: 'Tools & Utilities',
+      categoryIcon: SettingsIcon,
+      categoryColor: 'gray',
+      items: [
+        { name: 'Export Manager', href: '/export-manager', icon: ExportIcon },
+        { name: 'Settings', href: '/settings', icon: SettingsIcon },
+        { name: 'Subscription', href: '/subscription', icon: SubscriptionIcon },
       ],
     },
   ];

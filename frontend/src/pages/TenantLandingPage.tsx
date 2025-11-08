@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useTenant } from '../contexts/TenantContext';
-import LandingPage from './LandingPage';
-import BJPLandingPage from './BJPLandingPage';
 import TVKLandingPage from './TVKLandingPage';
 
 export default function TenantLandingPage() {
@@ -25,16 +23,6 @@ export default function TenantLandingPage() {
     );
   }
 
-  // Render TVK landing page for party-a subdomain
-  if (tenantSlug === 'party-a' || tenantConfig?.subdomain === 'party-a') {
-    return <TVKLandingPage />;
-  }
-
-  // Render BJP landing page for party-b subdomain
-  if (tenantSlug === 'party-b' || tenantConfig?.subdomain === 'party-b') {
-    return <BJPLandingPage />;
-  }
-
-  // Default landing page for all other tenants (including no tenant)
-  return <LandingPage />;
+  // Always render TVK landing page (single-tenant mode)
+  return <TVKLandingPage />;
 }
