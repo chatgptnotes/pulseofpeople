@@ -21,6 +21,7 @@ const TamilNaduMapDashboard: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState<'interactive' | 'reference' | 'trends' | 'analysis'>('interactive');
   const [showExportModal, setShowExportModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
 
   const tabs = [
     { id: 'interactive' as const, label: 'Interactive Map', icon: <ExploreIcon /> },
@@ -205,20 +206,6 @@ const TamilNaduMapDashboard: React.FC = () => {
                 <p className="text-sm text-gray-600 mb-3">
                   Click any constituency for details. Hover to see information. Use controls to zoom and navigate.
                 </p>
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
-                  <InfoIcon className="w-4 h-4 inline mr-1" />
-                  <strong>Setup Required:</strong> Get your free Mapbox API key from{' '}
-                  <a
-                    href="https://account.mapbox.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline font-semibold"
-                  >
-                    mapbox.com
-                  </a>
-                  {' '}and add it to MapboxTamilNadu.tsx (Line 13). See{' '}
-                  <code className="bg-amber-100 px-1 rounded">docs/MAPBOX_SETUP_GUIDE.md</code> for instructions.
-                </div>
               </div>
 
               <MapboxTamilNadu
@@ -250,7 +237,7 @@ const TamilNaduMapDashboard: React.FC = () => {
                 <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
                   <h4 className="text-sm font-semibold text-purple-800 mb-2">Technology</h4>
                   <ul className="text-xs text-purple-700 space-y-1">
-                    <li>✓ Mapbox GL JS</li>
+                    <li>✓ Interactive mapping</li>
                     <li>✓ DataMeet GeoJSON</li>
                     <li>✓ Real-time rendering</li>
                     <li>✓ Mobile responsive</li>
@@ -277,11 +264,61 @@ const TamilNaduMapDashboard: React.FC = () => {
               </div>
 
               <div className="relative overflow-auto max-h-[700px] bg-gray-50 rounded-lg border-2 border-gray-200">
-                <img
-                  src="/assets/maps/tn-election-map-2021.png"
-                  alt="2021 Tamil Nadu Legislative Assembly Election Map"
-                  className="w-full h-auto"
-                />
+                {!imageLoadError ? (
+                  <img
+                    src="/assets/maps/tn-election-map-2021.png"
+                    alt="2021 Tamil Nadu Legislative Assembly Election Map"
+                    className="w-full h-auto"
+                    onError={() => setImageLoadError(true)}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center min-h-[500px] p-8 text-center">
+                    <ImageIcon className="w-24 h-24 text-gray-300 mb-6" />
+                    <h3 className="text-2xl font-bold text-gray-700 mb-4">Election Map Image Not Found</h3>
+                    <p className="text-gray-600 mb-6 max-w-2xl">
+                      The official 2021 Tamil Nadu Legislative Assembly Election Map is not yet available in this installation.
+                    </p>
+                    <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 max-w-2xl text-left">
+                      <h4 className="font-bold text-blue-900 mb-3 flex items-center">
+                        <DownloadIcon className="w-5 h-5 mr-2" />
+                        How to Add the Map:
+                      </h4>
+                      <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
+                        <li>
+                          Visit{' '}
+                          <a
+                            href="https://commons.wikimedia.org/wiki/File:2021_Tamil_Nadu_Legislative_Assembly_election_result.png"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline font-semibold"
+                          >
+                            Wikimedia Commons
+                          </a>
+                          {' '}and download the election map
+                        </li>
+                        <li>Or download from the official{' '}
+                          <a
+                            href="https://eci.gov.in/files/file/6852-election-map-tamil-nadu/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline font-semibold"
+                          >
+                            Election Commission of India
+                          </a>
+                        </li>
+                        <li>Save the downloaded file as <code className="bg-blue-100 px-2 py-0.5 rounded font-mono text-xs">tn-election-map-2021.png</code></li>
+                        <li>Place it in the folder: <code className="bg-blue-100 px-2 py-0.5 rounded font-mono text-xs">frontend/public/assets/maps/</code></li>
+                        <li>Refresh this page to see the map</li>
+                      </ol>
+                    </div>
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                    >
+                      <span>Refresh Page</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="mt-4 text-xs text-gray-500 bg-gray-50 rounded p-3">

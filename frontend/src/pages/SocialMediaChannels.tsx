@@ -42,7 +42,7 @@ import { MobileCard, ResponsiveGrid, MobileButton, MobileTabs } from '../compone
 interface SocialPlatform {
   id: string;
   name: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string }>;
   color: string;
   followers: number;
   dailyPosts: number;
@@ -97,7 +97,7 @@ const socialPlatforms: SocialPlatform[] = [
   {
     id: 'facebook',
     name: 'Facebook',
-    icon: '📘',
+    icon: Globe,
     color: 'bg-blue-600',
     followers: 4200000,
     dailyPosts: 15600,
@@ -111,7 +111,7 @@ const socialPlatforms: SocialPlatform[] = [
   {
     id: 'instagram',
     name: 'Instagram',
-    icon: '📸',
+    icon: Camera,
     color: 'bg-pink-600',
     followers: 2800000,
     dailyPosts: 8900,
@@ -125,7 +125,7 @@ const socialPlatforms: SocialPlatform[] = [
   {
     id: 'twitter',
     name: 'Twitter/X',
-    icon: '🐦',
+    icon: MessageCircle,
     color: 'bg-black',
     followers: 3500000,
     dailyPosts: 24500,
@@ -139,7 +139,7 @@ const socialPlatforms: SocialPlatform[] = [
   {
     id: 'youtube',
     name: 'YouTube',
-    icon: '📺',
+    icon: Play,
     color: 'bg-red-600',
     followers: 1900000,
     dailyPosts: 450,
@@ -153,7 +153,7 @@ const socialPlatforms: SocialPlatform[] = [
   {
     id: 'whatsapp',
     name: 'WhatsApp',
-    icon: '💬',
+    icon: MessageSquare,
     color: 'bg-green-600',
     followers: 8500000,
     dailyPosts: 45000,
@@ -167,7 +167,7 @@ const socialPlatforms: SocialPlatform[] = [
   {
     id: 'telegram',
     name: 'Telegram',
-    icon: '✈️',
+    icon: Zap,
     color: 'bg-blue-500',
     followers: 1200000,
     dailyPosts: 3200,
@@ -181,7 +181,7 @@ const socialPlatforms: SocialPlatform[] = [
   {
     id: 'linkedin',
     name: 'LinkedIn',
-    icon: '💼',
+    icon: UserPlus,
     color: 'bg-blue-700',
     followers: 680000,
     dailyPosts: 890,
@@ -195,7 +195,7 @@ const socialPlatforms: SocialPlatform[] = [
   {
     id: 'tiktok',
     name: 'TikTok',
-    icon: '🎵',
+    icon: Mic,
     color: 'bg-black',
     followers: 1800000,
     dailyPosts: 1200,
@@ -212,9 +212,9 @@ const mockSocialPosts: SocialPost[] = [
   {
     id: '1',
     platform: 'Facebook',
-    author: 'Kerala State News',
+    author: 'Tamil Nadu State News',
     authorFollowers: 450000,
-    content: 'Breaking: Kerala Budget 2026 allocates ₹15,000 crores for education sector modernization. This historic investment will benefit over 45 lakh students across the state. #KeralaBudget2026 #Education #Development',
+    content: 'Breaking: Tamil Nadu Budget 2026 allocates ₹15,000 crores for education sector modernization. This historic investment will benefit over 45 lakh students across the state. #Tamil NaduBudget2026 #Education #Development',
     timestamp: new Date(Date.now() - 1800000), // 30 minutes ago
     engagement: {
       likes: 12500,
@@ -225,8 +225,8 @@ const mockSocialPosts: SocialPost[] = [
     sentiment: 'positive',
     sentimentScore: 0.78,
     topics: ['Budget', 'Education', 'Development'],
-    mentions: ['Kerala State', 'Education Department'],
-    hashtags: ['#KeralaBudget2026', '#Education', '#Development'],
+    mentions: ['Tamil Nadu State', 'Education Department'],
+    hashtags: ['#Tamil NaduBudget2026', '#Education', '#Development'],
     mediaType: 'image',
     isVerified: true,
     location: 'Thiruvananthapuram',
@@ -238,9 +238,9 @@ const mockSocialPosts: SocialPost[] = [
   {
     id: '2',
     platform: 'Instagram',
-    author: 'YouthKeralaNow',
+    author: 'YouthTamil NaduNow',
     authorFollowers: 180000,
-    content: 'Young voters are speaking up! Our generation cares about climate action, job opportunities, and digital infrastructure. Time for leaders to listen 🗳️ #YouthVoice #Kerala2026',
+    content: 'Young voters are speaking up! Our generation cares about climate action, job opportunities, and digital infrastructure. Time for leaders to listen 🗳️ #YouthVoice #Tamil Nadu2026',
     timestamp: new Date(Date.now() - 3600000), // 1 hour ago
     engagement: {
       likes: 8500,
@@ -252,7 +252,7 @@ const mockSocialPosts: SocialPost[] = [
     sentimentScore: 0.65,
     topics: ['Youth', 'Climate', 'Employment', 'Digital Infrastructure'],
     mentions: ['Youth Voters', 'Leaders'],
-    hashtags: ['#YouthVoice', '#Kerala2026'],
+    hashtags: ['#YouthVoice', '#Tamil Nadu2026'],
     mediaType: 'video',
     isVerified: false,
     location: 'Kochi',
@@ -264,7 +264,7 @@ const mockSocialPosts: SocialPost[] = [
   {
     id: '3',
     platform: 'Twitter/X',
-    author: 'KeralaPolitics',
+    author: 'Tamil NaduPolitics',
     authorFollowers: 75000,
     content: 'Infrastructure projects timeline extended again. Citizens deserve transparent updates on project status and realistic completion dates. #Accountability #Infrastructure',
     timestamp: new Date(Date.now() - 7200000), // 2 hours ago
@@ -281,7 +281,7 @@ const mockSocialPosts: SocialPost[] = [
     hashtags: ['#Accountability', '#Infrastructure'],
     mediaType: 'text',
     isVerified: true,
-    location: 'Kerala',
+    location: 'Tamil Nadu',
     language: 'English',
     influence: 68,
     viralPotential: 62,
@@ -292,7 +292,7 @@ const mockSocialPosts: SocialPost[] = [
 const trendingHashtags: TrendingHashtag[] = [
   {
     id: '1',
-    hashtag: '#KeralaBudget2026',
+    hashtag: '#Tamil NaduBudget2026',
     platform: 'Multiple',
     mentions: 45600,
     growth: 185,
@@ -502,10 +502,12 @@ export default function SocialMediaChannels() {
               </div>
 
               <ResponsiveGrid cols={{ sm: 2, lg: 4 }} gap="small">
-                {socialPlatforms.slice(0, 8).map(platform => (
+                {socialPlatforms.slice(0, 8).map(platform => {
+                  const PlatformIcon = platform.icon;
+                  return (
                   <div key={platform.id} className="text-center p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-center mb-2">
-                      <div className="text-2xl mr-2">{platform.icon}</div>
+                      <PlatformIcon className="w-6 h-6 mr-2" />
                       <div className={`w-2 h-2 rounded-full ${
                         platform.apiStatus === 'connected' ? 'bg-green-500' :
                         platform.apiStatus === 'limited' ? 'bg-yellow-500' :
@@ -531,7 +533,8 @@ export default function SocialMediaChannels() {
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </ResponsiveGrid>
             </MobileCard>
 
@@ -588,11 +591,13 @@ export default function SocialMediaChannels() {
         {activeTab === 'platforms' && (
           <div className="space-responsive">
             <div className="grid gap-4">
-              {socialPlatforms.map(platform => (
+              {socialPlatforms.map(platform => {
+                const PlatformIcon = platform.icon;
+                return (
                 <MobileCard key={platform.id} padding="default">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-4">
-                      <div className="text-4xl">{platform.icon}</div>
+                      <PlatformIcon className="w-10 h-10" />
                       <div>
                         <div className="flex items-center space-x-2 mb-1">
                           <h4 className="text-responsive-base font-semibold text-gray-900">
@@ -657,7 +662,8 @@ export default function SocialMediaChannels() {
                     </div>
                   </div>
                 </MobileCard>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -712,7 +718,7 @@ export default function SocialMediaChannels() {
                       >
                         <option value="all">All Languages</option>
                         <option value="English">English</option>
-                        <option value="Malayalam">Malayalam</option>
+                        <option value="Tamil">Tamil</option>
                         <option value="Hindi">Hindi</option>
                       </select>
                     </div>
@@ -748,14 +754,14 @@ export default function SocialMediaChannels() {
             <div className="space-y-4">
               {mockSocialPosts.map(post => {
                 const MediaIcon = getMediaIcon(post.mediaType);
-                
+                const platformData = socialPlatforms.find(p => p.name === post.platform);
+                const PostPlatformIcon = platformData?.icon || MessageCircle;
+
                 return (
                   <MobileCard key={post.id} padding="default">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center space-x-3">
-                        <div className="text-lg">
-                          {socialPlatforms.find(p => p.name === post.platform)?.icon}
-                        </div>
+                        <PostPlatformIcon className="w-5 h-5" />
                         <div>
                           <div className="flex items-center space-x-2">
                             <span className="text-responsive-sm font-semibold text-gray-900">
@@ -985,7 +991,7 @@ export default function SocialMediaChannels() {
                     </h4>
                   </div>
                   <p className="text-responsive-xs text-gray-700">
-                    Peak engagement occurs between 7-9 PM across Malayalam content, while English content 
+                    Peak engagement occurs between 7-9 PM across Tamil content, while English content 
                     performs best during 11 AM-2 PM and 6-8 PM slots.
                   </p>
                 </div>

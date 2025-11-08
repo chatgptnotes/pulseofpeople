@@ -86,7 +86,7 @@ export default function LandingPage() {
 
   const testimonials = [
     {
-      quote: "BETTROI transformed our campaign strategy with incredible insights. The AI-powered recommendations helped us increase voter engagement by 300%.",
+      quote: "Animal-I transformed our campaign strategy with incredible insights. The AI-powered recommendations helped us increase voter engagement by 300%.",
       author: "Sarah Johnson",
       role: "Campaign Manager",
       party: "Progressive Alliance",
@@ -100,7 +100,7 @@ export default function LandingPage() {
       avatar: <BarChartIcon className="w-8 h-8 text-green-500" />
     },
     {
-      quote: "Field worker management became seamless with BETTROI. Our volunteer coordination improved dramatically, leading to better ground coverage.",
+      quote: "Field worker management became seamless with Animal-I. Our volunteer coordination improved dramatically, leading to better ground coverage.",
       author: "Maria Rodriguez",
       role: "Operations Director",
       party: "United Reform Party",
@@ -269,7 +269,7 @@ export default function LandingPage() {
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Whether you're running for office, conducting policy research, or managing public relations, 
-              BETTROI adapts to your specific requirements.
+              Animal-I adapts to your specific requirements.
             </p>
           </div>
           
@@ -302,7 +302,7 @@ export default function LandingPage() {
               <span className="text-green-600 block">campaigns worldwide</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              See how political leaders and campaign managers are using BETTROI 
+              See how political leaders and campaign managers are using Animal-I 
               to gain the insights they need to win.
             </p>
           </div>
@@ -339,7 +339,7 @@ export default function LandingPage() {
             Ready to transform your campaign?
           </h2>
           <p className="text-xl text-blue-100 mb-10">
-            Join hundreds of successful campaigns that trust BETTROI for their political intelligence needs.
+            Join hundreds of successful campaigns that trust Animal-I for their political intelligence needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -371,7 +371,7 @@ export default function LandingPage() {
                   <Zap className="w-8 h-8 text-purple-400" />
                   <div>
                     <div className="text-2xl font-bold">Pulse of People</div>
-                    {/* <div className="text-sm text-gray-400">by BETTROI</div> */}
+                    {/* <div className="text-sm text-gray-400">by Animal-I</div> */}
                   </div>
                 </div>
               </div>
@@ -432,13 +432,13 @@ export default function LandingPage() {
                 </div>
                 <div className="mt-4 pt-3 border-t border-gray-700">
                   <p className="text-xs font-medium">24/7 Sales Support</p>
-                  <p className="text-xs">Kerala Project Office Available</p>
+                  <p className="text-xs">Tamil Nadu Project Office Available</p>
                 </div>
               </div>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 BETTROI. All rights reserved. Built with ❤️ for political change.</p>
+            <p>&copy; 2024 Animal-I. All rights reserved. Built with ❤️ for political change.</p>
           </div>
         </div>
       </div>
@@ -447,7 +447,7 @@ export default function LandingPage() {
       <VideoModal
         isOpen={isVideoModalOpen}
         onClose={() => setIsVideoModalOpen(false)}
-        title="BETTROI Platform Demo"
+        title="Animal-I Platform Demo"
       />
 
       {/* Demo Modal */}

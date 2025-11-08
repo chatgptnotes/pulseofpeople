@@ -13,7 +13,7 @@ export default function WhatsAppBot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Welcome to BETTROI Data Bot! 🤖\n\nI can help you submit ground intelligence data quickly. Use these commands:\n\n📊 /daily - Submit daily sentiment report\n📈 /weekly - Submit weekly summary\n📋 /survey - Submit survey results\n🔍 /status - Check submission status\n❓ /help - Show all commands',
+      text: 'Welcome to Animal-I Data Bot! 🤖\n\nI can help you submit ground intelligence data quickly. Use these commands:\n\n📊 /daily - Submit daily sentiment report\n📈 /weekly - Submit weekly summary\n📋 /survey - Submit survey results\n🔍 /status - Check submission status\n❓ /help - Show all commands',
       sender: 'bot',
       timestamp: new Date(),
       type: 'welcome'
@@ -49,7 +49,7 @@ export default function WhatsAppBot() {
       } else if (userMessage.toLowerCase().includes('/status')) {
         response = 'Your recent submissions:\n\n✅ Daily Report (Aug 15) - Verified\n⏳ Weekly Summary (Aug 14) - Pending Review\n❌ Survey Data (Aug 12) - Needs Revision\n\nTotal submissions this month: 23';
       } else if (userMessage.toLowerCase().includes('/help')) {
-        response = 'BETTROI Bot Commands 🤖\n\n📊 /daily - Daily sentiment report\n📈 /weekly - Weekly summary\n📋 /survey - Survey results\n🔍 /status - Check submission status\n📱 /contact - Get support contact\n📖 /guide - Data collection guide\n\nFor complex submissions, use the web form: bettroi.com/submit';
+        response = 'Animal-I Bot Commands 🤖\n\n📊 /daily - Daily sentiment report\n📈 /weekly - Weekly summary\n📋 /survey - Survey results\n🔍 /status - Check submission status\n📱 /contact - Get support contact\n📖 /guide - Data collection guide\n\nFor complex submissions, use the web form: bettroi.com/submit';
       } else if (userMessage.toLowerCase().includes('ward')) {
         response = 'Great! I see you\'re reporting from a ward. Your data has been recorded:\n\n✅ Location captured\n✅ Sentiment data logged\n✅ Timestamp added\n\nSubmission ID: #BR' + Math.random().toString(36).substr(2, 9).toUpperCase() + '\n\nYour data will be verified within 2 hours. Thank you for contributing! 🙏';
         type = 'confirmation';
@@ -85,7 +85,7 @@ export default function WhatsAppBot() {
       <div className="bg-green-600 text-white p-4 rounded-t-lg flex items-center">
         <MessageCircle className="w-6 h-6 mr-3" />
         <div>
-          <h3 className="font-semibold">BETTROI Data Bot</h3>
+          <h3 className="font-semibold">Animal-I Data Bot</h3>
           <p className="text-xs text-green-100">WhatsApp Integration Demo</p>
         </div>
         <div className="ml-auto">

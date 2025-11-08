@@ -118,7 +118,7 @@ export class SocialMediaMonitor {
     const mockPosts: SocialPost[] = [
       {
         id: `twitter_${Date.now()}_1`,
-        content: `महाराष्ट्र में रोजगार की स्थिति बेहतर हो रही है। नई नीतियों का सकारात्मक प्रभाव दिख रहा है।`,
+        content: `तமिழ்நाடு में रोजगार की स्थिति बेहतर हो रही है। புதிய கொள்கைகள் का सकारात्मक प्रभाव दिख रहा है।`,
         language: 'hi',
         sentiment: {} as SentimentData, // Will be filled by sentiment analysis
         source: {
@@ -135,11 +135,11 @@ export class SocialMediaMonitor {
           comments: 30,
           reach: 2500
         },
-        hashtags: ['#महाराष्ट्र', '#रोजगार', '#नीति'],
-        mentions: ['@CMOMaharashtra'],
+        hashtags: ['#TamilNadu', '#வேலைவாய்ப்பு', '#கொள்கை'],
+        mentions: ['@CMOTamilNadu'],
         location: {
           coordinates: [19.0760, 72.8777],
-          place_name: 'Mumbai, Maharashtra'
+          place_name: 'Chennai, Tamil Nadu'
         }
       }
     ];
@@ -173,7 +173,7 @@ export class SocialMediaMonitor {
         mentions: [],
         location: {
           coordinates: [18.5204, 73.8567],
-          place_name: 'Pune, Maharashtra'
+          place_name: 'Coimbatore, Tamil Nadu'
         }
       }
     ];
@@ -207,7 +207,7 @@ export class SocialMediaMonitor {
         mentions: [],
         location: {
           coordinates: [16.7050, 74.2433],
-          place_name: 'Kolhapur, Maharashtra'
+          place_name: 'Madurai, Tamil Nadu'
         }
       }
     ];
@@ -241,7 +241,7 @@ export class SocialMediaMonitor {
         mentions: [],
         location: {
           coordinates: [19.9975, 73.7898],
-          place_name: 'Nashik, Maharashtra'
+          place_name: 'Tiruchirappalli, Tamil Nadu'
         }
       }
     ];
@@ -260,7 +260,7 @@ export class SocialMediaMonitor {
         source: {
           platform: 'news',
           url: 'https://news.example.com/employment-scheme',
-          author: 'Maharashtra Times',
+          author: 'Tamil Nadu Times',
           followers: 150000,
           engagement: 1200,
           verified: true
@@ -276,7 +276,7 @@ export class SocialMediaMonitor {
         mentions: [],
         location: {
           coordinates: [19.0760, 72.8777],
-          place_name: 'Mumbai, Maharashtra'
+          place_name: 'Chennai, Tamil Nadu'
         }
       }
     ];
@@ -532,12 +532,12 @@ export class SocialMediaMonitor {
 export const defaultMonitoringConfig: MonitoringConfig = {
   platforms: ['twitter', 'facebook', 'instagram', 'youtube', 'news'],
   keywords: [
-    'महाराष्ट्र', 'Maharashtra', 'मुंबई', 'Mumbai', 'पुणे', 'Pune',
-    'रोजगार', 'employment', 'jobs', 'शिक्षा', 'education',
-    'स्वास्थ्य', 'health', 'infrastructure', 'development'
+    'தமிழ்நாடு', 'Tamil Nadu', 'சென்னை', 'Chennai', 'கோயம்புத்தூர்', 'Coimbatore',
+    'வேலைவாய்ப்பு', 'employment', 'jobs', 'கல்வி', 'education',
+    'சுகாதாரம்', 'health', 'தண்ணீர்', 'water', 'infrastructure', 'development'
   ],
   hashtags: [
-    '#Maharashtra', '#Mumbai', '#Pune', '#Development',
+    '#TamilNadu', '#Chennai', '#Coimbatore', '#Water', '#Development',
     '#Education', '#Health', '#Jobs', '#Infrastructure'
   ],
   candidates: [

@@ -53,7 +53,7 @@ export default function ManifestoMatch() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Mock manifesto data for major Kerala parties
+  // Mock manifesto data for major Tamil Nadu parties
   const [manifestoPoints] = useState<ManifestoPoint[]>([
     {
       id: '1',

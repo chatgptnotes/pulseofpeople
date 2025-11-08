@@ -180,7 +180,7 @@ export default function DataSubmission() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Data Submission</h1>
-          <p className="text-gray-600">Submit ground intelligence data to BETTROI dashboard</p>
+          <p className="text-gray-600">Submit ground intelligence data to Animal-I dashboard</p>
         </div>
         <div className="text-sm text-gray-500">
           <Clock className="w-4 h-4 inline mr-1" />
@@ -728,7 +728,7 @@ export default function DataSubmission() {
                   <h4 className="font-semibold text-blue-900">Ready to Submit</h4>
                 </div>
                 <p className="text-blue-800 text-sm">
-                  Your data will be processed and integrated into the BETTROI dashboard. 
+                  Your data will be processed and integrated into the Animal-I dashboard. 
                   You'll receive a confirmation once the submission is complete.
                 </p>
               </div>

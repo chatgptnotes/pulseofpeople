@@ -44,7 +44,7 @@ export default function BJPLandingPage() {
     {
       icon: BarChart3,
       title: 'Real-Time Analytics',
-      description: 'Monitor voter sentiment across Kerala with advanced data visualization and comprehensive booth-level reporting.'
+      description: 'Monitor voter sentiment across Tamil Nadu with advanced data visualization and comprehensive booth-level reporting.'
     },
     {
       icon: Users,
@@ -81,7 +81,7 @@ export default function BJPLandingPage() {
   ];
 
   const achievements = [
-    'Nemom - First BJP MLA in Kerala',
+    'Nemom - First BJP MLA in Tamil Nadu',
     'Growing vote share from 6% to 15%+',
     'Strong presence in 5 corporations',
     'Youth wing with 1 lakh+ members'
@@ -92,7 +92,7 @@ export default function BJPLandingPage() {
       {/* Announcement Banner */}
       <div className="bg-gradient-to-r from-orange-600 to-orange-500 text-white py-2 px-4 text-center">
         <p className="text-sm font-medium">
-          🪷 Kerala Assembly Elections 2026 - Building a Stronger Tomorrow
+          🪷 Tamil Nadu Assembly Elections 2026 - Building a Stronger Tomorrow
         </p>
       </div>
 
@@ -107,19 +107,19 @@ export default function BJPLandingPage() {
               <div className="space-y-8">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 rounded-full">
                   <span className="text-2xl">🪷</span>
-                  <span className="text-orange-800 font-semibold">BJP Kerala</span>
+                  <span className="text-orange-800 font-semibold">BJP Tamil Nadu</span>
                 </div>
 
                 <h1 className="text-5xl md:text-6xl font-bold text-gray-900">
                   <span className="text-orange-600">Building</span> a{' '}
                   <span className="bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
-                    Stronger Kerala
+                    Stronger Tamil Nadu
                   </span>
                 </h1>
 
                 <p className="text-xl text-gray-700 leading-relaxed">
                   Empowering every citizen with development and good governance.
-                  Join the movement for a prosperous Kerala that leads in progress
+                  Join the movement for a prosperous Tamil Nadu that leads in progress
                   while preserving our rich cultural heritage.
                 </p>
 
@@ -162,10 +162,10 @@ export default function BJPLandingPage() {
                 <div className="relative bg-white rounded-3xl shadow-2xl p-8">
                   <img
                     src="/assets/images/bjp-kerala-campaign.jpg"
-                    alt="BJP Kerala Campaign"
+                    alt="BJP Tamil Nadu Campaign"
                     className="w-full h-full object-cover rounded-2xl"
                     onError={(e) => {
-                      e.currentTarget.src = 'https://via.placeholder.com/600x400/FF9933/FFFFFF?text=BJP+Kerala+2026';
+                      e.currentTarget.src = 'https://via.placeholder.com/600x400/FF9933/FFFFFF?text=BJP+Tamil Nadu+2026';
                     }}
                   />
                   <div className="absolute -bottom-6 -right-6 bg-gradient-to-r from-orange-500 to-orange-400 text-white p-6 rounded-2xl shadow-xl">
@@ -184,7 +184,7 @@ export default function BJPLandingPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold text-center text-white mb-12">
-              Our Growing Strength in Kerala
+              Our Growing Strength in Tamil Nadu
             </h2>
             <div className="grid md:grid-cols-4 gap-8">
               {stats.map((stat, index) => (
@@ -207,7 +207,7 @@ export default function BJPLandingPage() {
                 Campaign Management Platform
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Advanced technology platform designed specifically for BJP Kerala's
+                Advanced technology platform designed specifically for BJP Tamil Nadu's
                 campaign needs, enabling data-driven decision making and efficient
                 resource management.
               </p>
@@ -250,21 +250,21 @@ export default function BJPLandingPage() {
                       <CheckCircle className="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" />
                       <div>
                         <h4 className="font-semibold text-gray-900">Infrastructure Development</h4>
-                        <p className="text-gray-600">Modern roads, railways, and smart cities across Kerala</p>
+                        <p className="text-gray-600">Modern roads, railways, and smart cities across Tamil Nadu</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle className="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" />
                       <div>
                         <h4 className="font-semibold text-gray-900">Cultural Heritage</h4>
-                        <p className="text-gray-600">Preserving and promoting Kerala's rich traditions and temples</p>
+                        <p className="text-gray-600">Preserving and promoting Tamil Nadu's rich traditions and temples</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle className="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" />
                       <div>
                         <h4 className="font-semibold text-gray-900">Youth Empowerment</h4>
-                        <p className="text-gray-600">Skill development and startup ecosystem for young Kerala</p>
+                        <p className="text-gray-600">Skill development and startup ecosystem for young Tamil Nadu</p>
                       </div>
                     </div>
                   </div>
@@ -272,7 +272,7 @@ export default function BJPLandingPage() {
                 <div className="bg-gradient-to-br from-orange-500 to-orange-400 p-12 text-white">
                   <h3 className="text-2xl font-bold mb-6">Join the Movement</h3>
                   <p className="mb-8">
-                    Be part of Kerala's transformation journey. Together, we can build
+                    Be part of Tamil Nadu's transformation journey. Together, we can build
                     a state that leads in development while preserving our values.
                   </p>
                   <button
@@ -293,7 +293,7 @@ export default function BJPLandingPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <MapPin className="w-5 h-5" />
-                      <span>BJP Kerala State Office, Thiruvananthapuram</span>
+                      <span>BJP Tamil Nadu State Office, Thiruvananthapuram</span>
                     </div>
                   </div>
                 </div>
@@ -307,10 +307,10 @@ export default function BJPLandingPage() {
       <section className="py-20 bg-gradient-to-r from-orange-600 to-orange-500">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold text-white mb-4">
-            Ready to Transform Kerala?
+            Ready to Transform Tamil Nadu?
           </h2>
           <p className="text-xl text-orange-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of karyakartas working towards a developed and prosperous Kerala.
+            Join thousands of karyakartas working towards a developed and prosperous Tamil Nadu.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link

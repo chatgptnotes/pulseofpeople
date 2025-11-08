@@ -41,7 +41,7 @@ import { MobileCard, ResponsiveGrid, MobileButton, MobileTabs } from '../compone
 interface TVChannel {
   id: string;
   name: string;
-  logo: string;
+  logo: React.ComponentType<{ className?: string }>;
   language: string;
   type: 'news' | 'entertainment' | 'regional' | 'national';
   viewership: number;
@@ -90,54 +90,54 @@ interface ShowAnalytics {
 
 const tvChannels: TVChannel[] = [
   {
-    id: 'asianet-news',
-    name: 'Asianet News',
-    logo: '📺',
-    language: 'Malayalam',
+    id: 'sun-news',
+    name: 'Sun News',
+    logo: Tv,
+    language: 'Tamil',
     type: 'news',
-    viewership: 2800000,
+    viewership: 3200000,
     credibilityScore: 85,
     isLive: true,
     currentShow: 'News @ 9',
     bias: 'center',
-    region: 'Kerala',
+    region: 'Tamil Nadu',
     primeTimeStart: '19:00',
     primeTimeEnd: '23:00'
   },
   {
-    id: 'manorama-news',
-    name: 'Manorama News',
-    logo: '🔴',
-    language: 'Malayalam',
+    id: 'puthiya-thalaimurai',
+    name: 'Puthiya Thalaimurai',
+    logo: Rss,
+    language: 'Tamil',
     type: 'news',
-    viewership: 3200000,
+    viewership: 2800000,
     credibilityScore: 88,
     isLive: true,
     currentShow: 'Prime Time',
     bias: 'center',
-    region: 'Kerala',
+    region: 'Tamil Nadu',
     primeTimeStart: '18:30',
     primeTimeEnd: '22:30'
   },
   {
-    id: 'mathrubhumi-news',
-    name: 'Mathrubhumi News',
-    logo: '📰',
-    language: 'Malayalam',
+    id: 'thanthi-tv',
+    name: 'Thanthi TV',
+    logo: Radio,
+    language: 'Tamil',
     type: 'news',
     viewership: 2600000,
     credibilityScore: 86,
     isLive: true,
     currentShow: 'Evening Bulletin',
     bias: 'center',
-    region: 'Kerala',
+    region: 'Tamil Nadu',
     primeTimeStart: '19:00',
     primeTimeEnd: '22:00'
   },
   {
     id: 'ndtv',
     name: 'NDTV',
-    logo: '📹',
+    logo: Video,
     language: 'English',
     type: 'news',
     viewership: 4500000,
@@ -152,7 +152,7 @@ const tvChannels: TVChannel[] = [
   {
     id: 'aaj-tak',
     name: 'Aaj Tak',
-    logo: '🎯',
+    logo: Target,
     language: 'Hindi',
     type: 'news',
     viewership: 5200000,
@@ -167,7 +167,7 @@ const tvChannels: TVChannel[] = [
   {
     id: 'republic-tv',
     name: 'Republic TV',
-    logo: '🏛️',
+    logo: Podcast,
     language: 'English',
     type: 'news',
     viewership: 3800000,
@@ -180,32 +180,32 @@ const tvChannels: TVChannel[] = [
     primeTimeEnd: '23:00'
   },
   {
-    id: 'tv9-kerala',
-    name: 'TV9 Kerala',
-    logo: '9️⃣',
-    language: 'Malayalam',
+    id: 'news7-tamil',
+    name: 'News7 Tamil',
+    logo: MonitorPlay,
+    language: 'Tamil',
     type: 'news',
-    viewership: 1900000,
+    viewership: 2100000,
     credibilityScore: 81,
     isLive: true,
-    currentShow: 'Kerala Roundup',
+    currentShow: 'Tamil Nadu Roundup',
     bias: 'center',
-    region: 'Kerala',
+    region: 'Tamil Nadu',
     primeTimeStart: '20:00',
     primeTimeEnd: '22:00'
   },
   {
-    id: 'news18-kerala',
-    name: 'News18 Kerala',
-    logo: '📻',
-    language: 'Malayalam',
+    id: 'polimer-news',
+    name: 'Polimer News',
+    logo: Headphones,
+    language: 'Tamil',
     type: 'news',
-    viewership: 1600000,
-    credibilityScore: 79,
+    viewership: 1900000,
+    credibilityScore: 83,
     isLive: true,
     currentShow: 'State Focus',
     bias: 'center',
-    region: 'Kerala',
+    region: 'Tamil Nadu',
     primeTimeStart: '19:30',
     primeTimeEnd: '21:30'
   }
@@ -219,7 +219,7 @@ const mockBroadcastSegments: BroadcastSegment[] = [
     segment: 'Budget Analysis',
     timestamp: new Date(Date.now() - 900000), // 15 minutes ago
     duration: 420, // 7 minutes
-    topic: 'Kerala Budget 2026',
+    topic: 'Tamil Nadu Budget 2026',
     sentiment: 'positive',
     sentimentScore: 0.68,
     mentions: ['Chief Minister', 'Finance Minister', 'Opposition'],
@@ -450,11 +450,13 @@ export default function TVBroadcastAnalysis() {
               </div>
 
               <ResponsiveGrid cols={{ sm: 1, md: 2, lg: 3 }}>
-                {tvChannels.filter(channel => channel.isLive).map(channel => (
+                {tvChannels.filter(channel => channel.isLive).map(channel => {
+                  const ChannelLogo = channel.logo;
+                  return (
                   <MobileCard key={channel.id} padding="default" className="relative">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center space-x-3">
-                        <div className="text-2xl">{channel.logo}</div>
+                        <ChannelLogo className="w-8 h-8" />
                         <div>
                           <h4 className="text-responsive-sm font-semibold text-gray-900">
                             {channel.name}
@@ -516,7 +518,8 @@ export default function TVBroadcastAnalysis() {
                       </MobileButton>
                     </div>
                   </MobileCard>
-                ))}
+                  );
+                })}
               </ResponsiveGrid>
             </div>
           </div>
@@ -526,11 +529,13 @@ export default function TVBroadcastAnalysis() {
         {activeTab === 'channels' && (
           <div className="space-responsive">
             <div className="space-y-4">
-              {tvChannels.map(channel => (
+              {tvChannels.map(channel => {
+                const ChannelLogo = channel.logo;
+                return (
                 <MobileCard key={channel.id} padding="default">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      <div className="text-3xl">{channel.logo}</div>
+                      <ChannelLogo className="w-12 h-12" />
                       <div>
                         <h4 className="text-responsive-base font-semibold text-gray-900">
                           {channel.name}
@@ -591,7 +596,8 @@ export default function TVBroadcastAnalysis() {
                     </div>
                   )}
                 </MobileCard>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -645,7 +651,7 @@ export default function TVBroadcastAnalysis() {
                         className="w-full p-2 border border-gray-300 rounded text-sm"
                       >
                         <option value="all">All Languages</option>
-                        <option value="Malayalam">Malayalam</option>
+                        <option value="Tamil">Tamil</option>
                         <option value="English">English</option>
                         <option value="Hindi">Hindi</option>
                       </select>
@@ -763,10 +769,12 @@ export default function TVBroadcastAnalysis() {
                   Channel Performance
                 </h3>
                 <div className="space-y-3">
-                  {tvChannels.slice(0, 5).map(channel => (
+                  {tvChannels.slice(0, 5).map(channel => {
+                    const ChannelLogo = channel.logo;
+                    return (
                     <div key={channel.id} className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm">{channel.logo}</span>
+                        <ChannelLogo className="w-5 h-5" />
                         <span className="text-xs text-gray-700">{channel.name}</span>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -781,7 +789,8 @@ export default function TVBroadcastAnalysis() {
                         </span>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </MobileCard>
 
@@ -791,7 +800,7 @@ export default function TVBroadcastAnalysis() {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-700">Malayalam</span>
+                    <span className="text-xs text-gray-700">Tamil</span>
                     <div className="flex items-center space-x-2">
                       <div className="w-20 bg-gray-200 rounded-full h-2">
                         <div className="bg-green-600 h-2 rounded-full" style={{ width: '50%' }} />
@@ -854,7 +863,7 @@ export default function TVBroadcastAnalysis() {
                   </div>
                   <p className="text-responsive-xs text-gray-700">
                     Budget analysis segments are generating 40% higher engagement than average, 
-                    with positive sentiment across Malayalam and English channels.
+                    with positive sentiment across Tamil and English channels.
                   </p>
                 </div>
 

@@ -176,8 +176,8 @@ function getMockTenantConfig(tenantSlug: string): TenantConfig {
     'party-b': {
       id: 'mock-party-b',
       slug: 'bjp-kerala',
-      name: 'BJP Kerala Campaign 2026',
-      displayName: 'BJP Kerala',
+      name: 'BJP Tamil Nadu Campaign 2026',
+      displayName: 'BJP Tamil Nadu',
       subdomain: 'party-b',
       customDomain: null,
       status: 'active',
@@ -188,7 +188,7 @@ function getMockTenantConfig(tenantSlug: string): TenantConfig {
         secondaryColor: '#FF6B00',
         logo: '/assets/images/bjp-logo.png',
         theme: 'saffron',
-        heroTitle: 'BJP Kerala - Building a Stronger Tomorrow',
+        heroTitle: 'BJP Tamil Nadu - Building a Stronger Tomorrow',
         motto: 'Sabka Saath, Sabka Vikas, Sabka Vishwas, Sabka Prayas'
       },
       features: {
@@ -200,7 +200,7 @@ function getMockTenantConfig(tenantSlug: string): TenantConfig {
         digitalCampaigning: true
       },
       config: {
-        state: 'Kerala',
+        state: 'Tamil Nadu',
         districts: ['Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Alappuzha', 'Kottayam', 'Idukki', 'Ernakulam', 'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode', 'Wayanad', 'Kannur', 'Kasaragod'],
         partySymbol: 'lotus',
         electionYear: '2026'

@@ -47,7 +47,7 @@ export default function ExportManager({ className = '', onExportComplete }: Expo
       recommendations: true
     },
     customization: {
-      title: 'BETTROI Sentiment Analysis Report',
+      title: 'Animal-I Sentiment Analysis Report',
       subtitle: 'Political Intelligence Dashboard',
       color_scheme: 'blue'
     }
@@ -61,7 +61,7 @@ export default function ExportManager({ className = '', onExportComplete }: Expo
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `BETTROI_Report_${timestamp}.${options.format}`;
+      const filename = `Animal-I_Report_${timestamp}.${options.format}`;
       
       if (onExportComplete) {
         onExportComplete({ success: true, message: `Report exported successfully as ${filename}` });

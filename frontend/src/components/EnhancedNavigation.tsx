@@ -146,6 +146,14 @@ export function EnhancedNavigation() {
   // Standard User Navigation - Categorized Structure
   const userMenu: MenuSection[] = [
     {
+      title: 'Main Dashboard',
+      categoryIcon: DashboardIcon,
+      categoryColor: 'indigo',
+      items: [
+        { name: 'Pulse of People Dashboard', href: '/dashboard/legacy', icon: DashboardIcon, badge: 'Live' },
+      ],
+    },
+    {
       title: 'Data Intelligence',
       categoryIcon: DataIntelligenceIcon,
       categoryColor: 'blue',
@@ -165,7 +173,6 @@ export function EnhancedNavigation() {
       categoryIcon: TrendingIcon,
       categoryColor: 'green',
       items: [
-        { name: 'Main Dashboard', href: '/dashboard', icon: DashboardIcon },
         { name: 'Analytics Dashboard', href: '/analytics-dashboard', icon: AnalyticsIcon },
         { name: 'Advanced Charts', href: '/advanced-charts', icon: AssessmentIcon },
         { name: 'AI Insights', href: '/ai-insights', icon: InsightsIcon },

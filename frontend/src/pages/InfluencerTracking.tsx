@@ -124,8 +124,8 @@ const influencers: Influencer[] = [
     sentiment: 68,
     category: 'political',
     verified: true,
-    location: 'Kerala, India',
-    language: ['Malayalam', 'English'],
+    location: 'Tamil Nadu, India',
+    language: ['Tamil', 'English'],
     reachEstimate: 5600000,
     postsPerWeek: 12,
     avgShares: 15600,
@@ -151,8 +151,8 @@ const influencers: Influencer[] = [
     sentiment: 45,
     category: 'political',
     verified: true,
-    location: 'Kerala, India',
-    language: ['Malayalam', 'English'],
+    location: 'Tamil Nadu, India',
+    language: ['Tamil', 'English'],
     reachEstimate: 2400000,
     postsPerWeek: 18,
     avgShares: 8900,
@@ -178,8 +178,8 @@ const influencers: Influencer[] = [
     sentiment: 78,
     category: 'celebrity',
     verified: true,
-    location: 'Kerala, India',
-    language: ['Malayalam', 'English', 'Hindi'],
+    location: 'Tamil Nadu, India',
+    language: ['Tamil', 'English', 'Hindi'],
     reachEstimate: 8900000,
     postsPerWeek: 8,
     avgShares: 45000,
@@ -205,8 +205,8 @@ const influencers: Influencer[] = [
     sentiment: 62,
     category: 'journalist',
     verified: true,
-    location: 'Kerala, India',
-    language: ['Malayalam', 'English'],
+    location: 'Tamil Nadu, India',
+    language: ['Tamil', 'English'],
     reachEstimate: 1800000,
     postsPerWeek: 15,
     avgShares: 12000,
@@ -233,7 +233,7 @@ const influencers: Influencer[] = [
     category: 'activist',
     verified: true,
     location: 'India',
-    language: ['English', 'Hindi', 'Malayalam'],
+    language: ['English', 'Hindi', 'Tamil'],
     reachEstimate: 1200000,
     postsPerWeek: 22,
     avgShares: 8500,
@@ -282,7 +282,7 @@ const mockInfluencerPosts: InfluencerPost[] = [
     influencerId: '1',
     influencerName: 'Pinarayi Vijayan',
     platform: 'Twitter/X',
-    content: 'Kerala Budget 2026 prioritizes sustainable development while ensuring social justice. Our commitment to education and healthcare remains unwavering. Together, we build a better tomorrow. #KeralaBudget2026 #Development',
+    content: 'Tamil Nadu Budget 2026 prioritizes sustainable development while ensuring social justice. Our commitment to education and healthcare remains unwavering. Together, we build a better tomorrow. #Tamil NaduBudget2026 #Development',
     timestamp: new Date(Date.now() - 1800000), // 30 minutes ago
     engagement: {
       likes: 28000,
@@ -294,8 +294,8 @@ const mockInfluencerPosts: InfluencerPost[] = [
     sentiment: 'positive',
     sentimentScore: 0.78,
     topics: ['Budget', 'Development', 'Education', 'Healthcare'],
-    mentions: ['Kerala Government', 'Citizens'],
-    hashtags: ['#KeralaBudget2026', '#Development'],
+    mentions: ['Tamil Nadu Government', 'Citizens'],
+    hashtags: ['#Tamil NaduBudget2026', '#Development'],
     mediaType: 'text',
     isViral: true,
     influence: 92,
@@ -308,7 +308,7 @@ const mockInfluencerPosts: InfluencerPost[] = [
     influencerId: '3',
     influencerName: 'Priya Prakash Varrier',
     platform: 'Instagram',
-    content: 'Young voices matter in shaping our future! Excited to see more youth engagement in important discussions about our state\'s progress. Every opinion counts! ✨ #YouthVoice #Kerala',
+    content: 'Young voices matter in shaping our future! Excited to see more youth engagement in important discussions about our state\'s progress. Every opinion counts! ✨ #YouthVoice #Tamil Nadu',
     timestamp: new Date(Date.now() - 7200000), // 2 hours ago
     engagement: {
       likes: 89000,
@@ -320,8 +320,8 @@ const mockInfluencerPosts: InfluencerPost[] = [
     sentiment: 'positive',
     sentimentScore: 0.85,
     topics: ['Youth', 'Engagement', 'Future', 'Progress'],
-    mentions: ['Young People', 'Kerala'],
-    hashtags: ['#YouthVoice', '#Kerala'],
+    mentions: ['Young People', 'Tamil Nadu'],
+    hashtags: ['#YouthVoice', '#Tamil Nadu'],
     mediaType: 'video',
     isViral: true,
     influence: 88,
@@ -1182,7 +1182,7 @@ export default function InfluencerTracking() {
                   </div>
                   <p className="text-responsive-xs text-gray-700">
                     Regional influencers gaining 25% more traction than national ones. 
-                    Malayalam content outperforming English by 30% in local engagement.
+                    Tamil content outperforming English by 30% in local engagement.
                   </p>
                 </div>
 

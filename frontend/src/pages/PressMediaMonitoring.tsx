@@ -81,8 +81,8 @@ const newsSources: NewsSource[] = [
     logo: '📰',
     credibilityScore: 92,
     bias: 'center',
-    region: 'Kerala',
-    language: 'Malayalam',
+    region: 'Tamil Nadu',
+    language: 'Tamil',
     active: true,
     articlesCount: 1247,
     reachEstimate: 2800000
@@ -93,8 +93,8 @@ const newsSources: NewsSource[] = [
     logo: '📖',
     credibilityScore: 89,
     bias: 'center',
-    region: 'Kerala',
-    language: 'Malayalam',
+    region: 'Tamil Nadu',
+    language: 'Tamil',
     active: true,
     articlesCount: 1156,
     reachEstimate: 2200000
@@ -141,8 +141,8 @@ const newsSources: NewsSource[] = [
     logo: '📺',
     credibilityScore: 82,
     bias: 'center',
-    region: 'Kerala',
-    language: 'Malayalam',
+    region: 'Tamil Nadu',
+    language: 'Tamil',
     active: true,
     articlesCount: 1689,
     reachEstimate: 1900000
@@ -176,7 +176,7 @@ const newsSources: NewsSource[] = [
 const mockArticles: NewsArticle[] = [
   {
     id: '1',
-    title: 'Kerala Budget 2026: Focus on Education and Healthcare Infrastructure',
+    title: 'Tamil Nadu Budget 2026: Focus on Education and Healthcare Infrastructure',
     summary: 'State government announces major allocation for educational reforms and healthcare modernization across all districts.',
     source: 'Malayala Manorama',
     timestamp: new Date(Date.now() - 1800000), // 30 minutes ago
@@ -186,8 +186,8 @@ const mockArticles: NewsArticle[] = [
     engagement: 1245,
     topics: ['Budget', 'Education', 'Healthcare', 'Infrastructure'],
     mentions: ['Chief Minister', 'Finance Minister', 'Education Department'],
-    region: 'Kerala',
-    language: 'Malayalam',
+    region: 'Tamil Nadu',
+    language: 'Tamil',
     url: '#',
     isBreaking: true,
     priority: 'high',
@@ -205,7 +205,7 @@ const mockArticles: NewsArticle[] = [
     engagement: 892,
     topics: ['Election', 'Polling', 'Politics', 'Survey'],
     mentions: ['Opposition Leader', 'Political Parties', 'Voters'],
-    region: 'Kerala',
+    region: 'Tamil Nadu',
     language: 'English',
     url: '#',
     isBreaking: false,
@@ -224,8 +224,8 @@ const mockArticles: NewsArticle[] = [
     engagement: 654,
     topics: ['Infrastructure', 'Development', 'Government', 'Projects'],
     mentions: ['PWD', 'Contractors', 'Local Bodies'],
-    region: 'Kerala',
-    language: 'Malayalam',
+    region: 'Tamil Nadu',
+    language: 'Tamil',
     url: '#',
     isBreaking: false,
     priority: 'medium',
@@ -651,7 +651,7 @@ export default function PressMediaMonitoring() {
                         className="w-full p-2 border border-gray-300 rounded text-sm"
                       >
                         <option value="all">All Regions</option>
-                        <option value="Kerala">Kerala</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
                         <option value="National">National</option>
                       </select>
                     </div>
@@ -663,7 +663,7 @@ export default function PressMediaMonitoring() {
                         className="w-full p-2 border border-gray-300 rounded text-sm"
                       >
                         <option value="all">All Languages</option>
-                        <option value="Malayalam">Malayalam</option>
+                        <option value="Tamil">Tamil</option>
                         <option value="English">English</option>
                         <option value="Hindi">Hindi</option>
                       </select>
@@ -856,7 +856,7 @@ export default function PressMediaMonitoring() {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-700">Malayalam</span>
+                    <span className="text-xs text-gray-700">Tamil</span>
                     <div className="flex items-center space-x-2">
                       <div className="w-20 bg-gray-200 rounded-full h-2">
                         <div className="bg-green-600 h-2 rounded-full" style={{ width: '45%' }} />

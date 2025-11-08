@@ -56,7 +56,7 @@ interface Conversation {
   userLocation: string;
   timestamp: Date;
   duration: number;
-  language: 'Malayalam' | 'English' | 'Hindi' | 'Tamil';
+  language: 'Tamil' | 'English' | 'Hindi' | 'Tamil';
   channel: 'web' | 'whatsapp' | 'telegram' | 'voice' | 'sms';
   sentiment: 'positive' | 'negative' | 'neutral';
   sentimentScore: number;
@@ -122,10 +122,10 @@ interface TopicAnalysis {
 
 const botConfigurations: BotConfiguration[] = [
   {
-    id: 'kerala-assistant',
-    name: 'Kerala Pulse Assistant',
-    description: 'Main conversational AI for Kerala voter feedback',
-    language: ['Malayalam', 'English'],
+    id: 'tamilnadu-assistant',
+    name: 'Tamil Nadu Pulse Assistant',
+    description: 'Main conversational AI for Tamil Nadu voter feedback',
+    language: ['Tamil', 'English'],
     active: true,
     channels: ['web', 'whatsapp', 'telegram'],
     personality: 'friendly',
@@ -141,7 +141,7 @@ const botConfigurations: BotConfiguration[] = [
     id: 'complaint-resolver',
     name: 'Issue Resolution Bot',
     description: 'Specialized bot for handling complaints and issues',
-    language: ['Malayalam', 'English', 'Hindi'],
+    language: ['Tamil', 'English', 'Hindi'],
     active: true,
     channels: ['web', 'voice', 'sms'],
     personality: 'professional',
@@ -157,7 +157,7 @@ const botConfigurations: BotConfiguration[] = [
     id: 'survey-conductor',
     name: 'Survey & Polling Bot',
     description: 'Conducts structured surveys and polls',
-    language: ['Malayalam', 'English'],
+    language: ['Tamil', 'English'],
     active: true,
     channels: ['web', 'whatsapp', 'telegram'],
     personality: 'formal',
@@ -173,7 +173,7 @@ const botConfigurations: BotConfiguration[] = [
     id: 'youth-engager',
     name: 'Youth Engagement Bot',
     description: 'Specialized for engaging young voters',
-    language: ['English', 'Hindi', 'Malayalam'],
+    language: ['English', 'Hindi', 'Tamil'],
     active: true,
     channels: ['web', 'whatsapp', 'telegram'],
     personality: 'casual',
@@ -195,7 +195,7 @@ const mockConversations: Conversation[] = [
     userLocation: 'Kochi',
     timestamp: new Date(Date.now() - 900000), // 15 minutes ago
     duration: 420, // 7 minutes
-    language: 'Malayalam',
+    language: 'Tamil',
     channel: 'whatsapp',
     sentiment: 'positive',
     sentimentScore: 0.72,
@@ -251,7 +251,7 @@ const mockConversations: Conversation[] = [
     userLocation: 'Kozhikode',
     timestamp: new Date(Date.now() - 2700000), // 45 minutes ago
     duration: 600, // 10 minutes
-    language: 'Malayalam',
+    language: 'Tamil',
     channel: 'telegram',
     sentiment: 'positive',
     sentimentScore: 0.68,
@@ -279,12 +279,12 @@ const mockMessages: Message[] = [
     id: '1',
     conversationId: '1',
     sender: 'bot',
-    content: 'Hello! I\'m Kerala Pulse Assistant. How can I help you share your thoughts about government services today?',
+    content: 'Hello! I\'m Tamil Nadu Pulse Assistant. How can I help you share your thoughts about government services today?',
     timestamp: new Date(Date.now() - 900000),
     type: 'text',
     intent: 'greeting',
     confidence: 95,
-    language: 'Malayalam',
+    language: 'Tamil',
     processed: true
   },
   {
@@ -295,7 +295,7 @@ const mockMessages: Message[] = [
     timestamp: new Date(Date.now() - 870000),
     type: 'text',
     sentiment: 'positive',
-    language: 'Malayalam',
+    language: 'Tamil',
     processed: true
   },
   {
@@ -307,7 +307,7 @@ const mockMessages: Message[] = [
     type: 'text',
     intent: 'follow_up',
     confidence: 88,
-    language: 'Malayalam',
+    language: 'Tamil',
     processed: true
   }
 ];
@@ -363,7 +363,7 @@ export default function ConversationBot() {
     satisfactionRate: 87,
     humanHandoffs: 8,
     resolvedToday: 1247,
-    languageBreakdown: { Malayalam: 45, English: 35, Hindi: 15, Tamil: 5 },
+    languageBreakdown: { Tamil: 45, English: 35, Hindi: 15, Tamil: 5 },
     topIssues: ['Healthcare', 'Education', 'Transport', 'Infrastructure']
   });
 
@@ -525,7 +525,7 @@ export default function ConversationBot() {
                       </div>
                       <div>
                         <div className="text-responsive-sm font-semibold text-gray-900">
-                          Kerala Pulse Assistant
+                          Tamil Nadu Pulse Assistant
                         </div>
                         <div className="text-xs text-green-600">Online</div>
                       </div>
@@ -679,7 +679,7 @@ export default function ConversationBot() {
                         className="w-full p-2 border border-gray-300 rounded text-sm"
                       >
                         <option value="all">All Languages</option>
-                        <option value="Malayalam">Malayalam</option>
+                        <option value="Tamil">Tamil</option>
                         <option value="English">English</option>
                         <option value="Hindi">Hindi</option>
                         <option value="Tamil">Tamil</option>
@@ -1044,7 +1044,7 @@ export default function ConversationBot() {
                   </div>
                   <p className="text-responsive-xs text-gray-700">
                     Young users prefer WhatsApp (67%), while older demographics use web interface (78%). 
-                    Malayalam conversations 40% longer on average than English ones.
+                    Tamil conversations 40% longer on average than English ones.
                   </p>
                 </div>
 
@@ -1069,7 +1069,7 @@ export default function ConversationBot() {
                     </h4>
                   </div>
                   <p className="text-responsive-xs text-gray-700">
-                    Reduce human handoffs by improving complaint resolution bot. Add more Malayalam 
+                    Reduce human handoffs by improving complaint resolution bot. Add more Tamil 
                     training data for better regional understanding. Implement proactive follow-ups.
                   </p>
                 </div>

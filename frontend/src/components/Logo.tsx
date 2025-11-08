@@ -86,7 +86,7 @@ export default function Logo({
         </div>
         {showTagline && (
           <div className={`${sizeClasses.tagline} text-gray-500 mt-2`}>
-            by BETTROI • Animal-i Initiative
+            by Animal-I • Animal-i Initiative
           </div>
         )}
       </div>
@@ -119,7 +119,7 @@ export default function Logo({
           <div className="text-gray-600 text-sm font-medium">pulse of people</div>
           {showTagline && (
             <div className={`${sizeClasses.tagline} text-gray-500`}>
-              by BETTROI
+              by Animal-I
             </div>
           )}
         </div>
@@ -158,7 +158,7 @@ export const PulseLogoCompact = ({ className = '' }: { className?: string }) => 
       <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
         POP
       </span>
-      <span className="text-xs text-gray-600">by BETTROI</span>
+      <span className="text-xs text-gray-600">by Animal-I</span>
     </div>
   </div>
 );

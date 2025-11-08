@@ -60,7 +60,7 @@ interface TenantFormData {
 const INDIAN_STATES = [
   'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
   'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
-  'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
+  'Tamil Nadu', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
   'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
   'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
 ];
@@ -362,7 +362,7 @@ export function TenantProvisioning() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="e.g., Kerala Campaign 2026"
+                  placeholder="e.g., Tamil Nadu Campaign 2026"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
@@ -376,7 +376,7 @@ export function TenantProvisioning() {
                   type="text"
                   value={formData.displayName}
                   onChange={(e) => handleInputChange('displayName', e.target.value)}
-                  placeholder="e.g., Kerala 2026"
+                  placeholder="e.g., Tamil Nadu 2026"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />

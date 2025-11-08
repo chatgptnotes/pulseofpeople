@@ -85,7 +85,7 @@ export default function FeedbackChatbot() {
       id: '2',
       type: 'suggestion',
       title: 'Digital Job Portal for Youth',
-      content: 'Create a centralized digital platform for job postings specifically for Kerala youth with skill matching.',
+      content: 'Create a centralized digital platform for job postings specifically for Tamil Nadu youth with skill matching.',
       category: 'Employment',
       priority: 'medium',
       status: 'open',
@@ -124,7 +124,7 @@ export default function FeedbackChatbot() {
       setChatMessages([{
         id: '1',
         type: 'bot',
-        message: 'Hello! I\'m your AI assistant for the Kerala 2026 elections. I can help you with complaints, questions, feedback, or suggestions. How can I assist you today?',
+        message: 'Hello! I\'m your AI assistant for the Tamil Nadu 2026 elections. I can help you with complaints, questions, feedback, or suggestions. How can I assist you today?',
         timestamp: new Date()
       }]);
     }
@@ -183,7 +183,7 @@ export default function FeedbackChatbot() {
         response = 'I can help answer questions about voting procedures, candidate information, manifestos, and more. What specific information are you looking for?';
       }
     } else {
-      response = 'I\'m here to help with complaints, questions, feedback, or suggestions related to Kerala elections 2026. Could you please be more specific about how I can assist you?';
+      response = 'I\'m here to help with complaints, questions, feedback, or suggestions related to Tamil Nadu elections 2026. Could you please be more specific about how I can assist you?';
     }
 
     setCurrentCategory(category);
@@ -326,7 +326,7 @@ export default function FeedbackChatbot() {
               <div className="bg-blue-600 text-white p-3 rounded-t-lg flex items-center justify-between">
                 <div className="flex items-center">
                   <Bot className="h-5 w-5 mr-2" />
-                  <span className="font-medium">AI Assistant - Kerala Elections 2026</span>
+                  <span className="font-medium">AI Assistant - Tamil Nadu Elections 2026</span>
                 </div>
                 <div className="flex items-center space-x-2 text-xs">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>

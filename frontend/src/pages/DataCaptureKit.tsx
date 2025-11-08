@@ -137,7 +137,7 @@ export default function DataCaptureKit() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            BETTROI Party Worker Data Capture Kit
+            Animal-I Party Worker Data Capture Kit
           </h1>
           <p className="text-gray-600">
             Structured ground intelligence collection system for campaign workers
@@ -189,7 +189,7 @@ export default function DataCaptureKit() {
                   <h2 className="text-xl font-bold text-gray-900 mb-4">Purpose & Overview</h2>
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                     <p className="text-blue-800">
-                      This kit creates a consistent flow of reliable voter sentiment data from the ground to the BETTROI dashboard, 
+                      This kit creates a consistent flow of reliable voter sentiment data from the ground to the Animal-I dashboard, 
                       ensuring campaign decisions are based on verified insights, not guesswork.
                     </p>
                   </div>
@@ -382,7 +382,7 @@ export default function DataCaptureKit() {
                     <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <h4 className="font-semibold text-blue-900 mb-2">How to Use:</h4>
                       <ol className="text-sm text-blue-800 space-y-1">
-                        <li>1. Add BETTROI Bot to WhatsApp: +91-XXXXXXXXXX</li>
+                        <li>1. Add Animal-I Bot to WhatsApp: +91-XXXXXXXXXX</li>
                         <li>2. Start with /help command to see options</li>
                         <li>3. Use /daily for quick sentiment updates</li>
                         <li>4. Follow bot prompts for structured data entry</li>
@@ -482,7 +482,7 @@ export default function DataCaptureKit() {
                       <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-4">3</div>
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900">Submit Through Official Channel</h4>
-                        <p className="text-sm text-gray-600">WhatsApp bot, Google Form, or BETTROI app</p>
+                        <p className="text-sm text-gray-600">WhatsApp bot, Google Form, or Animal-I app</p>
                       </div>
                     </div>
                     
@@ -511,7 +511,7 @@ export default function DataCaptureKit() {
                   
                   <div className="border border-gray-200 rounded-lg p-4 text-center">
                     <Upload className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                    <h4 className="font-medium text-gray-900">BETTROI App</h4>
+                    <h4 className="font-medium text-gray-900">Animal-I App</h4>
                     <p className="text-sm text-gray-600">Complete data package</p>
                   </div>
                 </div>
@@ -587,7 +587,7 @@ export default function DataCaptureKit() {
                 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-blue-900 mb-4">
-                    BETTROI Dashboard Support Team
+                    Animal-I Dashboard Support Team
                   </h3>
                   <p className="text-blue-800 mb-4">
                     For help with submissions, technical issues, or training questions, 

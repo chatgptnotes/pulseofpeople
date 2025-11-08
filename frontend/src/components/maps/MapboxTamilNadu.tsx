@@ -8,7 +8,6 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import tamilNaduGeoJSON from '../../assets/maps/tamilnadu-constituencies.json';
 
-// Get your free API key from: https://account.mapbox.com/access-tokens/
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiYmttdXJhbGkiLCJhIjoiY21ocDhoNXhiMGhodDJrcW94OGptdDg0MiJ9.dq6OU3jiKKntjhIDD9sxWQ';
 
 interface MapboxTamilNaduProps {
@@ -239,7 +238,7 @@ export const MapboxTamilNadu: React.FC<MapboxTamilNaduProps> = ({
       )}
 
       <div className="mt-2 text-xs text-gray-500 text-center">
-        Interactive map powered by Mapbox | Constituency data from DataMeet
+        Constituency data from DataMeet
       </div>
     </div>
   );

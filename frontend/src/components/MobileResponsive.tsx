@@ -113,7 +113,7 @@ export function MobileNavigation() {
               <div className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                 Pulse of People
               </div>
-              <div className="text-xs text-gray-600">by BETTROI</div>
+              <div className="text-xs text-gray-600">by Animal-I</div>
             </div>
           </div>
         </div>
