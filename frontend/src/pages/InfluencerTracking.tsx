@@ -114,8 +114,8 @@ interface TrendingInfluencer {
 const influencers: Influencer[] = [
   {
     id: '1',
-    name: 'Pinarayi Vijayan',
-    handle: '@pinarayivijayan',
+    name: 'M.K. Stalin',
+    handle: '@mkstalin',
     avatar: '👤',
     platforms: ['Twitter/X', 'Facebook', 'Instagram'],
     totalFollowers: 2800000,
@@ -141,8 +141,8 @@ const influencers: Influencer[] = [
   },
   {
     id: '2',
-    name: 'Ramesh Chennithala',
-    handle: '@chennithala',
+    name: 'Thalapathy Vijay',
+    handle: '@actorvijay',
     avatar: '👤',
     platforms: ['Twitter/X', 'Facebook'],
     totalFollowers: 1200000,
@@ -168,8 +168,8 @@ const influencers: Influencer[] = [
   },
   {
     id: '3',
-    name: 'Priya Prakash Varrier',
-    handle: '@priya.prakash.varrier',
+    name: 'Rajinikanth',
+    handle: '@rajinikanth',
     avatar: '👤',
     platforms: ['Instagram', 'TikTok', 'YouTube'],
     totalFollowers: 6800000,
@@ -195,8 +195,8 @@ const influencers: Influencer[] = [
   },
   {
     id: '4',
-    name: 'John Brittas',
-    handle: '@johnbrittas',
+    name: 'Rangaraj Pandey',
+    handle: '@rangarajpandey',
     avatar: '👤',
     platforms: ['Twitter/X', 'YouTube'],
     totalFollowers: 890000,
@@ -222,8 +222,8 @@ const influencers: Influencer[] = [
   },
   {
     id: '5',
-    name: 'Medha Patkar',
-    handle: '@medhapatkar',
+    name: 'Suriya Sivakumar',
+    handle: '@actorsuriya',
     avatar: '👤',
     platforms: ['Twitter/X', 'Facebook'],
     totalFollowers: 450000,
@@ -249,8 +249,8 @@ const influencers: Influencer[] = [
   },
   {
     id: '6',
-    name: 'Kiran Bedi',
-    handle: '@thekiranbedi',
+    name: 'Kamal Haasan',
+    handle: '@ikamalhaasan',
     avatar: '👤',
     platforms: ['Twitter/X', 'Instagram', 'LinkedIn'],
     totalFollowers: 3200000,
@@ -280,7 +280,7 @@ const mockInfluencerPosts: InfluencerPost[] = [
   {
     id: '1',
     influencerId: '1',
-    influencerName: 'Pinarayi Vijayan',
+    influencerName: 'M.K. Stalin',
     platform: 'Twitter/X',
     content: 'Tamil Nadu Budget 2026 prioritizes sustainable development while ensuring social justice. Our commitment to education and healthcare remains unwavering. Together, we build a better tomorrow. #Tamil NaduBudget2026 #Development',
     timestamp: new Date(Date.now() - 1800000), // 30 minutes ago
@@ -306,7 +306,7 @@ const mockInfluencerPosts: InfluencerPost[] = [
   {
     id: '2',
     influencerId: '3',
-    influencerName: 'Priya Prakash Varrier',
+    influencerName: 'Rajinikanth',
     platform: 'Instagram',
     content: 'Young voices matter in shaping our future! Excited to see more youth engagement in important discussions about our state\'s progress. Every opinion counts! ✨ #YouthVoice #Tamil Nadu',
     timestamp: new Date(Date.now() - 7200000), // 2 hours ago
@@ -334,7 +334,7 @@ const mockInfluencerPosts: InfluencerPost[] = [
 const trendingInfluencers: TrendingInfluencer[] = [
   {
     id: '1',
-    name: 'Priya Prakash Varrier',
+    name: 'Rajinikanth',
     growthRate: 15.8,
     reasonForTrending: 'Youth engagement advocacy posts',
     timeframe: '24h',
@@ -344,7 +344,7 @@ const trendingInfluencers: TrendingInfluencer[] = [
   },
   {
     id: '2',
-    name: 'John Brittas',
+    name: 'Rangaraj Pandey',
     growthRate: 12.3,
     reasonForTrending: 'Investigative journalism series',
     timeframe: '7d',
