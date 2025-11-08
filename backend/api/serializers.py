@@ -31,16 +31,17 @@ class FlexibleLoginSerializer(serializers.Serializer):
         user = None
 
         # Try to find user by email first (if provided)
+        # Use select_related to fetch profile in same query for faster response
         if email:
             try:
-                user = User.objects.get(email=email)
+                user = User.objects.select_related('profile').get(email=email)
             except User.DoesNotExist:
                 pass  # Will try username next or fail later
 
         # If email didn't work, try username
         if not user and username:
             try:
-                user = User.objects.get(username=username)
+                user = User.objects.select_related('profile').get(username=username)
             except User.DoesNotExist:
                 pass
 
