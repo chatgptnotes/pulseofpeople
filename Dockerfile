@@ -1,7 +1,7 @@
 # Production Dockerfile for Pulse of People Frontend
 # Simplified single-stage build for Render deployment
 
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
