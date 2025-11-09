@@ -57,8 +57,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log('[AuthContext] 🔔 Auth state changed:', event);
 
       if (event === 'SIGNED_IN' && session) {
-        // User signed in
-        await checkSession();
+        // User signed in - fetch user data directly using the provided session
+        console.log('[AuthContext] ✅ Session found in auth event:', session.user.email);
+        await fetchUserData(session);
       } else if (event === 'SIGNED_OUT') {
         // User signed out
         setUser(null);
@@ -176,6 +177,93 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Always set initializing to false, even on error
       setIsInitializing(false);
       // Don't sign out on error - let user stay logged in with fallback data
+    }
+  };
+
+  const fetchUserData = async (session: any) => {
+    try {
+      // Fetch user details from database with extended timeout (30 seconds)
+      console.log('[AuthContext] 🔄 Fetching user data from database for:', session.user.email);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('User data fetch timeout after 30 seconds')), 30000);
+      });
+
+      const userDataPromise = supabase
+        .from('users')
+        .select('*')
+        .eq('email', session.user.email)
+        .single();
+
+      try {
+        const { data: userData, error: userError } = await Promise.race([
+          userDataPromise,
+          timeoutPromise
+        ]) as any;
+
+        if (userError || !userData) {
+          console.warn('[AuthContext] ⚠️ Failed to load user data from database:', userError?.message || 'No data found');
+          console.log('[AuthContext] 🔄 Creating fallback user from auth session...');
+
+          // Fallback: Create basic user object from auth session
+          const fallbackUser: User = {
+            id: session.user.id,
+            name: session.user.email?.split('@')[0] || 'User',
+            email: session.user.email || '',
+            role: 'user' as UserRole,
+            permissions: ['*'], // Grant basic permissions
+            avatar: session.user.user_metadata?.avatar_url,
+            is_super_admin: false,
+            status: 'active',
+          };
+
+          console.log('[AuthContext] ✅ Using fallback user data:', fallbackUser.name, fallbackUser.role);
+          setUser(fallbackUser);
+          setIsInitializing(false);
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('[AuthContext] ✅ User data loaded from database:', userData.full_name, userData.role);
+
+        setUser({
+          id: userData.id,
+          name: userData.full_name,
+          email: userData.email,
+          role: userData.role as UserRole,
+          permissions: userData.permissions || [],
+          avatar: userData.avatar_url,
+          is_super_admin: userData.is_super_admin,
+          organization_id: userData.organization_id,
+          status: userData.status || 'active',
+        });
+
+        setIsInitializing(false);
+        setIsLoading(false);
+      } catch (dbError: any) {
+        console.error('[AuthContext] ❌ Database query timeout or error:', dbError.message);
+        console.log('[AuthContext] 🔄 Creating fallback user from auth session...');
+
+        // Fallback: Create basic user object from auth session
+        const fallbackUser: User = {
+          id: session.user.id,
+          name: session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          role: 'user' as UserRole,
+          permissions: ['*'], // Grant basic permissions
+          avatar: session.user.user_metadata?.avatar_url,
+          is_super_admin: false,
+          status: 'active',
+        };
+
+        console.log('[AuthContext] ✅ Using fallback user data after timeout:', fallbackUser.name, fallbackUser.role);
+        setUser(fallbackUser);
+        setIsInitializing(false);
+        setIsLoading(false);
+      }
+    } catch (error: any) {
+      console.error('[AuthContext] ❌ fetchUserData failed with error:', error.message);
+      setIsInitializing(false);
+      setIsLoading(false);
     }
   };
 
