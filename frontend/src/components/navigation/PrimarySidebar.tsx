@@ -141,22 +141,24 @@ export default function PrimarySidebar({
         {/* User Profile */}
         <button
           ref={profileButtonRef}
-          className="category-button"
-          title="User Profile"
+          className="category-button with-tooltip"
           onClick={() => setShowProfileMenu(!showProfileMenu)}
+          data-tooltip="User Profile"
         >
           <UserIcon sx={{ color: '#FFFFFF', fontSize: '24px' }} />
+          <span className="button-tooltip">User Profile</span>
         </button>
 
         {/* Notifications */}
         <button
           ref={notificationsButtonRef}
-          className="category-button relative"
-          title="Notifications"
+          className="category-button with-tooltip relative"
           onClick={() => setShowNotifications(!showNotifications)}
+          data-tooltip="Notifications"
         >
           <NotificationIcon sx={{ color: '#FFFFFF', fontSize: '24px' }} />
           <span className="notification-badge">3</span>
+          <span className="button-tooltip">Notifications</span>
         </button>
       </div>
 
@@ -258,6 +260,43 @@ export default function PrimarySidebar({
           text-align: center;
         }
 
+        /* Tooltip styling for bottom section buttons */
+        .button-tooltip {
+          position: absolute;
+          left: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-left: 12px;
+          padding: 8px 12px;
+          background: #1F2937;
+          color: white;
+          font-size: 13px;
+          font-weight: 500;
+          white-space: nowrap;
+          border-radius: 6px;
+          pointer-events: none;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.2s ease, visibility 0.2s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+          z-index: 10000;
+        }
+
+        .button-tooltip::before {
+          content: '';
+          position: absolute;
+          right: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          border: 6px solid transparent;
+          border-right-color: #1F2937;
+        }
+
+        .category-button.with-tooltip:hover .button-tooltip {
+          opacity: 1;
+          visibility: visible;
+        }
+
         /* Scrollbar styling */
         .categories-section::-webkit-scrollbar {
           width: 4px;
@@ -293,11 +332,11 @@ function CategoryButton({ category, isActive, onClick }: CategoryButtonProps) {
     <>
       <button
         className={`category-button ${isActive ? 'active' : ''}`}
-        title={category.label}
         onClick={onClick}
         style={{
           '--category-color': category.color,
         } as React.CSSProperties}
+        data-tooltip={category.label}
       >
         <Icon
           sx={{
@@ -306,6 +345,7 @@ function CategoryButton({ category, isActive, onClick }: CategoryButtonProps) {
           }}
         />
         {isActive && <div className="active-indicator" />}
+        <span className="tooltip">{category.label}</span>
       </button>
 
       <style jsx>{`
@@ -352,6 +392,43 @@ function CategoryButton({ category, isActive, onClick }: CategoryButtonProps) {
           height: 24px;
           background: var(--category-color);
           border-radius: 0 2px 2px 0;
+        }
+
+        /* Tooltip styling */
+        .tooltip {
+          position: absolute;
+          left: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-left: 12px;
+          padding: 8px 12px;
+          background: #1F2937;
+          color: white;
+          font-size: 13px;
+          font-weight: 500;
+          white-space: nowrap;
+          border-radius: 6px;
+          pointer-events: none;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.2s ease, visibility 0.2s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+          z-index: 10000;
+        }
+
+        .tooltip::before {
+          content: '';
+          position: absolute;
+          right: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          border: 6px solid transparent;
+          border-right-color: #1F2937;
+        }
+
+        .category-button:hover .tooltip {
+          opacity: 1;
+          visibility: visible;
         }
       `}</style>
     </>
