@@ -4,7 +4,7 @@
 # ============================================
 
 # Stage 1: Build
-FROM node:18-alpine as builder
+FROM node:22-alpine as builder
 
 # Set working directory
 WORKDIR /app
@@ -12,8 +12,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install ALL dependencies (need devDependencies for build)
+RUN npm ci && npm cache clean --force
 
 # Copy application source
 COPY . .
