@@ -363,7 +363,7 @@ export default function ConversationBot() {
     satisfactionRate: 87,
     humanHandoffs: 8,
     resolvedToday: 1247,
-    languageBreakdown: { Tamil: 45, English: 35, Hindi: 15, Tamil: 5 },
+    languageBreakdown: { Tamil: 45, English: 35, Hindi: 15, Telugu: 5 },
     topIssues: ['Healthcare', 'Education', 'Transport', 'Infrastructure']
   });
 

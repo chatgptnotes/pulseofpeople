@@ -18,7 +18,7 @@ interface VersionFooterProps {
   variant?: 'default' | 'minimal';
 }
 
-export default function VersionFooter({
+function VersionFooter({
   className = '',
   variant = 'default'
 }: VersionFooterProps) {
@@ -72,3 +72,7 @@ export default function VersionFooter({
 export function MinimalVersionFooter() {
   return <VersionFooter variant="minimal" />;
 }
+
+// Export as both default and named export for compatibility
+export { VersionFooter };
+export default VersionFooter;
