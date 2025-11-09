@@ -30,6 +30,16 @@ export default function ProtectedRoute({
   adminOnly = false,
   redirectTo = '/login',
 }: ProtectedRouteProps) {
+  // ✅ AUTHENTICATION ENABLED - Using Mock Auth
+  // Mock authentication is enabled in AuthContext (no backend needed)
+  // You can log in with test credentials from AuthContext.tsx
+  const DISABLE_AUTH = false;
+
+  if (DISABLE_AUTH) {
+    console.log('⚠️ [ProtectedRoute] AUTH DISABLED - Development Mode');
+    return <>{children}</>;
+  }
+
   const { user, isLoading: authLoading, isInitializing } = useAuth();
   const {
     hasPermission,

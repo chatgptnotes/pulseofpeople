@@ -12,12 +12,52 @@ import {
   LocationCity,
   VolunteerActivism,
   EmojiEvents,
-  AutoAwesome
+  AutoAwesome,
+  Login as LoginIcon
 } from '@mui/icons-material';
+import { TVKLogo } from '../components/TVKLogo';
 
 const TVKLandingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-yellow-50 to-red-50">
+      {/* Header Navigation */}
+      <header className="bg-white shadow-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            {/* Logo and Name */}
+            <div className="flex items-center gap-3">
+              <TVKLogo size={40} />
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  <span className="text-red-600">Tamilaga Vettri</span>{' '}
+                  <span className="text-yellow-600">Kazhagam</span>
+                </h1>
+                <p className="text-xs text-gray-600">தமிழக வெற்றிக் கழகம்</p>
+              </div>
+            </div>
+
+            {/* Login/Signup Buttons */}
+            <div className="flex items-center gap-3">
+              <Link
+                to="/login"
+                className="hidden sm:flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-red-600 font-semibold transition-colors"
+              >
+                <LoginIcon className="w-5 h-5" />
+                Login
+              </Link>
+              <Link
+                to="/login"
+                className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-2 rounded-lg font-semibold hover:from-red-700 hover:to-red-800 transition-all shadow-md"
+              >
+                <VolunteerActivism className="w-5 h-5" />
+                <span className="hidden sm:inline">Join Movement</span>
+                <span className="sm:hidden">Join</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
       {/* Announcement Banner */}
       <div className="bg-gradient-to-r from-red-600 to-yellow-500 text-white py-2 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-sm">

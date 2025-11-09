@@ -129,13 +129,29 @@ export default function Login() {
               </div>
             )}
 
-            {/* Info Box */}
-            <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
-              <p className="text-blue-100 text-xs font-bold mb-2">Secure Login</p>
-              <p className="text-blue-200 text-xs">
-                Access restricted to authorized users only. If you don't have an account,
-                please contact your administrator for access.
+            {/* Mock Credentials Info */}
+            <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-400/30 rounded-lg p-4">
+              <p className="text-green-100 text-xs font-bold mb-3 flex items-center gap-2">
+                <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                Development Mode - Test Credentials
               </p>
+              <div className="space-y-2 text-xs">
+                <div className="bg-white/5 rounded px-2 py-1 flex justify-between items-center">
+                  <span className="text-green-200">Admin:</span>
+                  <span className="text-green-100 font-mono">admin@tvk.com / admin123</span>
+                </div>
+                <div className="bg-white/5 rounded px-2 py-1 flex justify-between items-center">
+                  <span className="text-green-200">Manager:</span>
+                  <span className="text-green-100 font-mono">manager@tvk.com / manager123</span>
+                </div>
+                <div className="bg-white/5 rounded px-2 py-1 flex justify-between items-center">
+                  <span className="text-green-200">Analyst:</span>
+                  <span className="text-green-100 font-mono">analyst@tvk.com / analyst123</span>
+                </div>
+                <p className="text-green-200/70 text-[10px] mt-2 italic">
+                  Click any credential to copy, or type manually to login
+                </p>
+              </div>
             </div>
 
 

@@ -2,6 +2,60 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { djangoApi } from '../services/djangoApi';
 import type { UserRole } from '../utils/permissions';
 
+// 🚨 MOCK AUTHENTICATION MODE
+// Set to true to use frontend-only mock authentication (no backend needed)
+const USE_MOCK_AUTH = true;
+
+// Mock Users for Development
+const MOCK_USERS = [
+  {
+    id: '1',
+    email: 'admin@tvk.com',
+    password: 'admin123',
+    name: 'TVK Admin',
+    role: 'admin' as UserRole,
+    permissions: ['*'], // All permissions
+    constituency: 'Chennai Central',
+  },
+  {
+    id: '2',
+    email: 'manager@tvk.com',
+    password: 'manager123',
+    name: 'District Manager',
+    role: 'manager' as UserRole,
+    permissions: ['analytics:view', 'data:manage', 'reports:view'],
+    constituency: 'Coimbatore South',
+  },
+  {
+    id: '3',
+    email: 'analyst@tvk.com',
+    password: 'analyst123',
+    name: 'Data Analyst',
+    role: 'analyst' as UserRole,
+    permissions: ['analytics:view', 'data:view', 'reports:view'],
+    constituency: 'Madurai West',
+  },
+  {
+    id: '4',
+    email: 'user@tvk.com',
+    password: 'user123',
+    name: 'Field Worker',
+    role: 'user' as UserRole,
+    permissions: ['data:view', 'data:submit'],
+    ward: 'Ward 42',
+    constituency: 'Chennai Central',
+  },
+  {
+    id: '5',
+    email: 'volunteer@tvk.com',
+    password: 'volunteer123',
+    name: 'Campaign Volunteer',
+    role: 'volunteer' as UserRole,
+    permissions: ['data:view'],
+    constituency: 'Salem North',
+  },
+];
+
 interface User {
   id: string;
   name: string;
@@ -46,6 +100,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const checkSession = async () => {
     console.log('[AuthContext] 🔄 Checking session...');
+
+    // MOCK AUTH: Check localStorage for mock user
+    if (USE_MOCK_AUTH) {
+      const storedUser = localStorage.getItem('mock_user');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          console.log('[AuthContext] ✅ Mock user loaded:', userData.email);
+          setUser(userData);
+        } catch (error) {
+          console.error('[AuthContext] ❌ Failed to parse mock user:', error);
+          localStorage.removeItem('mock_user');
+        }
+      } else {
+        console.log('[AuthContext] ❌ No mock user found');
+      }
+      setIsInitializing(false);
+      return;
+    }
+
+    // REAL AUTH: Check Django backend session
     try {
       const accessToken = localStorage.getItem('access_token');
       const refreshToken = localStorage.getItem('refresh_token');
@@ -114,7 +189,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setIsLoading(true);
 
-      // Call Django login endpoint
+      // MOCK AUTH: Check credentials against mock users
+      if (USE_MOCK_AUTH) {
+        console.log('[AuthContext] 🔐 Mock login attempt:', email);
+
+        // Find user by email and password
+        const mockUser = MOCK_USERS.find(
+          u => u.email === email && u.password === password
+        );
+
+        if (!mockUser) {
+          console.log('[AuthContext] ❌ Mock login failed: Invalid credentials');
+          setIsLoading(false);
+          throw new Error('Invalid email or password');
+        }
+
+        // Create user object (exclude password)
+        const { password: _, ...userData } = mockUser;
+
+        console.log('[AuthContext] ✅ Mock login successful:', userData.email, userData.role);
+        setUser(userData as User);
+
+        // Store in localStorage
+        localStorage.setItem('mock_user', JSON.stringify(userData));
+        localStorage.setItem('auth_token', 'mock_authenticated');
+
+        setIsLoading(false);
+        return true;
+      }
+
+      // REAL AUTH: Call Django login endpoint
       const response = await djangoApi.login(email, password);
 
       // Store tokens
@@ -213,6 +317,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Admins have all permissions
     if (user.role === 'admin' || user.role === 'superadmin') return true;
+
+    // Check for wildcard permission (mock auth)
+    if (user.permissions.includes('*')) return true;
 
     // Check user's permissions array
     return user.permissions?.includes(permission) || false;
