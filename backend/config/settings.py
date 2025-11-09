@@ -131,11 +131,11 @@ else:
             'NAME': os.environ.get('DB_NAME', 'postgres'),
             'USER': os.environ.get('DB_USER', 'postgres'),
             'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-            'HOST': os.environ.get('DB_HOST', 'db.iwtgbseaoztjbnvworyq.supabase.co'),
-            'PORT': os.environ.get('DB_PORT', '6543'),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
             'OPTIONS': {
-                'sslmode': 'require',
-                'connect_timeout': 10,
+                'sslmode': os.environ.get('DB_SSLMODE', 'require'),
+                'connect_timeout': int(os.environ.get('DB_CONNECT_TIMEOUT', '10')),
             },
         }
     }
@@ -201,18 +201,39 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Supabase Configuration
-SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
+# =====================================================
+# SUPABASE CONFIGURATION
+# =====================================================
+# Project: pulseofpeople (iwtgbseaoztjbnvworyq)
+# Region: ap-south-1 (Mumbai)
+
+# Supabase Project URL - used for REST API and Auth endpoints
+SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://iwtgbseaoztjbnvworyq.supabase.co')
+
+# Supabase Anonymous Key - public key for client-side auth (safe to expose)
 SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY', '')
+
+# Supabase JWT Secret - CRITICAL: Used to validate JWT tokens from Supabase
+# This is the actual secret key for JWT validation (NOT the anon key)
+# Never expose this in frontend - backend only
 SUPABASE_JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET', '')
+
+# Supabase Service Role Key - Optional: For admin operations that bypass RLS
+# Only use for trusted server-side operations (e.g., user provisioning)
 SUPABASE_SERVICE_KEY = os.environ.get('SUPABASE_SERVICE_KEY', '')
+
+# Validation: Ensure critical Supabase credentials are set
+if not SUPABASE_JWT_SECRET and not DEBUG:
+    raise ValueError(
+        "SUPABASE_JWT_SECRET is required for production. "
+        "Find it in Supabase Dashboard > Settings > API > JWT Settings"
+    )
 
 # REST Framework configuration
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'api.authentication.HybridAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'api.authentication.HybridAuthentication',  # Tries Supabase first, falls back to Django JWT
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
@@ -308,7 +329,7 @@ CORS_ALLOW_HEADERS = [
 
 # Additional CORS settings for reliability
 CORS_PREFLIGHT_MAX_AGE = 86400  # 24 hours
-CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken', 'Authorization']
 
 # Security Settings for Production
 if not DEBUG:
@@ -329,10 +350,25 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 # CSRF trusted origins
-CSRF_TRUSTED_ORIGINS = os.environ.get(
+csrf_origins_raw = os.environ.get(
     'CSRF_TRUSTED_ORIGINS',
     'http://localhost:5173,http://127.0.0.1:5173'
 ).split(',')
+
+CSRF_TRUSTED_ORIGINS = []
+for origin in csrf_origins_raw:
+    origin = origin.strip()
+    if origin:
+        # Add scheme if missing
+        if not origin.startswith(('http://', 'https://')):
+            # Use https for Railway domains, http for localhost
+            if 'railway.app' in origin or 'pulseofpeople.com' in origin:
+                origin = f'https://{origin}'
+            elif 'localhost' in origin or '127.0.0.1' in origin:
+                origin = f'http://{origin}'
+            else:
+                origin = f'https://{origin}'
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 # Always trust custom frontend domain
 CSRF_TRUSTED_ORIGINS.extend([
@@ -346,6 +382,10 @@ if not DEBUG:
         'https://www.pulseofpeople.com',
         'https://api.pulseofpeople.com',
     ])
+
+# Remove duplicates
+CSRF_TRUSTED_ORIGINS = list(set(CSRF_TRUSTED_ORIGINS))
+print(f"🔧 CSRF_TRUSTED_ORIGINS configured: {CSRF_TRUSTED_ORIGINS}")
 
 # Email Configuration
 # For development, use console backend (prints emails to console)
@@ -510,6 +550,11 @@ LOGGING = {
         'api': {
             'handlers': ['console', 'file'],
             'level': 'INFO',
+            'propagate': False,
+        },
+        'api.authentication': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
         'api.security': {

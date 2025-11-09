@@ -5,6 +5,7 @@ API URL Configuration for Pulse of People platform.
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from api.views import health
+from api.webhooks import supabase_user_webhook
 
 # Create router for ViewSets
 router = DefaultRouter()
@@ -21,6 +22,9 @@ urlpatterns = [
     path('health/liveness/', health.liveness_probe, name='liveness-probe'),
     path('health/readiness/', health.readiness_probe, name='readiness-probe'),
     path('version/', health.version_info, name='version-info'),
+
+    # Supabase webhooks (no authentication required - verified via signature)
+    path('webhooks/supabase/user/', supabase_user_webhook, name='supabase-user-webhook'),
 
     # Core API endpoints
     path('', include('api.core_views')),  # If you have a separate core views module

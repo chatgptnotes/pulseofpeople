@@ -9,23 +9,52 @@
  * - Analytics and sentiment data
  */
 
+import { supabase } from '../lib/supabase';
+
 const DJANGO_API_URL = import.meta.env.VITE_DJANGO_API_URL || 'http://127.0.0.1:8000/api';
 
-// Helper function to get auth token
-const getAuthToken = (): string | null => {
-  return localStorage.getItem('access_token');
+// Helper function to get Supabase JWT token
+const getAuthToken = async (): Promise<string | null> => {
+  try {
+    console.log('[DjangoAPI] 🔑 Fetching Supabase session token...');
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error('[DjangoAPI] ❌ Error fetching session:', error.message);
+      return null;
+    }
+
+    if (!session) {
+      console.log('[DjangoAPI] ⚠️ No active session found');
+      return null;
+    }
+
+    console.log('[DjangoAPI] ✅ Supabase token retrieved successfully');
+    console.log('[DjangoAPI] 📊 Token details:', {
+      user: session.user.email,
+      expires_at: new Date(session.expires_at! * 1000).toLocaleString(),
+    });
+
+    return session.access_token;
+  } catch (error: any) {
+    console.error('[DjangoAPI] ❌ Unexpected error getting token:', error.message);
+    return null;
+  }
 };
 
-// Helper function to build headers
-const buildHeaders = (includeAuth = false): HeadersInit => {
+// Helper function to build headers with Supabase JWT token
+const buildHeaders = async (includeAuth = false): Promise<HeadersInit> => {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
 
   if (includeAuth) {
-    const token = getAuthToken();
+    const token = await getAuthToken();
     if (token) {
+      console.log('[DjangoAPI] 🔐 Adding Supabase JWT to Authorization header');
       headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      console.warn('[DjangoAPI] ⚠️ No token available for authenticated request');
     }
   }
 
@@ -49,7 +78,7 @@ export const djangoApi = {
   }) {
     const response = await fetch(`${DJANGO_API_URL}/auth/signup/`, {
       method: 'POST',
-      headers: buildHeaders(true), // FIXED: Include auth token for creating users
+      headers: await buildHeaders(true), // Include Supabase auth token for creating users
       body: JSON.stringify(data),
     });
 
@@ -75,7 +104,7 @@ export const djangoApi = {
 
     const response = await fetch(`${DJANGO_API_URL}/auth/login/`, {
       method: 'POST',
-      headers: buildHeaders(),
+      headers: await buildHeaders(),
       body: JSON.stringify(payload),
     });
 
@@ -93,7 +122,7 @@ export const djangoApi = {
    */
   async getUserProfile() {
     const response = await fetch(`${DJANGO_API_URL}/auth/profile/`, {
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
 
     if (!response.ok) {
@@ -110,7 +139,7 @@ export const djangoApi = {
   async refreshToken(refreshToken: string) {
     const response = await fetch(`${DJANGO_API_URL}/auth/refresh/`, {
       method: 'POST',
-      headers: buildHeaders(),
+      headers: await buildHeaders(),
       body: JSON.stringify({ refresh: refreshToken }),
     });
 
@@ -128,7 +157,7 @@ export const djangoApi = {
   async logout(refreshToken: string) {
     const response = await fetch(`${DJANGO_API_URL}/auth/logout/`, {
       method: 'POST',
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
       body: JSON.stringify({ refresh: refreshToken }),
     });
 
@@ -145,7 +174,7 @@ export const djangoApi = {
    */
   async getUsers() {
     const response = await fetch(`${DJANGO_API_URL}/auth/users/`, {
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
 
     if (!response.ok) {
@@ -166,7 +195,7 @@ export const djangoApi = {
    */
   async getStates() {
     const response = await fetch(`${DJANGO_API_URL}/states/`, {
-      headers: buildHeaders(),
+      headers: await buildHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch states');
     return response.json();
@@ -181,7 +210,7 @@ export const djangoApi = {
       : `${DJANGO_API_URL}/districts/`;
 
     const response = await fetch(url, {
-      headers: buildHeaders(),
+      headers: await buildHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch districts');
     return response.json();
@@ -198,7 +227,7 @@ export const djangoApi = {
     if (params.toString()) url += `?${params.toString()}`;
 
     const response = await fetch(url, {
-      headers: buildHeaders(),
+      headers: await buildHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch constituencies');
     return response.json();
@@ -216,7 +245,7 @@ export const djangoApi = {
     if (params.toString()) url += `?${params.toString()}`;
 
     const response = await fetch(url, {
-      headers: buildHeaders(),
+      headers: await buildHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch polling booths');
     return response.json();
@@ -227,7 +256,7 @@ export const djangoApi = {
    */
   async getIssueCategories() {
     const response = await fetch(`${DJANGO_API_URL}/issue-categories/`, {
-      headers: buildHeaders(),
+      headers: await buildHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch issue categories');
     return response.json();
@@ -245,7 +274,7 @@ export const djangoApi = {
    */
   async getVoterSegments() {
     const response = await fetch(`${DJANGO_API_URL}/voter-segments/`, {
-      headers: buildHeaders(),
+      headers: await buildHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch voter segments');
     return response.json();
@@ -256,7 +285,7 @@ export const djangoApi = {
    */
   async getPoliticalParties() {
     const response = await fetch(`${DJANGO_API_URL}/political-parties/`, {
-      headers: buildHeaders(),
+      headers: await buildHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch political parties');
     return response.json();
@@ -290,7 +319,7 @@ export const djangoApi = {
   }) {
     const response = await fetch(`${DJANGO_API_URL}/feedback/`, {
       method: 'POST',
-      headers: buildHeaders(false), // No auth required for submission
+      headers: await buildHeaders(false), // No auth required for submission
       body: JSON.stringify(feedbackData),
     });
     if (!response.ok) {
@@ -318,7 +347,7 @@ export const djangoApi = {
     }
 
     const response = await fetch(url, {
-      headers: buildHeaders(true), // Auth required
+      headers: await buildHeaders(true), // Auth required
     });
     if (!response.ok) throw new Error('Failed to fetch feedback');
     return response.json();
@@ -329,7 +358,7 @@ export const djangoApi = {
    */
   async getFeedbackDetail(id: number) {
     const response = await fetch(`${DJANGO_API_URL}/feedback/${id}/`, {
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
     if (!response.ok) throw new Error('Failed to fetch feedback details');
     return response.json();
@@ -341,7 +370,7 @@ export const djangoApi = {
   async markFeedbackReviewed(id: number) {
     const response = await fetch(`${DJANGO_API_URL}/feedback/${id}/mark_reviewed/`, {
       method: 'POST',
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
     if (!response.ok) throw new Error('Failed to mark feedback as reviewed');
     return response.json();
@@ -353,7 +382,7 @@ export const djangoApi = {
   async escalateFeedback(id: number) {
     const response = await fetch(`${DJANGO_API_URL}/feedback/${id}/escalate/`, {
       method: 'POST',
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
     if (!response.ok) throw new Error('Failed to escalate feedback');
     return response.json();
@@ -364,7 +393,7 @@ export const djangoApi = {
    */
   async getFeedbackStats() {
     const response = await fetch(`${DJANGO_API_URL}/feedback/stats/`, {
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
     if (!response.ok) throw new Error('Failed to fetch feedback stats');
     return response.json();
@@ -395,7 +424,7 @@ export const djangoApi = {
   }) {
     const response = await fetch(`${DJANGO_API_URL}/field-reports/`, {
       method: 'POST',
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
       body: JSON.stringify(reportData),
     });
     if (!response.ok) {
@@ -414,7 +443,7 @@ export const djangoApi = {
       : `${DJANGO_API_URL}/field-reports/`;
 
     const response = await fetch(url, {
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
     if (!response.ok) throw new Error('Failed to fetch field reports');
     return response.json();
@@ -426,7 +455,7 @@ export const djangoApi = {
   async verifyFieldReport(id: number, verificationNotes?: string) {
     const response = await fetch(`${DJANGO_API_URL}/field-reports/${id}/verify/`, {
       method: 'POST',
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
       body: JSON.stringify({ verification_notes: verificationNotes }),
     });
     if (!response.ok) throw new Error('Failed to verify field report');
@@ -442,7 +471,7 @@ export const djangoApi = {
    */
   async getAnalyticsOverview() {
     const response = await fetch(`${DJANGO_API_URL}/analytics/overview/`, {
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
     if (!response.ok) throw new Error('Failed to fetch analytics overview');
     return response.json();
@@ -453,7 +482,7 @@ export const djangoApi = {
    */
   async getConstituencyAnalytics(constituencyCode: string) {
     const response = await fetch(`${DJANGO_API_URL}/analytics/constituency/${constituencyCode}/`, {
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
     if (!response.ok) throw new Error('Failed to fetch constituency analytics');
     return response.json();
@@ -464,7 +493,7 @@ export const djangoApi = {
    */
   async getDistrictAnalytics(districtId: number) {
     const response = await fetch(`${DJANGO_API_URL}/analytics/district/${districtId}/`, {
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
     if (!response.ok) throw new Error('Failed to fetch district analytics');
     return response.json();
@@ -475,7 +504,7 @@ export const djangoApi = {
    */
   async getStateAnalytics(stateCode: string) {
     const response = await fetch(`${DJANGO_API_URL}/analytics/state/${stateCode}/`, {
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
     if (!response.ok) throw new Error('Failed to fetch state analytics');
     return response.json();
@@ -488,8 +517,9 @@ export const djangoApi = {
   /**
    * Check if user is authenticated
    */
-  isAuthenticated(): boolean {
-    return !!getAuthToken();
+  async isAuthenticated(): Promise<boolean> {
+    const token = await getAuthToken();
+    return !!token;
   },
 
   /**
@@ -513,7 +543,7 @@ export const djangoApi = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const token = getAuthToken();
+    const token = await getAuthToken();
     const response = await fetch(`${DJANGO_API_URL}/users/bulk-upload/`, {
       method: 'POST',
       headers: {
@@ -536,7 +566,7 @@ export const djangoApi = {
    */
   async getBulkUploadStatus(jobId: string) {
     const response = await fetch(`${DJANGO_API_URL}/users/bulk-upload/${jobId}/status/`, {
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
 
     if (!response.ok) {
@@ -551,7 +581,7 @@ export const djangoApi = {
    * GET /api/users/bulk-upload/{jobId}/errors/
    */
   async downloadBulkErrors(jobId: string) {
-    const token = getAuthToken();
+    const token = await getAuthToken();
     const response = await fetch(`${DJANGO_API_URL}/users/bulk-upload/${jobId}/errors/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -574,7 +604,7 @@ export const djangoApi = {
   async cancelBulkUpload(jobId: string) {
     const response = await fetch(`${DJANGO_API_URL}/users/bulk-upload/${jobId}/`, {
       method: 'DELETE',
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
 
     if (!response.ok) {
@@ -590,7 +620,7 @@ export const djangoApi = {
    * GET /api/users/bulk-upload/template/
    */
   async downloadUserTemplate() {
-    const token = getAuthToken();
+    const token = await getAuthToken();
     const response = await fetch(`${DJANGO_API_URL}/users/bulk-upload/template/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -612,7 +642,7 @@ export const djangoApi = {
    */
   async getBulkUploadJobs() {
     const response = await fetch(`${DJANGO_API_URL}/users/bulk-upload/jobs/`, {
-      headers: buildHeaders(true),
+      headers: await buildHeaders(true),
     });
 
     if (!response.ok) {
