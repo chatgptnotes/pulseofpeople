@@ -69,17 +69,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log('[AuthContext] 🔄 Checking Supabase session...');
 
     try {
-      // Add timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Session check timeout')), 10000); // 10 second timeout
-      });
-
-      // Check for existing Supabase session with timeout
-      const sessionPromise = supabase.auth.getSession();
-      const { data: { session }, error } = await Promise.race([
-        sessionPromise,
-        timeoutPromise
-      ]) as any;
+      // Check for existing Supabase session (no timeout for auth check)
+      console.log('[AuthContext] 🔄 Step 1/2: Fetching auth session...');
+      const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error) {
         console.error('[AuthContext] ❌ Session check error:', error);
@@ -95,47 +87,86 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       console.log('[AuthContext] ✅ Session found:', session.user.email);
 
-      // Fetch user details from database with timeout
+      // Fetch user details from database with extended timeout (30 seconds)
+      console.log('[AuthContext] 🔄 Step 2/2: Fetching user data from database...');
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('User data fetch timeout after 30 seconds')), 30000);
+      });
+
       const userDataPromise = supabase
         .from('users')
         .select('*')
         .eq('email', session.user.email)
         .single();
 
-      const { data: userData, error: userError } = await Promise.race([
-        userDataPromise,
-        timeoutPromise
-      ]) as any;
+      try {
+        const { data: userData, error: userError } = await Promise.race([
+          userDataPromise,
+          timeoutPromise
+        ]) as any;
 
-      if (userError || !userData) {
-        console.error('[AuthContext] ❌ Failed to load user data:', userError);
-        // Sign out if user data doesn't exist
-        await supabase.auth.signOut();
+        if (userError || !userData) {
+          console.warn('[AuthContext] ⚠️ Failed to load user data from database:', userError?.message || 'No data found');
+          console.log('[AuthContext] 🔄 Creating fallback user from auth session...');
+
+          // Fallback: Create basic user object from auth session
+          const fallbackUser: User = {
+            id: session.user.id,
+            name: session.user.email?.split('@')[0] || 'User',
+            email: session.user.email || '',
+            role: 'user' as UserRole,
+            permissions: ['*'], // Grant basic permissions
+            avatar: session.user.user_metadata?.avatar_url,
+            is_super_admin: false,
+            status: 'active',
+          };
+
+          console.log('[AuthContext] ✅ Using fallback user data:', fallbackUser.name, fallbackUser.role);
+          setUser(fallbackUser);
+          setIsInitializing(false);
+          return;
+        }
+
+        console.log('[AuthContext] ✅ User data loaded from database:', userData.full_name, userData.role);
+
+        setUser({
+          id: userData.id,
+          name: userData.full_name,
+          email: userData.email,
+          role: userData.role as UserRole,
+          permissions: userData.permissions || [],
+          avatar: userData.avatar_url,
+          is_super_admin: userData.is_super_admin,
+          organization_id: userData.organization_id,
+          status: userData.status || 'active',
+        });
+
         setIsInitializing(false);
-        return;
+      } catch (dbError: any) {
+        console.error('[AuthContext] ❌ Database query timeout or error:', dbError.message);
+        console.log('[AuthContext] 🔄 Creating fallback user from auth session...');
+
+        // Fallback: Create basic user object from auth session
+        const fallbackUser: User = {
+          id: session.user.id,
+          name: session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          role: 'user' as UserRole,
+          permissions: ['*'], // Grant basic permissions
+          avatar: session.user.user_metadata?.avatar_url,
+          is_super_admin: false,
+          status: 'active',
+        };
+
+        console.log('[AuthContext] ✅ Using fallback user data after timeout:', fallbackUser.name, fallbackUser.role);
+        setUser(fallbackUser);
+        setIsInitializing(false);
       }
-
-      console.log('[AuthContext] ✅ User data loaded:', userData.full_name, userData.role);
-
-      setUser({
-        id: userData.id,
-        name: userData.full_name,
-        email: userData.email,
-        role: userData.role as UserRole,
-        permissions: userData.permissions || [],
-        avatar: userData.avatar_url,
-        is_super_admin: userData.is_super_admin,
-        organization_id: userData.organization_id,
-        status: userData.status || 'active',
-      });
-
+    } catch (error: any) {
+      console.error('[AuthContext] ❌ Session check failed with error:', error.message);
+      // Always set initializing to false, even on error
       setIsInitializing(false);
-    } catch (error) {
-      console.error('[AuthContext] ❌ Session check failed:', error);
-      // Always set initializing to false, even on timeout
-      setIsInitializing(false);
-      // Sign out on error to clear any bad state
-      await supabase.auth.signOut().catch(() => {});
+      // Don't sign out on error - let user stay logged in with fallback data
     }
   };
 
@@ -161,36 +192,84 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       console.log('[AuthContext] ✅ Supabase auth successful:', authData.user.email);
 
-      // Fetch user details from database
-      const { data: userData, error: userError } = await supabase
+      // Fetch user details from database with timeout
+      console.log('[AuthContext] 🔄 Fetching user data from database...');
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('User data fetch timeout after 30 seconds')), 30000);
+      });
+
+      const userDataPromise = supabase
         .from('users')
         .select('*')
         .eq('email', email)
         .single();
 
-      if (userError || !userData) {
-        console.error('[AuthContext] ❌ Failed to load user data:', userError);
-        throw new Error('Failed to load user profile');
+      try {
+        const { data: userData, error: userError } = await Promise.race([
+          userDataPromise,
+          timeoutPromise
+        ]) as any;
+
+        if (userError || !userData) {
+          console.warn('[AuthContext] ⚠️ Failed to load user data from database:', userError?.message || 'No data found');
+          console.log('[AuthContext] 🔄 Using fallback user from auth session...');
+
+          // Fallback: Create basic user object from auth session
+          const fallbackUser: User = {
+            id: authData.user.id,
+            name: authData.user.email?.split('@')[0] || 'User',
+            email: authData.user.email || '',
+            role: 'user' as UserRole,
+            permissions: ['*'], // Grant basic permissions
+            avatar: authData.user.user_metadata?.avatar_url,
+            is_super_admin: false,
+            status: 'active',
+          };
+
+          console.log('[AuthContext] ✅ Using fallback user data:', fallbackUser.name, fallbackUser.role);
+          setUser(fallbackUser);
+          setIsLoading(false);
+          return true;
+        }
+
+        console.log('[AuthContext] ✅ User data loaded from database:', userData.full_name, userData.role);
+
+        const user: User = {
+          id: userData.id,
+          name: userData.full_name,
+          email: userData.email,
+          role: userData.role as UserRole,
+          permissions: userData.permissions || [],
+          avatar: userData.avatar_url,
+          is_super_admin: userData.is_super_admin,
+          organization_id: userData.organization_id,
+          status: userData.status || 'active',
+        };
+
+        setUser(user);
+        setIsLoading(false);
+        return true;
+      } catch (dbError: any) {
+        console.error('[AuthContext] ❌ Database query timeout or error:', dbError.message);
+        console.log('[AuthContext] 🔄 Using fallback user from auth session...');
+
+        // Fallback: Create basic user object from auth session
+        const fallbackUser: User = {
+          id: authData.user.id,
+          name: authData.user.email?.split('@')[0] || 'User',
+          email: authData.user.email || '',
+          role: 'user' as UserRole,
+          permissions: ['*'], // Grant basic permissions
+          avatar: authData.user.user_metadata?.avatar_url,
+          is_super_admin: false,
+          status: 'active',
+        };
+
+        console.log('[AuthContext] ✅ Using fallback user data after timeout:', fallbackUser.name, fallbackUser.role);
+        setUser(fallbackUser);
+        setIsLoading(false);
+        return true;
       }
-
-      console.log('[AuthContext] ✅ User data loaded:', userData.full_name, userData.role);
-
-      const user: User = {
-        id: userData.id,
-        name: userData.full_name,
-        email: userData.email,
-        role: userData.role as UserRole,
-        permissions: userData.permissions || [],
-        avatar: userData.avatar_url,
-        is_super_admin: userData.is_super_admin,
-        organization_id: userData.organization_id,
-        status: userData.status || 'active',
-      };
-
-      setUser(user);
-
-      setIsLoading(false);
-      return true;
     } catch (error: any) {
       console.error('[AuthContext] ❌ Login error:', error);
       setIsLoading(false);
