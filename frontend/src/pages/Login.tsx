@@ -138,15 +138,15 @@ export default function Login() {
               <div className="space-y-2 text-xs">
                 <div className="bg-white/5 rounded px-2 py-1 flex justify-between items-center">
                   <span className="text-green-200">Admin:</span>
-                  <span className="text-green-100 font-mono">admin@tvk.com / admin123</span>
+                  <span className="text-green-100 font-mono">admin@tvk.com / admin123456</span>
                 </div>
                 <div className="bg-white/5 rounded px-2 py-1 flex justify-between items-center">
                   <span className="text-green-200">Manager:</span>
-                  <span className="text-green-100 font-mono">manager@tvk.com / manager123</span>
+                  <span className="text-green-100 font-mono">manager@tvk.com / manager123456</span>
                 </div>
                 <div className="bg-white/5 rounded px-2 py-1 flex justify-between items-center">
                   <span className="text-green-200">Analyst:</span>
-                  <span className="text-green-100 font-mono">analyst@tvk.com / analyst123</span>
+                  <span className="text-green-100 font-mono">analyst@tvk.com / analyst123456</span>
                 </div>
                 <p className="text-green-200/70 text-[10px] mt-2 italic">
                   Click any credential to copy, or type manually to login
