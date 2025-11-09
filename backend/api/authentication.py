@@ -141,27 +141,29 @@ class SupabaseJWTAuthentication(authentication.BaseAuthentication):
         return 'Bearer realm="api"'
 
 
-class HybridAuthentication:
+class HybridAuthentication(authentication.BaseAuthentication):
     """
     Try Supabase authentication first, fall back to Django JWT if needed
     This allows both auth methods to work during migration period
     """
 
-    def __init__(self):
-        self.supabase_auth = SupabaseJWTAuthentication()
-
     def authenticate(self, request):
         """
         Try Supabase auth first, then fall back to Django JWT
         """
-        # Try Supabase authentication
-        try:
-            result = self.supabase_auth.authenticate(request)
-            if result is not None:
-                return result
-        except (exceptions.AuthenticationFailed, Exception):
-            # If Supabase auth fails, try Django JWT
-            pass
+        # Only try Supabase if JWT secret is configured
+        supabase_jwt_secret = getattr(settings, 'SUPABASE_JWT_SECRET', None)
+
+        if supabase_jwt_secret:
+            # Try Supabase authentication
+            try:
+                supabase_auth = SupabaseJWTAuthentication()
+                result = supabase_auth.authenticate(request)
+                if result is not None:
+                    return result
+            except (exceptions.AuthenticationFailed, Exception):
+                # If Supabase auth fails, try Django JWT
+                pass
 
         # Fall back to Django JWT
         from rest_framework_simplejwt.authentication import JWTAuthentication

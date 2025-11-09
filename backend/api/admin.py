@@ -4,8 +4,8 @@ from .models import UserProfile, Task, Organization, Permission, RolePermission,
 
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'subscription_status', 'subscription_tier', 'max_users', 'created_at']
-    list_filter = ['subscription_status', 'subscription_tier', 'created_at']
+    list_display = ['name', 'slug', 'subscription_status', 'subscription_plan', 'max_users', 'created_at']
+    list_filter = ['subscription_status', 'subscription_plan', 'created_at']
     search_fields = ['name', 'slug']
     prepopulated_fields = {'slug': ('name',)}
 

@@ -67,6 +67,9 @@ urlpatterns = [
     # Political Platform APIs (NEW)
     path('', include('api.urls.political_urls')),
 
+    # Core Platform APIs (Workstream 2 - NEW)
+    path('', include('api.urls.core_urls')),
+
     # Router URLs (legacy)
     path('', include(router.urls)),
 ]

@@ -1,0 +1,73 @@
+version: '3.8'
+
+# ============================================
+# Pulse of People - Development Docker Compose
+# Optimized for local development
+# ============================================
+
+services:
+  # ============================================
+  # PostgreSQL Database
+  # ============================================
+  db:
+    image: postgres:15-alpine
+    container_name: pulseofpeople_dev_db
+    environment:
+      POSTGRES_DB: pulseofpeople_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - dev_network
+
+  # ============================================
+  # Redis Cache
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: pulseofpeople_dev_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - dev_network
+
+  # ============================================
+  # MailHog (Email Testing)
+  # ============================================
+  mailhog:
+    image: mailhog/mailhog
+    container_name: pulseofpeople_mailhog
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - dev_network
+
+  # ============================================
+  # MinIO (S3-compatible storage)
+  # ============================================
+  minio:
+    image: minio/minio
+    container_name: pulseofpeople_minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # Console
+    networks:
+      - dev_network
+
+volumes:
+  postgres_dev_data:
+  minio_data:
+
+networks:
+  dev_network:
+    driver: bridge

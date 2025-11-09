@@ -3,17 +3,44 @@ from django.contrib.auth.models import User
 
 
 class Organization(models.Model):
-    """Organization model for multi-tenancy support"""
+    """Organization model for multi-tenancy support (Political parties, campaigns, NGOs)"""
+    ORGANIZATION_TYPES = [
+        ('party', 'Political Party'),
+        ('campaign', 'Campaign Organization'),
+        ('ngo', 'NGO'),
+        ('other', 'Other'),
+    ]
+    SUBSCRIPTION_PLANS = [
+        ('free', 'Free'),
+        ('basic', 'Basic'),
+        ('pro', 'Professional'),
+        ('enterprise', 'Enterprise'),
+    ]
+
+    # Basic Info
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
+    logo = models.ImageField(upload_to='org_logos/', blank=True, null=True)
+    organization_type = models.CharField(max_length=20, choices=ORGANIZATION_TYPES, default='campaign')
+
+    # Contact Info
+    contact_email = models.EmailField(blank=True)
+    contact_phone = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    website = models.URLField(blank=True, null=True)
+    social_media_links = models.JSONField(default=dict, blank=True, help_text="Social media URLs")
 
     # Subscription
+    subscription_plan = models.CharField(max_length=20, choices=SUBSCRIPTION_PLANS, default='free')
     subscription_status = models.CharField(max_length=20, default='active')
-    subscription_tier = models.CharField(max_length=20, default='basic')
+    subscription_expires_at = models.DateTimeField(null=True, blank=True)
     max_users = models.IntegerField(default=10)
 
     # Settings
-    settings = models.JSONField(default=dict, blank=True)
+    settings = models.JSONField(default=dict, blank=True, help_text="Branding colors, email templates, etc.")
+    is_active = models.BooleanField(default=True)
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -85,6 +112,10 @@ class UserProfile(models.Model):
 
     # Password management
     must_change_password = models.BooleanField(default=False)
+
+    # Two-Factor Authentication
+    is_2fa_enabled = models.BooleanField(default=False)
+    totp_secret = models.CharField(max_length=32, blank=True, null=True)
 
     # Location assignments for political roles
     # Admin1 (State level) - sees entire state
@@ -939,3 +970,469 @@ class BulkUploadError(models.Model):
 
     def __str__(self):
         return f"Row {self.row_number} - {self.error_field}: {self.error_message[:50]}"
+
+
+# =====================================================
+# TWO-FACTOR AUTHENTICATION MODELS
+# =====================================================
+
+
+class TwoFactorBackupCode(models.Model):
+    """Backup codes for 2FA recovery"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='twofactor_backup_codes')
+    code_hash = models.CharField(max_length=255, help_text="Hashed backup code")
+    is_used = models.BooleanField(default=False)
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "2FA Backup Code"
+        verbose_name_plural = "2FA Backup Codes"
+        indexes = [
+            models.Index(fields=['user', 'is_used']),
+        ]
+
+    def __str__(self):
+        status = 'Used' if self.is_used else 'Active'
+        return f'{self.user.username} - Backup Code ({status})'
+
+
+# =====================================================
+# CORE POLITICAL PLATFORM MODELS - WORKSTREAM 2
+# =====================================================
+
+
+class Voter(models.Model):
+    """
+    Voter database - core voter information and engagement tracking
+    """
+    PARTY_CHOICES = [
+        ('bjp', 'BJP'),
+        ('congress', 'Congress'),
+        ('aap', 'AAP'),
+        ('tvk', 'TVK'),
+        ('dmk', 'DMK'),
+        ('aiadmk', 'AIADMK'),
+        ('neutral', 'Neutral'),
+        ('unknown', 'Unknown'),
+        ('other', 'Other'),
+    ]
+    SENTIMENT_CHOICES = [
+        ('strong_supporter', 'Strong Supporter'),
+        ('supporter', 'Supporter'),
+        ('neutral', 'Neutral'),
+        ('opposition', 'Opposition'),
+        ('strong_opposition', 'Strong Opposition'),
+    ]
+    INFLUENCE_CHOICES = [
+        ('high', 'High'),
+        ('medium', 'Medium'),
+        ('low', 'Low'),
+    ]
+    COMMUNICATION_CHOICES = [
+        ('phone', 'Phone Call'),
+        ('sms', 'SMS'),
+        ('whatsapp', 'WhatsApp'),
+        ('email', 'Email'),
+        ('door_to_door', 'Door to Door'),
+    ]
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+    ]
+
+    # Identity
+    voter_id = models.CharField(max_length=50, unique=True, db_index=True, help_text="Official voter ID")
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100, blank=True)
+    middle_name = models.CharField(max_length=100, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    age = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(18), MaxValueValidator(120)])
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
+    phone = models.CharField(max_length=20, blank=True, db_index=True)
+    alternate_phone = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True, null=True)
+    photo = models.ImageField(upload_to='voter_photos/', blank=True, null=True)
+
+    # Address
+    address_line1 = models.CharField(max_length=200, blank=True)
+    address_line2 = models.CharField(max_length=200, blank=True)
+    landmark = models.CharField(max_length=200, blank=True)
+    ward = models.CharField(max_length=100, blank=True, db_index=True)
+    constituency = models.ForeignKey(Constituency, on_delete=models.SET_NULL, null=True, related_name='voters')
+    district = models.ForeignKey(District, on_delete=models.SET_NULL, null=True, related_name='voters')
+    state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True, related_name='voters')
+    pincode = models.CharField(max_length=10, blank=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+
+    # Political Data
+    party_affiliation = models.CharField(max_length=20, choices=PARTY_CHOICES, default='unknown')
+    voting_history = models.JSONField(default=list, blank=True, help_text="Last 5 elections voting history")
+    sentiment = models.CharField(max_length=30, choices=SENTIMENT_CHOICES, default='neutral')
+    influence_level = models.CharField(max_length=20, choices=INFLUENCE_CHOICES, default='low')
+    is_opinion_leader = models.BooleanField(default=False)
+
+    # Engagement
+    last_contacted_at = models.DateTimeField(null=True, blank=True)
+    contact_frequency = models.IntegerField(default=0, help_text="Number of times contacted")
+    interaction_count = models.IntegerField(default=0)
+    positive_interactions = models.IntegerField(default=0)
+    negative_interactions = models.IntegerField(default=0)
+    preferred_communication = models.CharField(max_length=20, choices=COMMUNICATION_CHOICES, default='phone')
+
+    # Metadata
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_voters')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    is_verified = models.BooleanField(default=False)
+    tags = models.JSONField(default=list, blank=True, help_text="Tags for categorization")
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Voter"
+        verbose_name_plural = "Voters"
+        indexes = [
+            models.Index(fields=['voter_id']),
+            models.Index(fields=['constituency', 'ward']),
+            models.Index(fields=['party_affiliation']),
+            models.Index(fields=['sentiment']),
+            models.Index(fields=['phone']),
+            models.Index(fields=['is_active']),
+            models.Index(fields=['-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.voter_id})"
+
+
+class VoterInteraction(models.Model):
+    """
+    Track all interactions with voters
+    """
+    INTERACTION_TYPES = [
+        ('phone_call', 'Phone Call'),
+        ('door_visit', 'Door to Door Visit'),
+        ('event_meeting', 'Event Meeting'),
+        ('sms', 'SMS'),
+        ('email', 'Email'),
+        ('whatsapp', 'WhatsApp'),
+    ]
+    SENTIMENT_CHOICES = [
+        ('positive', 'Positive'),
+        ('neutral', 'Neutral'),
+        ('negative', 'Negative'),
+    ]
+
+    voter = models.ForeignKey(Voter, on_delete=models.CASCADE, related_name='interactions')
+    interaction_type = models.CharField(max_length=20, choices=INTERACTION_TYPES)
+    contacted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='voter_interactions')
+    interaction_date = models.DateTimeField(auto_now_add=True)
+    duration_minutes = models.IntegerField(null=True, blank=True, help_text="Duration in minutes")
+    sentiment = models.CharField(max_length=10, choices=SENTIMENT_CHOICES, default='neutral')
+    issues_discussed = models.JSONField(default=list, blank=True)
+    promises_made = models.TextField(blank=True)
+    follow_up_required = models.BooleanField(default=False)
+    follow_up_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-interaction_date']
+        verbose_name = "Voter Interaction"
+        verbose_name_plural = "Voter Interactions"
+        indexes = [
+            models.Index(fields=['voter', '-interaction_date']),
+            models.Index(fields=['contacted_by']),
+            models.Index(fields=['interaction_type']),
+            models.Index(fields=['sentiment']),
+            models.Index(fields=['follow_up_required']),
+        ]
+
+    def __str__(self):
+        return f"{self.voter.first_name} - {self.get_interaction_type_display()} ({self.interaction_date.date()})"
+
+
+class Campaign(models.Model):
+    """
+    Campaign management - elections, awareness, door-to-door campaigns
+    """
+    CAMPAIGN_TYPES = [
+        ('election', 'Election Campaign'),
+        ('awareness', 'Awareness Campaign'),
+        ('issue_based', 'Issue-based Campaign'),
+        ('door_to_door', 'Door to Door Campaign'),
+    ]
+    STATUS_CHOICES = [
+        ('planning', 'Planning'),
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    campaign_name = models.CharField(max_length=200)
+    campaign_type = models.CharField(max_length=20, choices=CAMPAIGN_TYPES)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='planning')
+    budget = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    spent_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    target_constituency = models.ForeignKey(Constituency, on_delete=models.SET_NULL, null=True, blank=True, related_name='campaigns')
+    target_audience = models.TextField(blank=True, help_text="Description of target audience")
+    campaign_manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='managed_campaigns')
+    team_members = models.ManyToManyField(User, related_name='campaigns', blank=True)
+    goals = models.JSONField(default=dict, blank=True, help_text="Campaign goals and objectives")
+    metrics = models.JSONField(default=dict, blank=True, help_text="Reach, engagement, conversion metrics")
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_campaigns')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-start_date']
+        verbose_name = "Campaign"
+        verbose_name_plural = "Campaigns"
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['campaign_type']),
+            models.Index(fields=['start_date']),
+            models.Index(fields=['campaign_manager']),
+        ]
+
+    def __str__(self):
+        return f"{self.campaign_name} ({self.get_status_display()})"
+
+
+class SocialMediaPost(models.Model):
+    """
+    Social media post tracking and engagement
+    """
+    PLATFORM_CHOICES = [
+        ('facebook', 'Facebook'),
+        ('twitter', 'Twitter/X'),
+        ('instagram', 'Instagram'),
+        ('whatsapp', 'WhatsApp'),
+        ('youtube', 'YouTube'),
+    ]
+
+    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES)
+    post_content = models.TextField()
+    post_url = models.URLField(blank=True)
+    post_id = models.CharField(max_length=200, blank=True, help_text="Platform-specific post ID")
+    posted_at = models.DateTimeField()
+    scheduled_at = models.DateTimeField(null=True, blank=True)
+    reach = models.IntegerField(default=0)
+    impressions = models.IntegerField(default=0)
+    engagement_count = models.IntegerField(default=0)
+    likes = models.IntegerField(default=0)
+    shares = models.IntegerField(default=0)
+    comments_count = models.IntegerField(default=0)
+    sentiment_score = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    campaign = models.ForeignKey(Campaign, on_delete=models.SET_NULL, null=True, blank=True, related_name='social_posts')
+    posted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='social_posts')
+    is_published = models.BooleanField(default=False)
+    is_promoted = models.BooleanField(default=False)
+    hashtags = models.JSONField(default=list, blank=True)
+    mentions = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-posted_at']
+        verbose_name = "Social Media Post"
+        verbose_name_plural = "Social Media Posts"
+        indexes = [
+            models.Index(fields=['platform', '-posted_at']),
+            models.Index(fields=['campaign']),
+            models.Index(fields=['is_published']),
+            models.Index(fields=['-posted_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_platform_display()} - {self.post_content[:50]}"
+
+
+class Alert(models.Model):
+    """
+    Alert/Notification system for critical updates
+    """
+    ALERT_TYPES = [
+        ('info', 'Information'),
+        ('warning', 'Warning'),
+        ('urgent', 'Urgent'),
+        ('critical', 'Critical'),
+    ]
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent'),
+    ]
+
+    alert_type = models.CharField(max_length=20, choices=ALERT_TYPES, default='info')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    target_role = models.CharField(max_length=20, choices=UserProfile.ROLE_CHOICES, blank=True, help_text="Send to specific role")
+    target_users = models.ManyToManyField(User, related_name='alerts', blank=True)
+    constituency = models.ForeignKey(Constituency, on_delete=models.SET_NULL, null=True, blank=True, related_name='alerts')
+    district = models.ForeignKey(District, on_delete=models.SET_NULL, null=True, blank=True, related_name='alerts')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    is_read = models.BooleanField(default=False)
+    read_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    action_url = models.URLField(blank=True)
+    action_required = models.BooleanField(default=False)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_alerts')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Alert"
+        verbose_name_plural = "Alerts"
+        indexes = [
+            models.Index(fields=['target_role']),
+            models.Index(fields=['priority']),
+            models.Index(fields=['is_read']),
+            models.Index(fields=['-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_alert_type_display()}: {self.title}"
+
+
+class Event(models.Model):
+    """
+    Event management - rallies, meetings, door-to-door events
+    """
+    EVENT_TYPES = [
+        ('rally', 'Rally'),
+        ('meeting', 'Meeting'),
+        ('door_to_door', 'Door to Door'),
+        ('booth_visit', 'Booth Visit'),
+        ('town_hall', 'Town Hall'),
+    ]
+    STATUS_CHOICES = [
+        ('planned', 'Planned'),
+        ('ongoing', 'Ongoing'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    event_name = models.CharField(max_length=200)
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPES)
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
+    location = models.CharField(max_length=300)
+    ward = models.CharField(max_length=100, blank=True)
+    constituency = models.ForeignKey(Constituency, on_delete=models.SET_NULL, null=True, blank=True, related_name='events')
+    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+    expected_attendance = models.IntegerField(default=0)
+    actual_attendance = models.IntegerField(default=0)
+    organizer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='organized_events')
+    volunteers = models.ManyToManyField(User, related_name='volunteer_events', blank=True)
+    campaign = models.ForeignKey(Campaign, on_delete=models.SET_NULL, null=True, blank=True, related_name='events')
+    budget = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='planned')
+    notes = models.TextField(blank=True)
+    photos = models.JSONField(default=list, blank=True, help_text="URLs to event photos")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-start_datetime']
+        verbose_name = "Event"
+        verbose_name_plural = "Events"
+        indexes = [
+            models.Index(fields=['event_type']),
+            models.Index(fields=['status']),
+            models.Index(fields=['start_datetime']),
+            models.Index(fields=['constituency']),
+        ]
+
+    def __str__(self):
+        return f"{self.event_name} - {self.start_datetime.date()}"
+
+
+class VolunteerProfile(models.Model):
+    """
+    Extended volunteer profile with skills and assignments
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='volunteer_profile')
+    volunteer_id = models.CharField(max_length=50, unique=True, db_index=True)
+    skills = models.JSONField(default=list, blank=True, help_text="List of volunteer skills")
+    availability = models.JSONField(default=dict, blank=True, help_text="Days and times available")
+    assigned_ward = models.CharField(max_length=100, blank=True)
+    assigned_constituency = models.ForeignKey(Constituency, on_delete=models.SET_NULL, null=True, blank=True, related_name='volunteers')
+    tasks_completed = models.IntegerField(default=0)
+    hours_contributed = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0, validators=[MinValueValidator(0), MaxValueValidator(5)])
+    is_active = models.BooleanField(default=True)
+    joined_at = models.DateField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Volunteer Profile"
+        verbose_name_plural = "Volunteer Profiles"
+        indexes = [
+            models.Index(fields=['volunteer_id']),
+            models.Index(fields=['assigned_constituency']),
+            models.Index(fields=['is_active']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.get_full_name() or self.user.username} ({self.volunteer_id})"
+
+
+class Expense(models.Model):
+    """
+    Expense tracking for campaigns and events
+    """
+    EXPENSE_TYPES = [
+        ('travel', 'Travel'),
+        ('materials', 'Campaign Materials'),
+        ('advertising', 'Advertising'),
+        ('event', 'Event Expenses'),
+        ('salary', 'Salary/Honorarium'),
+        ('other', 'Other'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending Approval'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('paid', 'Paid'),
+    ]
+
+    expense_type = models.CharField(max_length=20, choices=EXPENSE_TYPES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3, default='INR')
+    description = models.TextField()
+    campaign = models.ForeignKey(Campaign, on_delete=models.SET_NULL, null=True, blank=True, related_name='expenses')
+    event = models.ForeignKey(Event, on_delete=models.SET_NULL, null=True, blank=True, related_name='expense_items')
+    receipt_image = models.ImageField(upload_to='receipts/', blank=True, null=True)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_expenses')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    paid_at = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_expenses')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Expense"
+        verbose_name_plural = "Expenses"
+        indexes = [
+            models.Index(fields=['expense_type']),
+            models.Index(fields=['status']),
+            models.Index(fields=['campaign']),
+            models.Index(fields=['event']),
+            models.Index(fields=['-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_expense_type_display()} - {self.amount} {self.currency}"

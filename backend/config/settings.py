@@ -13,9 +13,13 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -60,6 +64,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'django_filters',
 
     # Local apps
     'api',
@@ -68,6 +73,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'api.middleware.security_headers.SecurityHeadersMiddleware',  # Security headers
+    'api.middleware.security_headers.RequestSizeMiddleware',  # Request size limit
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -76,6 +83,7 @@ MIDDLEWARE = [
     'api.middleware.role_auth_middleware.RequestLoggingMiddleware',  # Request logging
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.gzip.GZipMiddleware',  # Response compression
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -142,6 +150,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 12,  # Increased from default 8
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -150,6 +161,17 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Password Security Settings
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',  # Default (no external libs needed)
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',  # Requires argon2-cffi
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',  # Requires bcrypt
+]
+
+# Password Reset Settings
+PASSWORD_RESET_TIMEOUT = 3600  # 1 hour (in seconds)
 
 
 # Internationalization
@@ -339,3 +361,273 @@ else:
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@pulseofpeople.com')
+
+# =====================================================
+# CACHING CONFIGURATION (Redis)
+# =====================================================
+
+REDIS_URL = os.environ.get('REDIS_URL', None)
+
+# Use Redis cache if available, otherwise fall back to local memory cache
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'CONNECTION_POOL_KWARGS': {
+                    'max_connections': 50,
+                    'retry_on_timeout': True,
+                },
+                'SOCKET_CONNECT_TIMEOUT': 5,
+                'SOCKET_TIMEOUT': 5,
+            },
+            'KEY_PREFIX': 'pulseofpeople',
+            'TIMEOUT': 300,  # 5 minutes default
+        }
+    }
+else:
+    # Fall back to local memory cache for development without Redis
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'pulseofpeople-cache',
+            'OPTIONS': {
+                'MAX_ENTRIES': 1000
+            }
+        }
+    }
+
+# Cache time settings (in seconds)
+CACHE_TTL = {
+    'voter_stats': 300,  # 5 minutes
+    'analytics_dashboard': 900,  # 15 minutes
+    'sentiment_data': 600,  # 10 minutes
+    'geographic_data': 3600,  # 1 hour
+    'user_permissions': 1800,  # 30 minutes
+    'constituency_list': 7200,  # 2 hours
+}
+
+# Session cache (using Redis)
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
+# =====================================================
+# MONITORING & ERROR TRACKING (Sentry)
+# =====================================================
+
+SENTRY_DSN = os.environ.get('SENTRY_DSN', '')
+
+if SENTRY_DSN and not DEBUG:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=0.1,  # 10% of transactions for performance monitoring
+        send_default_pii=False,  # Don't send personally identifiable information
+        environment=os.environ.get('ENVIRONMENT', 'production'),
+        release=os.environ.get('APP_VERSION', '1.0.0'),
+    )
+
+# =====================================================
+# STRUCTURED LOGGING
+# =====================================================
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {module} {process:d} {thread:d} - {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '[{levelname}] {message}',
+            'style': '{',
+        },
+        'json': {
+            'format': '{"time": "%(asctime)s", "level": "%(levelname)s", "module": "%(module)s", "message": "%(message)s"}',
+        },
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'app.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'error.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'security_file': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'security.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10MB
+            'backupCount': 10,
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['error_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['security_file'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'api': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'api.security': {
+            'handlers': ['security_file'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
+
+# Create logs directory if it doesn't exist
+import os
+logs_dir = BASE_DIR / 'logs'
+if not os.path.exists(logs_dir):
+    os.makedirs(logs_dir)
+
+# =====================================================
+# RATE LIMITING CONFIGURATION
+# =====================================================
+
+# Django-ratelimit uses cache backend
+RATELIMIT_USE_CACHE = 'default'
+RATELIMIT_ENABLE = True  # Can be disabled for testing
+
+# =====================================================
+# FILE UPLOAD SECURITY
+# =====================================================
+
+# Maximum upload size (10MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+
+# Allowed file extensions
+ALLOWED_UPLOAD_EXTENSIONS = [
+    '.jpg', '.jpeg', '.png', '.gif',
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.csv'
+]
+
+# =====================================================
+# SECURITY ENHANCEMENTS
+# =====================================================
+
+# Session Security
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_AGE = 86400  # 24 hours
+
+# CSRF Settings
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False  # Use cookie-based CSRF for API
+# CSRF_FAILURE_VIEW = 'api.views.csrf_failure'  # Commented out - view doesn't exist, using Django default
+
+# Additional Security Headers (already in middleware, but configure here)
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Prevent admin site from being indexed
+SECURE_REFERRER_POLICY = 'same-origin'
+
+# =====================================================
+# API CONFIGURATION
+# =====================================================
+
+# API Version
+API_VERSION = os.environ.get('API_VERSION', 'v1')
+
+# Application Name
+APP_NAME = os.environ.get('APP_NAME', 'Pulse of People')
+
+# Pagination
+REST_FRAMEWORK['PAGE_SIZE'] = 50
+REST_FRAMEWORK['MAX_PAGE_SIZE'] = 500
+
+# =====================================================
+# TWO-FACTOR AUTHENTICATION
+# =====================================================
+
+# 2FA enforcement for roles
+TWO_FACTOR_REQUIRED_ROLES = ['superadmin', 'admin', 'manager']
+
+# OTP validity (in seconds)
+OTP_VALIDITY = 30  # 30 seconds per code
+
+# Backup codes
+BACKUP_CODE_COUNT = 10
+
+# =====================================================
+# PERFORMANCE OPTIMIZATION
+# =====================================================
+
+# Database connection pooling
+if not USE_SQLITE:
+    DATABASES['default']['CONN_MAX_AGE'] = 600  # 10 minutes
+
+# Disable Django's built-in atomic requests for better performance
+# (Handle transactions explicitly in views when needed)
+DATABASES['default']['ATOMIC_REQUESTS'] = False
+
+# Template caching (production only)
+if not DEBUG:
+    TEMPLATES[0]['OPTIONS']['loaders'] = [
+        ('django.template.loaders.cached.Loader', [
+            'django.template.loaders.filesystem.Loader',
+            'django.template.loaders.app_directories.Loader',
+        ]),
+    ]
+
+# =====================================================
+# ANALYTICS & MONITORING
+# =====================================================
+
+# Track slow queries (log queries taking longer than this)
+SLOW_QUERY_THRESHOLD = 0.5  # 500ms
+
+# Track API response times
+TRACK_API_PERFORMANCE = True

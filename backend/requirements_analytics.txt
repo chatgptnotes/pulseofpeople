@@ -1,0 +1,25 @@
+# Analytics and Reporting Dependencies
+
+# PDF Generation
+reportlab==4.2.2
+weasyprint==63.1
+
+# Excel Export
+openpyxl==3.1.5
+
+# Data Visualization
+matplotlib==3.9.4
+seaborn==0.13.2
+plotly==5.24.1
+
+# Task Queue for Automated Reports
+celery==5.4.0
+redis==5.2.1
+django-celery-beat==2.7.0
+
+# Data Processing
+pandas==2.2.3
+numpy==2.2.3
+
+# Email
+django-email-backend==0.2.0
