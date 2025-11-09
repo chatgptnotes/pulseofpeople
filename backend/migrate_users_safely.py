@@ -78,16 +78,16 @@ print('='*60)
 os.environ['USE_SQLITE'] = 'False'
 connections.close_all()
 
-# Manually set database to Supabase
+# Manually set database to Supabase (use environment variables for security)
 settings.DATABASES['default'] = {
     'ENGINE': 'django.db.backends.postgresql',
-    'NAME': 'postgres',
-    'USER': 'postgres.iwtgbseaoztjbnvworyq',
-    'PASSWORD': 'Chindwada@1',
-    'HOST': 'aws-1-ap-south-1.pooler.supabase.com',
-    'PORT': '6543',
+    'NAME': os.environ.get('DB_NAME', 'postgres'),
+    'USER': os.environ.get('DB_USER', 'postgres.iwtgbseaoztjbnvworyq'),
+    'PASSWORD': os.environ.get('DB_PASSWORD'),  # MUST be set in environment
+    'HOST': os.environ.get('DB_HOST', 'aws-1-ap-south-1.pooler.supabase.com'),
+    'PORT': os.environ.get('DB_PORT', '6543'),
     'OPTIONS': {
-        'sslmode': 'prefer',
+        'sslmode': os.environ.get('DB_SSLMODE', 'prefer'),
     },
 }
 

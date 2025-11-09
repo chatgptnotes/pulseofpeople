@@ -26,10 +26,19 @@ load_dotenv(BASE_DIR / '.env')
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-$)&g%4l4397-t65+w0mx%!=4x@a86ft7^d6okk&oxho2vt*et(')
+# In production, SECRET_KEY MUST be set via environment variable
+if 'SECRET_KEY' not in os.environ:
+    import warnings
+    warnings.warn(
+        'SECRET_KEY not found in environment. Using insecure default for development only. '
+        'Set SECRET_KEY environment variable in production!',
+        RuntimeWarning
+    )
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-development-only-change-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+# Defaults to False for safety - set DEBUG=True explicitly for development
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 # ALLOWED_HOSTS with Railway domain hardcoded as fallback
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')

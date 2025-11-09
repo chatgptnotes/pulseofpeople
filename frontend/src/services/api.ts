@@ -11,7 +11,7 @@ import {
 } from '../data/mockData';
 
 const API_BASE_URL = '/api';
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false; // Changed to false - use real dashboardService instead
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 

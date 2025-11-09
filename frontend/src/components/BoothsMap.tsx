@@ -3,8 +3,12 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { LocationOn, FilterList, Layers, ZoomIn, ZoomOut, MyLocation } from '@mui/icons-material';
 
-// Set Mapbox access token
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || 'pk.eyJ1IjoicHVsc2VvZnBlb3BsZSIsImEiOiJjbTN2ODFuM2swMmpkMnJzZXptN3FzcWF3In0.7uWA8G8x4rF_Qf4Pb8nN4A';
+// Set Mapbox access token from environment variable
+// IMPORTANT: VITE_MAPBOX_ACCESS_TOKEN must be set in .env file
+if (!import.meta.env.VITE_MAPBOX_ACCESS_TOKEN) {
+  console.error('VITE_MAPBOX_ACCESS_TOKEN not found in environment variables');
+}
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
 
 interface Booth {
   id: string;
