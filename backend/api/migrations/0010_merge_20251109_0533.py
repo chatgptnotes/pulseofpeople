@@ -6,9 +6,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0007_security_and_performance'),
         ('api', '0007_workstream2_core_models'),
         ('api', '0009_pollingbooth'),
+        ('api', '0007_userprofile_must_change_password_bulkuploadjob_and_more'),
     ]
 
     operations = [

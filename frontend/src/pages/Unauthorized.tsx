@@ -64,7 +64,7 @@ export function Unauthorized() {
             </button>
 
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/dashboard/legacy')}
               className="w-full flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <HomeIcon className="w-5 h-5 mr-2" />

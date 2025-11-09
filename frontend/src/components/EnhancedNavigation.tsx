@@ -352,10 +352,10 @@ export function EnhancedNavigation() {
 
     // Redirect to tenant-specific subdomain in production
     if (import.meta.env.PROD) {
-      window.location.href = `https://${tenant.subdomain}.yourapp.com/dashboard`;
+      window.location.href = `https://${tenant.subdomain}.yourapp.com/dashboard/legacy`;
     } else {
       // In development, just navigate
-      navigate('/dashboard');
+      navigate('/dashboard/legacy');
     }
   }
 

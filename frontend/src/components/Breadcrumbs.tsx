@@ -44,7 +44,7 @@ export default function Breadcrumbs() {
   return (
     <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4 py-2">
       <Link
-        to="/dashboard"
+        to="/dashboard/legacy"
         className="hover:text-gray-900 flex items-center transition-colors"
         title="Go to Dashboard"
       >

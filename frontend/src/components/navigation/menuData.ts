@@ -61,7 +61,7 @@ export const categoryMenuItems: Record<string, MenuItem[]> = {
     },
     {
       name: 'Role-Based Dashboard',
-      href: '/dashboard',
+      href: '/dashboard/legacy',
       icon: DashboardIcon
     },
   ],
