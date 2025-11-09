@@ -1,60 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { djangoApi } from '../services/djangoApi';
+import { supabase } from '../lib/supabase';
 import type { UserRole } from '../utils/permissions';
-
-// 🚨 MOCK AUTHENTICATION MODE
-// Set to true to use frontend-only mock authentication (no backend needed)
-const USE_MOCK_AUTH = true;
-
-// Mock Users for Development
-const MOCK_USERS = [
-  {
-    id: '1',
-    email: 'admin@tvk.com',
-    password: 'admin123',
-    name: 'TVK Admin',
-    role: 'admin' as UserRole,
-    permissions: ['*'], // All permissions
-    constituency: 'Chennai Central',
-  },
-  {
-    id: '2',
-    email: 'manager@tvk.com',
-    password: 'manager123',
-    name: 'District Manager',
-    role: 'manager' as UserRole,
-    permissions: ['analytics:view', 'data:manage', 'reports:view'],
-    constituency: 'Coimbatore South',
-  },
-  {
-    id: '3',
-    email: 'analyst@tvk.com',
-    password: 'analyst123',
-    name: 'Data Analyst',
-    role: 'analyst' as UserRole,
-    permissions: ['analytics:view', 'data:view', 'reports:view'],
-    constituency: 'Madurai West',
-  },
-  {
-    id: '4',
-    email: 'user@tvk.com',
-    password: 'user123',
-    name: 'Field Worker',
-    role: 'user' as UserRole,
-    permissions: ['data:view', 'data:submit'],
-    ward: 'Ward 42',
-    constituency: 'Chennai Central',
-  },
-  {
-    id: '5',
-    email: 'volunteer@tvk.com',
-    password: 'volunteer123',
-    name: 'Campaign Volunteer',
-    role: 'volunteer' as UserRole,
-    permissions: ['data:view'],
-    constituency: 'Salem North',
-  },
-];
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface User {
   id: string;
@@ -93,92 +40,80 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  // Check for existing session on mount
+  // Check for existing session on mount and listen for auth changes
   useEffect(() => {
     checkSession();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[AuthContext] 🔔 Auth state changed:', event);
+
+      if (event === 'SIGNED_IN' && session) {
+        // User signed in
+        await checkSession();
+      } else if (event === 'SIGNED_OUT') {
+        // User signed out
+        setUser(null);
+      } else if (event === 'TOKEN_REFRESHED') {
+        // Token refreshed
+        console.log('[AuthContext] ✅ Token refreshed');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const checkSession = async () => {
-    console.log('[AuthContext] 🔄 Checking session...');
+    console.log('[AuthContext] 🔄 Checking Supabase session...');
 
-    // MOCK AUTH: Check localStorage for mock user
-    if (USE_MOCK_AUTH) {
-      const storedUser = localStorage.getItem('mock_user');
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          console.log('[AuthContext] ✅ Mock user loaded:', userData.email);
-          setUser(userData);
-        } catch (error) {
-          console.error('[AuthContext] ❌ Failed to parse mock user:', error);
-          localStorage.removeItem('mock_user');
-        }
-      } else {
-        console.log('[AuthContext] ❌ No mock user found');
-      }
-      setIsInitializing(false);
-      return;
-    }
-
-    // REAL AUTH: Check Django backend session
     try {
-      const accessToken = localStorage.getItem('access_token');
-      const refreshToken = localStorage.getItem('refresh_token');
-      console.log('[AuthContext] Tokens found:', {
-        hasAccess: !!accessToken,
-        hasRefresh: !!refreshToken
-      });
+      // Check for existing Supabase session
+      const { data: { session }, error } = await supabase.auth.getSession();
 
-      if (!accessToken) {
-        console.log('[AuthContext] ❌ No access token, initialization complete');
+      if (error) {
+        console.error('[AuthContext] ❌ Session check error:', error);
         setIsInitializing(false);
         return;
       }
 
-      // Load user profile
-      try {
-        console.log('[AuthContext] 📡 Fetching user profile...');
-        const profile = await djangoApi.getUserProfile();
-        console.log('[AuthContext] ✅ Profile loaded:', profile.email, profile.role);
-
-        setUser({
-          id: profile.id.toString(),
-          name: profile.name,
-          email: profile.email,
-          role: profile.role,
-          permissions: profile.permissions || [],
-          avatar: profile.avatar_url,
-          ward: profile.ward,
-          constituency: profile.constituency,
-        });
-
-        console.log('[AuthContext] ✅ User set, initialization complete');
+      if (!session) {
+        console.log('[AuthContext] ❌ No active session found');
         setIsInitializing(false);
-      } catch (error) {
-        console.error('[AuthContext] ❌ Failed to load profile:', error);
-
-        // Try to refresh token
-        if (refreshToken) {
-          try {
-            console.log('[AuthContext] 🔄 Attempting token refresh...');
-            const { access } = await djangoApi.refreshToken(refreshToken);
-            localStorage.setItem('access_token', access);
-            console.log('[AuthContext] ✅ Token refreshed, retrying...');
-            // Don't set isInitializing here, let the retry complete
-            await checkSession(); // Retry
-            return; // Important: return here to avoid setting isInitializing again
-          } catch (refreshError) {
-            console.error('[AuthContext] ❌ Token refresh failed:', refreshError);
-            // Clear session
-            localStorage.clear();
-            setIsInitializing(false);
-          }
-        } else {
-          console.log('[AuthContext] ❌ No refresh token, clearing session');
-          localStorage.clear();
-          setIsInitializing(false);
-        }
+        return;
       }
+
+      console.log('[AuthContext] ✅ Session found:', session.user.email);
+
+      // Fetch user details from database
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', session.user.email)
+        .single();
+
+      if (userError || !userData) {
+        console.error('[AuthContext] ❌ Failed to load user data:', userError);
+        setIsInitializing(false);
+        return;
+      }
+
+      console.log('[AuthContext] ✅ User data loaded:', userData.full_name, userData.role);
+
+      setUser({
+        id: userData.id,
+        name: userData.full_name,
+        email: userData.email,
+        role: userData.role as UserRole,
+        permissions: userData.permissions || [],
+        avatar: userData.avatar_url,
+        is_super_admin: userData.is_super_admin,
+        organization_id: userData.organization_id,
+        status: userData.status || 'active',
+      });
+
+      setIsInitializing(false);
     } catch (error) {
       console.error('[AuthContext] ❌ Session check failed:', error);
       setIsInitializing(false);
@@ -188,124 +123,107 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
+      console.log('[AuthContext] 🔐 Attempting login:', email);
 
-      // MOCK AUTH: Check credentials against mock users
-      if (USE_MOCK_AUTH) {
-        console.log('[AuthContext] 🔐 Mock login attempt:', email);
+      // Sign in with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        // Find user by email and password
-        const mockUser = MOCK_USERS.find(
-          u => u.email === email && u.password === password
-        );
-
-        if (!mockUser) {
-          console.log('[AuthContext] ❌ Mock login failed: Invalid credentials');
-          setIsLoading(false);
-          throw new Error('Invalid email or password');
-        }
-
-        // Create user object (exclude password)
-        const { password: _, ...userData } = mockUser;
-
-        console.log('[AuthContext] ✅ Mock login successful:', userData.email, userData.role);
-        setUser(userData as User);
-
-        // Store in localStorage
-        localStorage.setItem('mock_user', JSON.stringify(userData));
-        localStorage.setItem('auth_token', 'mock_authenticated');
-
-        setIsLoading(false);
-        return true;
+      if (authError) {
+        console.error('[AuthContext] ❌ Login failed:', authError.message);
+        throw new Error(authError.message);
       }
 
-      // REAL AUTH: Call Django login endpoint
-      const response = await djangoApi.login(email, password);
+      if (!authData.user) {
+        throw new Error('Login failed - no user returned');
+      }
 
-      // Store tokens
-      localStorage.setItem('access_token', response.access);
-      localStorage.setItem('refresh_token', response.refresh);
+      console.log('[AuthContext] ✅ Supabase auth successful:', authData.user.email);
 
-      // Load user profile
-      const profile = await djangoApi.getUserProfile();
+      // Fetch user details from database
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .single();
 
-      const userData: User = {
-        id: profile.id.toString(),
-        name: profile.name,
-        email: profile.email,
-        role: profile.role as UserRole,
-        permissions: profile.permissions || [],
-        avatar: profile.avatar_url,
-        ward: profile.ward,
-        constituency: profile.constituency,
+      if (userError || !userData) {
+        console.error('[AuthContext] ❌ Failed to load user data:', userError);
+        throw new Error('Failed to load user profile');
+      }
+
+      console.log('[AuthContext] ✅ User data loaded:', userData.full_name, userData.role);
+
+      const user: User = {
+        id: userData.id,
+        name: userData.full_name,
+        email: userData.email,
+        role: userData.role as UserRole,
+        permissions: userData.permissions || [],
+        avatar: userData.avatar_url,
+        is_super_admin: userData.is_super_admin,
+        organization_id: userData.organization_id,
+        status: userData.status || 'active',
       };
 
-      setUser(userData);
-
-      // Also store user data for quick access
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('auth_token', 'authenticated');
+      setUser(user);
 
       setIsLoading(false);
       return true;
-    } catch (error) {
-      console.error('Login failed:', error);
+    } catch (error: any) {
+      console.error('[AuthContext] ❌ Login error:', error);
       setIsLoading(false);
-      return false;
+      throw error;
     }
   };
 
   const signup = async (email: string, password: string, name: string, role: string = 'user'): Promise<boolean> => {
     try {
       setIsLoading(true);
+      console.log('[AuthContext] 📝 Attempting signup:', email);
 
-      // Call Django signup endpoint
-      const response = await djangoApi.register({
+      // Sign up with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        name,
-        role,
       });
 
-      // Store tokens from signup response
-      localStorage.setItem('access_token', response.tokens.access);
-      localStorage.setItem('refresh_token', response.tokens.refresh);
+      if (authError) {
+        console.error('[AuthContext] ❌ Signup failed:', authError.message);
+        throw new Error(authError.message);
+      }
 
-      const userData: User = {
-        id: response.user.id.toString(),
-        name: response.user.name,
-        email: response.user.email,
-        role: response.user.role as UserRole,
-        permissions: response.user.permissions || [],
-      };
+      if (!authData.user) {
+        throw new Error('Signup failed - no user returned');
+      }
 
-      setUser(userData);
+      console.log('[AuthContext] ✅ Supabase auth signup successful:', authData.user.email);
 
-      // Store user data
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('auth_token', 'authenticated');
+      // Note: You'll need to create a database trigger or function to automatically
+      // create a user record in the users table when a new auth user is created
+      // For now, this will return true after signup
 
       setIsLoading(false);
       return true;
     } catch (error: any) {
-      console.error('Signup failed:', error);
-      alert(error.message || 'Signup failed. Please try again.');
+      console.error('[AuthContext] ❌ Signup error:', error);
       setIsLoading(false);
-      return false;
+      throw error;
     }
   };
 
   const logout = async () => {
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (refreshToken) {
-      try {
-        await djangoApi.logout(refreshToken);
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
+    try {
+      console.log('[AuthContext] 🚪 Logging out...');
+      await supabase.auth.signOut();
+      setUser(null);
+      console.log('[AuthContext] ✅ Logged out successfully');
+    } catch (error) {
+      console.error('[AuthContext] ❌ Logout error:', error);
+      setUser(null);
     }
-
-    setUser(null);
-    localStorage.clear();
   };
 
   // Check if user has a specific permission
@@ -356,6 +274,3 @@ export function useAuth(): AuthContextType {
   }
   return context;
 }
-
-// Export for backward compatibility (some components might use this)
-export const supabase = null;
