@@ -1,6 +1,7 @@
 /**
- * Primary Sidebar - Icon-only navigation (ChatGPT style)
- * 64px wide, always visible, shows main categories
+ * Primary Sidebar - Expandable navigation with hover
+ * 64px collapsed, 240px expanded
+ * Auto-collapses when mouse leaves
  */
 
 import React, { useState, useRef } from 'react';
@@ -105,8 +106,30 @@ export default function PrimarySidebar({
   const profileButtonRef = useRef<HTMLButtonElement>(null);
   const notificationsButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Hover state for expansion
+  const [isExpanded, setIsExpanded] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout>();
+
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    setIsExpanded(true);
+  };
+
+  const handleMouseLeave = () => {
+    // Add small delay before collapsing to prevent accidental closes
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsExpanded(false);
+    }, 150);
+  };
+
   return (
-    <div className={`primary-sidebar ${className}`}>
+    <div
+      className={`primary-sidebar ${className} ${isExpanded ? 'expanded' : ''}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {/* Logo Section */}
       <div className="logo-section">
         <div className="w-12 h-12 flex items-center justify-center">
@@ -122,6 +145,7 @@ export default function PrimarySidebar({
             category={category}
             isActive={activeCategory === category.id}
             onClick={() => onCategoryClick(category.id)}
+            isExpanded={isExpanded}
           />
         ))}
       </nav>
@@ -135,6 +159,7 @@ export default function PrimarySidebar({
             category={category}
             isActive={activeCategory === category.id}
             onClick={() => onCategoryClick(category.id)}
+            isExpanded={isExpanded}
           />
         ))}
 
@@ -186,6 +211,12 @@ export default function PrimarySidebar({
           left: 0;
           top: 0;
           z-index: 40;
+          transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          overflow: hidden;
+        }
+
+        .primary-sidebar.expanded {
+          width: 240px;
         }
 
         .logo-section {
@@ -284,27 +315,33 @@ interface CategoryButtonProps {
   category: Category;
   isActive: boolean;
   onClick: () => void;
+  isExpanded: boolean;
 }
 
-function CategoryButton({ category, isActive, onClick }: CategoryButtonProps) {
+function CategoryButton({ category, isActive, onClick, isExpanded }: CategoryButtonProps) {
   const Icon = category.icon;
 
   return (
     <>
       <button
-        className={`category-button ${isActive ? 'active' : ''}`}
-        title={category.label}
+        className={`category-button ${isActive ? 'active' : ''} ${isExpanded ? 'expanded' : ''}`}
+        title={!isExpanded ? category.label : undefined}
         onClick={onClick}
         style={{
           '--category-color': category.color,
         } as React.CSSProperties}
       >
-        <Icon
-          sx={{
-            color: isActive ? category.color : '#FFFFFF',
-            fontSize: '24px'
-          }}
-        />
+        <div className="icon-wrapper">
+          <Icon
+            sx={{
+              color: isActive ? category.color : '#FFFFFF',
+              fontSize: '24px'
+            }}
+          />
+        </div>
+        {isExpanded && (
+          <span className="category-label">{category.label}</span>
+        )}
         {isActive && <div className="active-indicator" />}
       </button>
 
@@ -312,16 +349,25 @@ function CategoryButton({ category, isActive, onClick }: CategoryButtonProps) {
         .category-button {
           width: 48px;
           height: 48px;
-          margin: 0 auto;
+          margin: 0 8px;
           display: flex;
           align-items: center;
-          justify-content: center;
+          justify-content: flex-start;
+          gap: 12px;
+          padding: 0 12px;
           border-radius: 8px;
           background: transparent;
           border: none;
           cursor: pointer;
           position: relative;
-          transition: all 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          white-space: nowrap;
+          overflow: hidden;
+        }
+
+        .category-button.expanded {
+          width: 224px;
+          justify-content: flex-start;
         }
 
         .category-button:hover {
@@ -330,6 +376,33 @@ function CategoryButton({ category, isActive, onClick }: CategoryButtonProps) {
 
         .category-button.active {
           background: #374151;
+        }
+
+        .icon-wrapper {
+          flex-shrink: 0;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .category-label {
+          color: #FFFFFF;
+          font-size: 14px;
+          font-weight: 500;
+          opacity: 0;
+          transform: translateX(-10px);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .category-button.expanded .category-label {
+          opacity: 1;
+          transform: translateX(0);
+        }
+
+        .category-button.active .category-label {
+          color: var(--category-color);
         }
 
         .category-button :global(.icon) {

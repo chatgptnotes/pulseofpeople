@@ -144,6 +144,16 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
     }
   };
 
+  // Auto-collapse secondary sidebar on mouse leave
+  const handleSecondaryMouseLeave = () => {
+    if (!isPinned) {
+      // Add small delay before closing to prevent accidental closes
+      setTimeout(() => {
+        setSecondarySidebarOpen(false);
+      }, 300);
+    }
+  };
+
   const handleTogglePin = () => {
     const newPinned = !isPinned;
     setIsPinned(newPinned);
@@ -200,6 +210,7 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
         isPinned={isPinned}
         onClose={handleCloseSecondarySidebar}
         onTogglePin={handleTogglePin}
+        onMouseLeave={handleSecondaryMouseLeave}
       />
 
       {/* Main Content */}

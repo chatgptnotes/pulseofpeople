@@ -19,6 +19,7 @@ interface SecondarySidebarProps {
   isPinned: boolean;
   onClose: () => void;
   onTogglePin: () => void;
+  onMouseLeave?: () => void;
   className?: string;
 }
 
@@ -28,6 +29,7 @@ export default function SecondarySidebar({
   isPinned,
   onClose,
   onTogglePin,
+  onMouseLeave,
   className = '',
 }: SecondarySidebarProps) {
   const navigate = useNavigate();
@@ -54,7 +56,10 @@ export default function SecondarySidebar({
       )}
 
       {/* Secondary Sidebar */}
-      <div className={`secondary-sidebar ${isOpen ? 'open' : 'closed'} ${className}`}>
+      <div
+        className={`secondary-sidebar ${isOpen ? 'open' : 'closed'} ${className}`}
+        onMouseLeave={onMouseLeave}
+      >
         {/* Header */}
         <div className="sidebar-header">
           <div>
