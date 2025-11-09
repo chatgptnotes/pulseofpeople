@@ -625,3 +625,17 @@
     content: counter(val) '%';
   }
 }
+
+/* ========================================
+   SIDEBAR VISIBILITY FIX
+   ======================================== */
+.primary-sidebar,
+.primary-sidebar-always-visible {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+}

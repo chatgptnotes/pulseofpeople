@@ -29,7 +29,7 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
   const [isPinned, setIsPinned] = useState(false);
 
   // Prevent flickering during mount
-  const [isMounted, setIsMounted] = useState(false);
+  const [isMounted, setIsMounted] = useState(true); // Start as true to show sidebars immediately
 
   // Prevent multiple localStorage saves
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
@@ -222,11 +222,12 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
 
         :global(.primary-sidebar-always-visible) {
           /* Force primary sidebar to always be visible */
-          display: block !important;
+          display: flex !important;
           opacity: 1 !important;
           visibility: visible !important;
           position: fixed !important;
           left: 0 !important;
+          top: 0 !important;
           z-index: 1000 !important;
         }
 
