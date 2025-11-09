@@ -27,7 +27,7 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [secondarySidebarOpen, setSecondarySidebarOpen] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
-  const [isPrimaryExpanded, setIsPrimaryExpanded] = useState(false);
+  const isPrimaryExpanded = false; // Primary sidebar never expands
 
   // Prevent flickering during mount
   const [isMounted, setIsMounted] = useState(true); // Start as true to show sidebars immediately
@@ -124,9 +124,17 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
     };
   }, []);
 
+  const handleCategoryHover = (categoryId: string | null) => {
+    if (categoryId && !isPinned) {
+      // Hover on icon opens secondary panel (if not pinned)
+      setActiveCategory(categoryId);
+      setSecondarySidebarOpen(true);
+    }
+  };
+
   const handleCategoryClick = (categoryId: string) => {
     if (activeCategory === categoryId && secondarySidebarOpen) {
-      // Clicking the same category closes it (unless pinned)
+      // Clicking the same category toggles it
       if (!isPinned) {
         setSecondarySidebarOpen(false);
         setActiveCategory(null);
@@ -202,7 +210,7 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
       <PrimarySidebar
         activeCategory={activeCategory}
         onCategoryClick={handleCategoryClick}
-        onExpandChange={setIsPrimaryExpanded}
+        onCategoryHover={handleCategoryHover}
         className="primary-sidebar-always-visible"
       />
 
