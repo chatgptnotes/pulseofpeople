@@ -89,12 +89,14 @@ const bottomCategories: Category[] = [
 interface PrimarySidebarProps {
   activeCategory: string | null;
   onCategoryClick: (categoryId: string) => void;
+  onExpandChange?: (isExpanded: boolean) => void;
   className?: string;
 }
 
 export default function PrimarySidebar({
   activeCategory,
   onCategoryClick,
+  onExpandChange,
   className = '',
 }: PrimarySidebarProps) {
   const { user } = useAuth();
@@ -115,12 +117,14 @@ export default function PrimarySidebar({
       clearTimeout(hoverTimeoutRef.current);
     }
     setIsExpanded(true);
+    onExpandChange?.(true);
   };
 
   const handleMouseLeave = () => {
     // Add small delay before collapsing to prevent accidental closes
     hoverTimeoutRef.current = setTimeout(() => {
       setIsExpanded(false);
+      onExpandChange?.(false);
     }, 150);
   };
 
