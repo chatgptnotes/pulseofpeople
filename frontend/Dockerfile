@@ -43,20 +43,20 @@ FROM nginx:alpine
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copy custom entrypoint script for Railway dynamic PORT
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 # Copy built assets from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Create non-root user
+# Create non-root user (but keep root for entrypoint to modify nginx config)
 RUN addgroup -g 1001 -S appuser && \
     adduser -S appuser -u 1001 && \
-    chown -R appuser:appuser /usr/share/nginx/html && \
-    chown -R appuser:appuser /var/cache/nginx && \
-    chown -R appuser:appuser /var/log/nginx && \
-    touch /var/run/nginx.pid && \
-    chown -R appuser:appuser /var/run/nginx.pid
+    chown -R appuser:appuser /usr/share/nginx/html
 
-# Switch to non-root user
-USER appuser
+# Note: Running as root for Railway PORT configuration
+# Railway needs to modify nginx.conf at runtime
 
 # Expose port
 EXPOSE 80
@@ -65,5 +65,5 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start nginx using custom entrypoint that handles Railway's dynamic PORT
+CMD ["/docker-entrypoint.sh"]
