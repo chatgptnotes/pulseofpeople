@@ -254,7 +254,7 @@ class WhatsAppStatusWebhookView(APIView):
     def _process_status_update(self, status_update: dict):
         """Process message status update"""
         try:
-            from api.models.whatsapp_conversation import WhatsAppMessage
+            from api.models import WhatsAppMessage
 
             message_id = status_update.get('id')
             status_value = status_update.get('status')

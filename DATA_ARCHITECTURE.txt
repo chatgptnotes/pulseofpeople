@@ -1,0 +1,428 @@
+PULSE OF PEOPLE - DATA ARCHITECTURE DIAGRAM
+============================================
+
+FRONTEND (React + TypeScript)
+│
+├─ Services Layer
+│  ├─ userService (users.service.ts)
+│  │  └─ manages: User CRUD, permissions, role updates, account lockout
+│  │
+│  ├─ votersService (voters.service.ts)
+│  │  └─ manages: Voter records, sentiment, categorization, bulk operations
+│  │
+│  ├─ pollingBoothsService (polling-booths.service.ts)
+│  │  └─ manages: Booth locations, geospatial queries, priority levels
+│  │
+│  ├─ constituenciesService (constituencies.service.ts)
+│  │  └─ manages: Electoral boundaries, statistics, aggregations
+│  │
+│  ├─ organizationService (organizations.service.ts)
+│  │  └─ manages: Multi-tenant organizations, subscriptions
+│  │
+│  ├─ dashboardService (dashboardService.ts) ***QUERIES MISSING DATA***
+│  │  └─ requires: sentiment_data, social_posts, trending_topics, alerts
+│  │
+│  ├─ djangoApi (djangoApi.ts)
+│  │  └─ interfaces: Master data, feedback, field reports, analytics
+│  │
+│  └─ CRUD base class (crud.ts)
+│     └─ provides: Generic filtering, pagination, sorting, search
+│
+├─ Context Providers
+│  ├─ AuthContext - User authentication & permissions
+│  ├─ PermissionContext - RBAC enforcement
+│  ├─ TenantContext - Multi-tenancy
+│  ├─ RealTimeContext - Live updates
+│  └─ FeatureFlagContext - Feature toggles
+│
+└─ Type Definitions
+   ├─ database.ts - Supabase schema (730 lines)
+   └─ index.ts - Domain models
+
+
+SUPABASE DATABASE (PostgreSQL)
+════════════════════════════════════════════════════════════════════════════════
+
+CORE ENTITIES (Phase 1 - Implemented)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Authentication & User Management                                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ organizations                                                               │
+│ ├─ id (UUID)                                                               │
+│ ├─ name, slug, type (political_party, campaign, ngo, advocacy_group)       │
+│ ├─ subscription_status (trial, active, suspended, cancelled)               │
+│ ├─ settings, metadata (JSON)                                               │
+│ └─ contact info, dates                                                     │
+│                                                                             │
+│ users                                                                       │
+│ ├─ id, email, username (unique)                                            │
+│ ├─ role (superadmin, admin, manager, analyst, user, viewer, volunteer)    │
+│ ├─ organization_id (FK) - Multi-tenant                                     │
+│ ├─ status (active, inactive, suspended)                                    │
+│ ├─ is_verified, email_verified_at                                          │
+│ ├─ failed_login_attempts, locked_until (security)                          │
+│ ├─ preferences, avatar_url                                                 │
+│ └─ timestamps: created_at, updated_at, last_login                          │
+│                                                                             │
+│ user_permissions                                                            │
+│ ├─ id, user_id (FK), permission_key                                        │
+│ ├─ granted_at, granted_by, expires_at                                      │
+│ └─ Permission Categories:                                                  │
+│    ├─ users.{view,create,update,delete,manage,export}                     │
+│    ├─ voters.{view,create,update,delete,manage,export}                    │
+│    ├─ booths.{view,create,update,delete,manage,export}                    │
+│    ├─ social.{view,create,update,delete}                                  │
+│    ├─ media.{view,manage}                                                  │
+│    ├─ analytics.{view,export}                                              │
+│    ├─ reports.{view,create,export}                                         │
+│    ├─ campaigns.{view,create,update,delete,manage}                         │
+│    ├─ field_workers.{view,manage}                                          │
+│    └─ alerts.{view,manage}                                                 │
+│                                                                             │
+│ audit_logs (READ-ONLY)                                                      │
+│ ├─ id, organization_id, user_id                                            │
+│ ├─ action (create, update, delete, view, login, logout, permission, etc)  │
+│ ├─ resource_type, resource_id, resource_name                              │
+│ ├─ changes, previous_values, new_values (JSON)                             │
+│ ├─ ip_address, user_agent, request_method, request_path                   │
+│ └─ timestamp: created_at                                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+GEOGRAPHIC & TERRITORY (Phase 2 - Implemented)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Electoral Hierarchy: State > District > Constituency > Ward > Polling Booth │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ constituencies                                                               │
+│ ├─ id, organization_id (FK)                                                │
+│ ├─ name, code, type (parliament, assembly, municipal, panchayat)           │
+│ ├─ state, district, boundaries (GeoJSON)                                   │
+│ ├─ geom (PostGIS GEOGRAPHY type)                                           │
+│ ├─ population, voter_count, total_booths                                   │
+│ ├─ reserved_category, last_election_year                                   │
+│ ├─ current_representative, current_party                                   │
+│ └─ timestamps: created_at, updated_at                                      │
+│    └─ RPC: get_constituency_stats(id) → voter counts, sentiment stats      │
+│                                                                             │
+│ wards (sub-constituency divisions)                                          │
+│ ├─ id, organization_id, constituency_id (FK)                               │
+│ ├─ name, code, ward_number                                                 │
+│ ├─ boundaries (GeoJSON), geom (PostGIS)                                    │
+│ ├─ population, voter_count, total_booths                                   │
+│ ├─ demographics (JSON)                                                     │
+│ ├─ income_level (low, middle, high)                                        │
+│ ├─ urbanization (urban, semi_urban, rural)                                 │
+│ └─ literacy_rate                                                           │
+│                                                                             │
+│ polling_booths (voting locations)                                           │
+│ ├─ id, organization_id, constituency_id, ward_id (FK)                      │
+│ ├─ booth_number, name, address                                             │
+│ ├─ latitude, longitude, location (PostGIS POINT)                           │
+│ ├─ landmark, building_name, building_type                                  │
+│ ├─ total_voters (aggregate), male_voters, female_voters, transgender      │
+│ ├─ booth_type (regular, auxiliary, special)                                │
+│ ├─ is_accessible, is_active                                                │
+│ ├─ swing_potential (high, medium, low) - Assessment of swing voters       │
+│ ├─ priority_level (1-10) - Strategic importance                            │
+│ ├─ party_strength (JSON) - Party vote share                                │
+│ ├─ facilities (JSON) - Accessibility features                              │
+│ └─ timestamps, notes                                                       │
+│    └─ RPC: find_booths_near(lat, lng, radius) → nearby booths with distance
+│                                                                             │
+│ voters (individual voter records)                                           │
+│ ├─ id, organization_id, polling_booth_id (FK)                              │
+│ ├─ Voter Identity                                                          │
+│ │  ├─ voter_id_number, epic_number, aadhaar_hash                          │
+│ │  ├─ full_name, gender (Male, Female, Transgender, Other)                │
+│ │  ├─ age, date_of_birth                                                  │
+│ │  └─ verified (boolean), verified_by, verified_at                        │
+│ ├─ Contact Information                                                     │
+│ │  ├─ address, phone, email, whatsapp_number                              │
+│ │  └─ consent_given, consent_date, data_retention_until                   │
+│ ├─ Demographics                                                            │
+│ │  ├─ religion, caste, caste_category                                     │
+│ │  ├─ occupation, education, monthly_income_range                         │
+│ │  └─ family_head_id, family_size                                         │
+│ ├─ Political Sentiment (Core Intelligence)                                 │
+│ │  ├─ sentiment (strong_support, support, neutral, oppose, strong_oppose) │
+│ │  ├─ sentiment_score (0-1), sentiment_last_updated                       │
+│ │  ├─ preferred_party, previous_party_support                             │
+│ │  └─ voter_category (core_supporter, swing_voter, opponent)              │
+│ ├─ Engagement Tracking                                                     │
+│ │  ├─ contacted_by_party (boolean), last_contact_date                     │
+│ │  ├─ contact_method, meeting_attendance, rally_participation             │
+│ │  └─ influencer_score (0-100) - Social influence                         │
+│ ├─ Issues & Concerns                                                       │
+│ │  ├─ top_issues (array)                                                  │
+│ │  ├─ complaints_filed (JSON)                                             │
+│ │  └─ benefits_received (JSON)                                            │
+│ ├─ Data Quality                                                            │
+│ │  ├─ data_quality_score, verified (boolean)                              │
+│ │  └─ tags (array) - Custom voter tagging                                 │
+│ ├─ Voting History                                                          │
+│ │  ├─ voting_history (JSON)                                               │
+│ │  ├─ voter_turnout_rate, first_time_voter                                │
+│ │  └─ metrics for behavioral analysis                                     │
+│ └─ timestamps, notes, metadata                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+ANALYTICS & SENTIMENT DATA (Phase 3 - MISSING IMPLEMENTATION)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ *** CRITICAL: These tables are queried but NOT in type definitions ***     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ sentiment_data [MISSING]                                                    │
+│ ├─ id, organization_id (FK)                                                │
+│ ├─ issue (Jobs, Infrastructure, Health, Education, Law & Order)            │
+│ ├─ sentiment (0-1 decimal), polarity (positive, negative, neutral)         │
+│ ├─ intensity, confidence (0-1)                                             │
+│ ├─ emotion (anger, trust, fear, hope, pride, joy, sadness, surprise)      │
+│ ├─ language (en, hi, bn, mr, ta, te, gu, kn, ml, or, pa)                 │
+│ ├─ source (social_media, survey, field_report, news, direct_feedback)     │
+│ ├─ source_id (UUID) - Links to social_posts, surveys, field_reports       │
+│ ├─ Location: state, district, ward, coordinates (PostGIS point)            │
+│ ├─ Demographics: age_group, gender, education, income                      │
+│ ├─ timestamp (DESC indexed)                                                │
+│ └─ CRITICAL INDEX: timestamp DESC for time-series queries                  │
+│                                                                             │
+│ social_posts [MISSING TYPE DEFINITIONS - but queries exist]                │
+│ ├─ id, platform (twitter, facebook, instagram, youtube, whatsapp, news)    │
+│ ├─ post_id (platform-specific), content, language                          │
+│ ├─ author_name, author_handle, author_followers, author_verified           │
+│ ├─ Engagement: likes, shares, comments, reach, engagement_rate             │
+│ ├─ Content: hashtags (array), mentions (array)                             │
+│ ├─ Sentiment: sentiment_score, sentiment_polarity                          │
+│ ├─ Location: latitude, longitude, place_name                               │
+│ ├─ timestamp, url                                                          │
+│ └─ timestamps: created_at, updated_at                                      │
+│                                                                             │
+│ trending_topics [MISSING]                                                   │
+│ ├─ id, keyword, volume                                                     │
+│ ├─ growth_rate, sentiment_score                                            │
+│ ├─ related_posts (array of IDs)                                            │
+│ ├─ platforms (array)                                                       │
+│ └─ last_updated, timestamp                                                 │
+│                                                                             │
+│ alerts [MISSING TYPE DEFINITIONS - but queries exist]                      │
+│ ├─ id, organization_id                                                     │
+│ ├─ title, description                                                      │
+│ ├─ severity (low, medium, high, critical)                                  │
+│ ├─ type (sentiment_spike, volume_surge, crisis_detected, trend_change)     │
+│ ├─ status (active, acknowledged, resolved, dismissed)                      │
+│ ├─ Location: ward, district                                                │
+│ ├─ Issue context                                                           │
+│ ├─ Metrics: current_value, previous_value, change_percentage, threshold    │
+│ ├─ Recommendations: suggested actions                                      │
+│ ├─ Assignment: assignee, resolution_notes                                  │
+│ └─ timestamp, created_at                                                   │
+│                                                                             │
+│ field_reports [MISSING TYPE DEFINITIONS - but queries exist]               │
+│ ├─ id, volunteer_id, timestamp                                             │
+│ ├─ Location: coordinates (lat/lng), address, ward                          │
+│ ├─ report_type (daily_summary, event_feedback, issue_report, competitor)   │
+│ ├─ Content: positive_reactions, negative_reactions, key_issues (arrays)    │
+│ ├─ crowd_size, media_attachments, quotes                                   │
+│ ├─ verification_status (pending, verified, disputed)                       │
+│ ├─ verified_by, sentiment_analysis (from sentiment_data)                   │
+│ └─ timestamps: created_at, updated_at                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+CUSTOM TABLES (Application-Specific)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ demo_requests                                                                │
+│ ├─ id, email, status, created_at, updated_at                               │
+│ └─ Service: demoService (CRUD operations)                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+DJANGO BACKEND (REST API)
+════════════════════════════════════════════════════════════════════════════════
+Base URL: http://127.0.0.1:8000/api
+
+Authentication
+├─ POST /auth/signup/ - Register new user
+├─ POST /auth/login/ - Email or username login → access + refresh tokens
+├─ GET  /auth/profile/ - Fetch current user details
+├─ POST /auth/refresh/ - Refresh access token
+├─ POST /auth/logout/ - Blacklist refresh token
+└─ GET  /auth/users/ - List all users (paginated)
+
+Master Data (Public - No Auth)
+├─ GET  /states/ - All states in India
+├─ GET  /districts/?state={code} - Districts filtered by state
+├─ GET  /constituencies/?state={code}&type={type} - Electoral constituencies
+├─ GET  /polling-booths/?constituency={name}&district={name}&state={code} - Voting locations
+├─ GET  /issue-categories/ - TVK 9 priority issues
+├─ GET  /issues/ - Alias for issue-categories
+├─ GET  /voter-segments/ - Voter demographic segments
+└─ GET  /political-parties/ - Political party registry
+
+Citizen Feedback (Mixed Auth)
+├─ POST /feedback/ - PUBLIC: Submit feedback without authentication
+├─ GET  /feedback/ - AUTH: Get feedback list (role-filtered)
+├─ GET  /feedback/{id}/ - AUTH: Get feedback details
+├─ POST /feedback/{id}/mark_reviewed/ - AUTH: Mark as reviewed
+├─ POST /feedback/{id}/escalate/ - AUTH: Escalate to higher authority
+└─ GET  /feedback/stats/ - AUTH: Feedback statistics
+
+Field Reports (Auth Required)
+├─ POST /field-reports/ - Submit volunteer field report
+├─ GET  /field-reports/ - List field reports
+├─ GET  /field-reports/my_reports/ - Get user's own reports
+└─ POST /field-reports/{id}/verify/ - Admin: Verify report
+
+Analytics (Auth Required)
+├─ GET  /analytics/overview/ - Dashboard metrics
+├─ GET  /analytics/constituency/{code}/ - Constituency-level analysis
+├─ GET  /analytics/district/{id}/ - District-level analysis
+└─ GET  /analytics/state/{code}/ - State-level analysis
+
+Bulk Operations (Auth Required)
+├─ POST /users/bulk-upload/ - Upload CSV for bulk user creation
+├─ GET  /users/bulk-upload/{jobId}/status/ - Get job status
+├─ GET  /users/bulk-upload/{jobId}/errors/ - Download error CSV
+├─ DELETE /users/bulk-upload/{jobId}/ - Cancel upload job
+├─ GET  /users/bulk-upload/template/ - Download CSV template
+└─ GET  /users/bulk-upload/jobs/ - List all bulk jobs
+
+Utility
+├─ GET  /health/ - API health check
+└─ Headers: Authorization: Bearer {JWT_TOKEN}
+
+
+DATA FLOW DIAGRAM
+════════════════════════════════════════════════════════════════════════════════
+
+User Registration Flow:
+┌──────────┐     ┌────────────────┐     ┌──────────────┐     ┌──────────┐
+│ Frontend │────►│ Django API     │────►│ PostgreSQL   │────►│ Supabase │
+│ SignUp   │     │ /auth/signup/  │     │ Store User   │     │ Create   │
+│ Form     │     │                │     │              │     │ JWT      │
+└──────────┘     └────────────────┘     └──────────────┘     └──────────┘
+                                                │                   │
+                                                └───────────────────┘
+                                                Store token in
+                                                localStorage
+
+Voter Data Query Flow:
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ React        │────►│ votersService│────►│ Supabase     │
+│ Component    │     │ getByBooth() │     │ voters       │
+│              │     │              │     │ table        │
+└──────────────┘     └──────────────┘     └──────────────┘
+                            │
+                            ├─ Apply org_id filter (RLS)
+                            ├─ Filter by polling_booth_id
+                            ├─ Join with booth details
+                            └─ Return PaginatedResponse<Voter>
+
+Dashboard Metrics Flow:
+┌──────────────┐     ┌──────────────────┐     ┌──────────────┐
+│ Dashboard    │────►│ dashboardService │────►│ sentiment_data
+│ Page         │     │ getDashboardMetrics()  │ social_posts
+│              │     │                  │     │ alerts
+└──────────────┘     └──────────────────┘     │ field_reports
+                            │                 │ trending_topics
+                            └────────────────►└──────────────┘
+                            [MISSING TABLES]
+
+Feedback Submission Flow:
+┌──────────────┐     ┌──────────────────┐     ┌───────────────┐
+│ Citizen Form │────►│ Django API       │────►│ PostgreSQL    │
+│ (Public)     │     │ POST /feedback/  │     │ Store Feedback│
+│              │     │ No Auth Required │     │               │
+└──────────────┘     └──────────────────┘     └───────────────┘
+                            │
+                            └─ Optional: Generate sentiment_data record
+
+Geospatial Query Flow:
+┌──────────────┐     ┌──────────────────────┐     ┌──────────────┐
+│ Map         │────►│ pollingBoothsService │────►│ Supabase RPC │
+│ findNearby  │     │ findNearby()        │     │ find_booths_ │
+│ (lat, lng)  │     │                     │     │ near()       │
+└──────────────┘     └──────────────────────┘     └──────────────┘
+                            │
+                            ├─ PostGIS ST_DWithin query
+                            ├─ Distance calculation
+                            └─ Return booth list with distances
+
+
+AUTHENTICATION SECURITY MODEL
+════════════════════════════════════════════════════════════════════════════════
+
+JWT Flow:
+1. User logs in with email/username + password
+2. Django validates credentials
+3. Django returns: { access_token, refresh_token }
+4. Frontend stores refresh_token in localStorage
+5. Frontend uses access_token in Authorization header
+6. Supabase also generates JWT for RLS enforcement
+7. On token expiry, use refresh_token to get new access_token
+
+Account Lockout:
+- Track failed_login_attempts in users.failed_login_attempts
+- After 5 failed attempts: Set locked_until = NOW() + 30 minutes
+- Block login attempts while account is locked
+- Reset counter on successful login
+
+Permission Checks:
+- userService.hasPermission(userId, 'voters.view') → RPC call
+- Returns boolean via PostgreSQL function
+- Enforced on both client and server
+
+Row-Level Security (RLS):
+- organization_id filtering on all tables
+- Users can only see data from their organization
+- RLS policies defined in PostgreSQL
+
+
+PERFORMANCE CONSIDERATIONS
+════════════════════════════════════════════════════════════════════════════════
+
+Indexes Created:
+- users(email) - Fast auth lookups
+- users(role) - Role-based filtering
+- users(organization_id) - Organization isolation
+- sentiment_data(timestamp DESC) - Time-series queries
+- sentiment_data(issue) - Issue filtering
+- polling_booths(constituency_id, is_active) - Geo queries
+- voters(polling_booth_id) - Booth membership
+- social_posts(timestamp DESC, platform) - Activity feeds
+- polling_booths GIST(location) - PostGIS spatial index
+
+Pagination:
+- All list endpoints support page + pageSize
+- Default: page 1, pageSize 50
+- Returns: { data, count, page, pageSize, totalPages }
+
+Real-Time Subscriptions:
+- subscribeToTable('voters', callback) - Watch table changes
+- subscribeToRecord('voters', voterId, callback) - Watch specific voter
+- Returns unsubscribe function
+
+Caching Considerations:
+- Master data (states, districts) - Cache in memory
+- User permissions - Cache with 5-minute expiry
+- Voter statistics - Cache with 15-minute expiry
+- Live sentiment data - No caching (real-time)
+
+
+DEPLOYMENT CHECKLIST
+════════════════════════════════════════════════════════════════════════════════
+□ Create missing tables: sentiment_data, social_posts, trending_topics, alerts, field_reports
+□ Run all 13 migration files in sequence
+□ Create indexes as defined in migrations
+□ Seed master tables: states, districts, constituencies
+□ Initialize permission hierarchy in user_permissions
+□ Create RPC functions: get_user_permissions, has_permission, find_booths_near, etc
+□ Configure Row-Level Security (RLS) policies
+□ Test all dashboard queries against real data
+□ Set up real-time subscriptions
+□ Configure Django API base URL in .env
+□ Verify Supabase credentials in .env
+□ Test voter data import flows
+□ Test geospatial queries
+□ Test permission enforcement
+□ Load test the system
+

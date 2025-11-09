@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
+import uuid
 
 
 class Organization(models.Model):
@@ -1438,11 +1440,306 @@ class Expense(models.Model):
         return f"{self.get_expense_type_display()} - {self.amount} {self.currency}"
 
 
-# Import WhatsApp Chatbot Models
-# TODO: Uncomment when whatsapp_conversation models are created as a separate file
-# from .models.whatsapp_conversation import (
-#     WhatsAppConversation,
-#     WhatsAppMessage,
-#     VoterProfile,
-#     BotConfiguration
-# )
+# =============================================================================
+# WHATSAPP AI CHATBOT MODELS
+# =============================================================================
+
+class WhatsAppConversation(models.Model):
+    """WhatsApp conversation tracking with AI-powered analysis"""
+
+    LANGUAGE_CHOICES = [
+        ('ta', 'Tamil'),
+        ('en', 'English'),
+        ('hi', 'Hindi'),
+        ('te', 'Telugu'),
+    ]
+
+    CHANNEL_CHOICES = [
+        ('whatsapp', 'WhatsApp'),
+        ('web', 'Web'),
+        ('telegram', 'Telegram'),
+    ]
+
+    SENTIMENT_CHOICES = [
+        ('positive', 'Positive'),
+        ('negative', 'Negative'),
+        ('neutral', 'Neutral'),
+    ]
+
+    CATEGORY_CHOICES = [
+        ('feedback', 'Feedback'),
+        ('complaint', 'Complaint'),
+        ('suggestion', 'Suggestion'),
+        ('inquiry', 'Inquiry'),
+        ('political', 'Political'),
+    ]
+
+    PRIORITY_CHOICES = [
+        ('high', 'High'),
+        ('medium', 'Medium'),
+        ('low', 'Low'),
+    ]
+
+    POLITICAL_LEAN_CHOICES = [
+        ('left', 'Left'),
+        ('center', 'Center'),
+        ('right', 'Right'),
+        ('neutral', 'Neutral'),
+    ]
+
+    # Primary fields
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    phone_number = models.CharField(max_length=20, db_index=True)
+    user_name = models.CharField(max_length=255, blank=True, null=True)
+    user_location = models.CharField(max_length=255, blank=True, null=True)
+
+    # Conversation metadata
+    started_at = models.DateTimeField(default=timezone.now, db_index=True)
+    ended_at = models.DateTimeField(blank=True, null=True)
+    duration_seconds = models.IntegerField(default=0)
+    message_count = models.IntegerField(default=0)
+
+    # Language and channel
+    language = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, default='ta')
+    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES, default='whatsapp')
+
+    # Sentiment analysis
+    sentiment = models.CharField(max_length=20, choices=SENTIMENT_CHOICES, default='neutral')
+    sentiment_score = models.FloatField(default=0.0)  # -1 to 1
+
+    # Classification
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='inquiry')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
+
+    # Topics and keywords (JSON fields)
+    topics = models.JSONField(default=list, blank=True)
+    keywords = models.JSONField(default=list, blank=True)
+    issues = models.JSONField(default=list, blank=True)
+
+    # User demographics
+    demographics = models.JSONField(default=dict, blank=True)
+    political_lean = models.CharField(max_length=20, choices=POLITICAL_LEAN_CHOICES, blank=True, null=True)
+
+    # AI processing
+    ai_confidence = models.FloatField(default=0.0)
+    satisfaction_score = models.IntegerField(default=0)
+    resolved = models.BooleanField(default=False)
+    human_handoff = models.BooleanField(default=False)
+
+    # Tracking
+    session_id = models.UUIDField(default=uuid.uuid4)
+    source_campaign = models.CharField(max_length=100, blank=True, null=True)
+    referral_code = models.CharField(max_length=50, blank=True, null=True)
+
+    # Metadata
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'whatsapp_conversations'
+        ordering = ['-started_at']
+        indexes = [
+            models.Index(fields=['-started_at']),
+            models.Index(fields=['phone_number']),
+            models.Index(fields=['sentiment']),
+            models.Index(fields=['category']),
+            models.Index(fields=['resolved']),
+        ]
+
+    def __str__(self):
+        return f"{self.phone_number} - {self.started_at.strftime('%Y-%m-%d %H:%M')}"
+
+    def calculate_duration(self):
+        """Calculate conversation duration"""
+        if self.ended_at:
+            self.duration_seconds = int((self.ended_at - self.started_at).total_seconds())
+            self.save(update_fields=['duration_seconds'])
+
+
+class WhatsAppMessage(models.Model):
+    """Individual messages within WhatsApp conversations"""
+
+    SENDER_CHOICES = [
+        ('user', 'User'),
+        ('bot', 'Bot'),
+        ('human', 'Human Agent'),
+    ]
+
+    TYPE_CHOICES = [
+        ('text', 'Text'),
+        ('voice', 'Voice'),
+        ('image', 'Image'),
+        ('video', 'Video'),
+        ('document', 'Document'),
+        ('location', 'Location'),
+    ]
+
+    # Primary fields
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    conversation = models.ForeignKey(
+        WhatsAppConversation,
+        on_delete=models.CASCADE,
+        related_name='messages'
+    )
+
+    # Message details
+    sender = models.CharField(max_length=10, choices=SENDER_CHOICES)
+    message_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='text')
+    content = models.TextField()
+    media_url = models.URLField(blank=True, null=True)
+
+    # WhatsApp metadata
+    whatsapp_message_id = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    timestamp = models.DateTimeField(default=timezone.now, db_index=True)
+
+    # AI processing
+    intent = models.CharField(max_length=100, blank=True, null=True)
+    confidence = models.FloatField(default=0.0)
+    sentiment = models.CharField(max_length=20, blank=True, null=True)
+    entities = models.JSONField(default=dict, blank=True)
+    language = models.CharField(max_length=5, blank=True, null=True)
+
+    # Processing status
+    processed = models.BooleanField(default=False)
+    processing_error = models.TextField(blank=True, null=True)
+
+    # Response metadata
+    prompt_tokens = models.IntegerField(default=0)
+    completion_tokens = models.IntegerField(default=0)
+    model_used = models.CharField(max_length=50, blank=True, null=True)
+
+    # Metadata
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'whatsapp_messages'
+        ordering = ['timestamp']
+        indexes = [
+            models.Index(fields=['conversation', 'timestamp']),
+            models.Index(fields=['whatsapp_message_id']),
+            models.Index(fields=['processed']),
+        ]
+
+    def __str__(self):
+        return f"{self.sender}: {self.content[:50]}"
+
+
+class VoterProfile(models.Model):
+    """Aggregated voter profile from WhatsApp interactions"""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    phone_number = models.CharField(max_length=20, unique=True, db_index=True)
+
+    # Basic info
+    name = models.CharField(max_length=255, blank=True, null=True)
+    preferred_language = models.CharField(max_length=5, default='ta')
+
+    # Location data
+    location_data = models.JSONField(default=dict, blank=True)
+
+    # Demographics
+    demographics = models.JSONField(default=dict, blank=True)
+    political_lean = models.CharField(max_length=20, blank=True, null=True)
+
+    # Engagement metrics
+    interaction_count = models.IntegerField(default=0)
+    total_messages_sent = models.IntegerField(default=0)
+    avg_sentiment_score = models.FloatField(default=0.0)
+    last_contacted = models.DateTimeField(blank=True, null=True)
+    first_contacted = models.DateTimeField(auto_now_add=True)
+
+    # Topics of interest
+    topic_interests = models.JSONField(default=dict, blank=True)
+    issues_raised = models.JSONField(default=list, blank=True)
+
+    # Sentiment history
+    sentiment_history = models.JSONField(default=list, blank=True)
+
+    # Referral tracking
+    referral_code = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    referrals_made = models.IntegerField(default=0)
+    referred_by = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='referrals'
+    )
+
+    # Metadata
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'voter_profiles'
+        ordering = ['-last_contacted']
+        indexes = [
+            models.Index(fields=['phone_number']),
+            models.Index(fields=['referral_code']),
+            models.Index(fields=['-last_contacted']),
+        ]
+
+    def __str__(self):
+        return f"{self.name or self.phone_number} - {self.interaction_count} interactions"
+
+    def generate_referral_code(self):
+        """Generate unique referral code"""
+        if not self.referral_code:
+            import hashlib
+            hash_input = f"{self.phone_number}{self.id}"
+            self.referral_code = hashlib.md5(hash_input.encode()).hexdigest()[:8].upper()
+            self.save(update_fields=['referral_code'])
+        return self.referral_code
+
+
+class BotConfiguration(models.Model):
+    """Bot personality and behavior configuration"""
+
+    PERSONALITY_CHOICES = [
+        ('formal', 'Formal'),
+        ('friendly', 'Friendly'),
+        ('professional', 'Professional'),
+        ('casual', 'Casual'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField()
+
+    # Configuration
+    personality = models.CharField(max_length=20, choices=PERSONALITY_CHOICES, default='friendly')
+    languages = models.JSONField(default=list)
+    channels = models.JSONField(default=list)
+
+    # AI settings
+    ai_model = models.CharField(max_length=50, default='gpt-4')
+    system_prompt = models.TextField()
+    custom_prompts = models.JSONField(default=dict, blank=True)
+    knowledge_base = models.JSONField(default=list, blank=True)
+
+    # Behavior settings
+    response_time_target = models.FloatField(default=1.0)
+    max_conversation_length = models.IntegerField(default=50)
+    auto_handoff_threshold = models.FloatField(default=0.3)
+
+    # Status
+    active = models.BooleanField(default=True)
+
+    # Metrics
+    total_conversations = models.IntegerField(default=0)
+    accuracy_rate = models.FloatField(default=0.0)
+    satisfaction_rate = models.FloatField(default=0.0)
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'bot_configurations'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name

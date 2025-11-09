@@ -10,7 +10,7 @@ import logging
 from typing import Dict, Any, Optional
 from django.utils import timezone
 from django.core.cache import cache
-from api.models.whatsapp_conversation import (
+from api.models import (
     WhatsAppConversation,
     WhatsAppMessage,
     VoterProfile

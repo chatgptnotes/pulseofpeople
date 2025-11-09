@@ -1,0 +1,109 @@
+PULSE OF PEOPLE - FRONTEND DATA REQUIREMENTS ANALYSIS
+=====================================================
+
+Two comprehensive analysis documents have been created:
+
+1. FRONTEND_DATA_ANALYSIS.md (7,800+ lines)
+   - Complete breakdown of all Supabase tables being queried
+   - All Django API endpoints with parameters
+   - Expected data structures and interfaces
+   - Gap analysis of missing tables
+   - Recommendations for implementation
+
+2. CODE_REFERENCES.md (650+ lines)
+   - Exact file locations and line numbers
+   - Complete method signatures for all services
+   - Service descriptions and dependencies
+   - Database migration files in sequence
+   - Quick reference summary table
+
+KEY FINDINGS
+============
+
+SUPABASE TABLES (13 total):
+✓ Core Entities (Fully Typed):
+  - organizations (multi-tenant support)
+  - users (7 roles: superadmin, admin, manager, analyst, user, viewer, volunteer)
+  - user_permissions (fine-grained access control)
+  - audit_logs (readonly, tracks all actions)
+  - constituencies (electoral boundaries)
+  - polling_booths (voting locations with geospatial queries)
+  - voters (individual records with 60+ fields and sentiment tracking)
+
+MISSING/CRITICAL GAPS:
+  - sentiment_data (dashboard depends on this heavily)
+  - social_posts (engagement metrics tracking)
+  - trending_topics (real-time keywords)
+  - alerts (crisis detection system)
+  - field_reports (volunteer submissions)
+
+DJANGO API ENDPOINTS (25+ total):
+✓ Implemented & Expected:
+  - Authentication (signup, login, profile, refresh, logout)
+  - Master Data (states, districts, constituencies, polling booths, issues, voter segments)
+  - Citizen Feedback (public submission + admin review)
+  - Field Reports (volunteer submissions + verification)
+  - Analytics (overview, constituency, district, state levels)
+  - Bulk Upload (CSV user import with job tracking)
+
+SERVICES (9 primary services):
+1. userService (19 methods) - User management & permissions
+2. votersService (20 methods) - Voter data & sentiment tracking
+3. pollingBoothsService (14 methods) - Voting locations & geospatial queries
+4. constituenciesService (8 methods) - Electoral boundaries & aggregation
+5. organizationService (12 methods) - Multi-tenant organization management
+6. dashboardService - Analytics queries (QUERIES MISSING TABLES)
+7. djangoApi - Django backend integration (657 lines)
+8. demoService - Demo access tracking
+9. CRUD base class - Generic database operations
+
+DATA STRUCTURES:
+- User: 20+ fields with role-based permissions
+- Voter: 60+ fields including sentiment, demographics, engagement
+- Constituency: Electoral type, population, voter counts, boundaries
+- PollingBooth: Location (lat/lng + PostGIS), voter demographics, priority/swing potential
+- SentimentData: Issue-sentiment analysis with multi-language support
+
+AUTHENTICATION:
+- Dual system: Supabase JWT + Django JWT
+- Role hierarchy: superadmin > admin > manager > analyst > user > viewer > volunteer
+- Permission categories: users, voters, booths, social, media, analytics, reports, campaigns, field_workers, alerts
+- Security features: Account lockout after 5 failed attempts (30 min), email verification, consent tracking
+
+REAL-TIME SUPPORT:
+- Supabase real-time subscriptions available
+- Events: permission changes, alert updates, sentiment changes, field reports, audit logs
+
+GEOGRAPHIC DATA:
+- State > District > Constituency > Ward > Polling Booth hierarchy
+- PostGIS for geospatial queries (distance calculations, boundary checks)
+- RPC functions: find_booths_near(), get_constituency_stats()
+
+DATABASE MIGRATIONS (13 files in sequence):
+1. Main schema creation (20 tables)
+2. Tenant registry (multi-tenancy support)
+3. RBAC system (role-based access)
+4. Index optimization
+5-13. Master data, voter segments, competitors, TV broadcasts
+
+RECOMMENDATIONS:
+1. IMMEDIATE: Create missing tables (sentiment_data, social_posts, trending_topics, alerts, field_reports)
+2. Add RPC functions for sentiment aggregation
+3. Run all migrations in sequence
+4. Seed master tables (states, districts, constituencies)
+5. Initialize permission hierarchy
+6. Test all dashboard queries against real data
+7. Set up real-time subscriptions for live updates
+
+FILES ANALYZED:
+- 19 frontend service files
+- 6 context providers
+- 2 type definition files (730 lines total)
+- 13 database migration files
+- 5 data/mock files
+
+TOTAL COVERAGE:
+- 25+ Django endpoints documented
+- 90+ Supabase query methods documented
+- 60+ data fields across tables documented
+- 7 major data entities fully mapped

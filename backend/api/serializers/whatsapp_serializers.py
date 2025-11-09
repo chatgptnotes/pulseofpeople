@@ -3,7 +3,7 @@ WhatsApp Serializers
 For API endpoints to serve frontend
 """
 from rest_framework import serializers
-from api.models.whatsapp_conversation import (
+from api.models import (
     WhatsAppConversation,
     WhatsAppMessage,
     VoterProfile,
