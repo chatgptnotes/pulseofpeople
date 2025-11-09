@@ -69,8 +69,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log('[AuthContext] 🔄 Checking Supabase session...');
 
     try {
-      // Check for existing Supabase session
-      const { data: { session }, error } = await supabase.auth.getSession();
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Session check timeout')), 10000); // 10 second timeout
+      });
+
+      // Check for existing Supabase session with timeout
+      const sessionPromise = supabase.auth.getSession();
+      const { data: { session }, error } = await Promise.race([
+        sessionPromise,
+        timeoutPromise
+      ]) as any;
 
       if (error) {
         console.error('[AuthContext] ❌ Session check error:', error);
@@ -86,15 +95,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       console.log('[AuthContext] ✅ Session found:', session.user.email);
 
-      // Fetch user details from database
-      const { data: userData, error: userError } = await supabase
+      // Fetch user details from database with timeout
+      const userDataPromise = supabase
         .from('users')
         .select('*')
         .eq('email', session.user.email)
         .single();
 
+      const { data: userData, error: userError } = await Promise.race([
+        userDataPromise,
+        timeoutPromise
+      ]) as any;
+
       if (userError || !userData) {
         console.error('[AuthContext] ❌ Failed to load user data:', userError);
+        // Sign out if user data doesn't exist
+        await supabase.auth.signOut();
         setIsInitializing(false);
         return;
       }
@@ -116,7 +132,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsInitializing(false);
     } catch (error) {
       console.error('[AuthContext] ❌ Session check failed:', error);
+      // Always set initializing to false, even on timeout
       setIsInitializing(false);
+      // Sign out on error to clear any bad state
+      await supabase.auth.signOut().catch(() => {});
     }
   };
 
