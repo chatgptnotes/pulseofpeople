@@ -25,6 +25,7 @@ import SocialMedia from './pages/SocialMedia'
 import CompetitorAnalysis from './pages/CompetitorAnalysis'
 import AIInsights from './pages/AIInsights'
 import Login from './pages/Login'
+import ResetPassword from './pages/ResetPassword'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -110,6 +111,9 @@ function AppRoutes() {
 
               {/* Login Page */}
               <Route path="/login" element={<Login />} />
+
+              {/* Reset Password Page */}
+              <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Django Backend Test Page (No auth required for testing) */}
               <Route path="/django-test" element={<DjangoTest />} />
