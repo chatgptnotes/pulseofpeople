@@ -20,15 +20,19 @@ def create_user_profile(sender, instance, created, **kwargs):
     """
     if created:
         # Check if profile already exists (might be created during sync)
-        if not hasattr(instance, 'profile'):
-            try:
-                UserProfile.objects.create(
-                    user=instance,
-                    role='user',  # Default role
-                )
+        try:
+            # Use get_or_create to avoid duplicate profile errors
+            profile, profile_created = UserProfile.objects.get_or_create(
+                user=instance,
+                defaults={'role': 'user'}  # Default role
+            )
+            if profile_created:
                 logger.info(f"Auto-created UserProfile for user: {instance.email}")
-            except Exception as e:
-                logger.error(f"Failed to create UserProfile for {instance.email}: {str(e)}")
+            else:
+                logger.info(f"UserProfile already exists for user: {instance.email}")
+        except Exception as e:
+            logger.error(f"Failed to create UserProfile for {instance.email}: {str(e)}")
+            # Don't re-raise - allow user creation to proceed
 
 
 @receiver(post_save, sender=User)
@@ -52,6 +56,7 @@ def log_user_creation(sender, instance, created, **kwargs):
             logger.info(f"Logged user creation: {instance.email}")
         except Exception as e:
             logger.error(f"Failed to log user creation for {instance.email}: {str(e)}")
+            # Don't re-raise - audit logging should not block user creation
 
 
 @receiver(post_save, sender=UserProfile)
@@ -68,11 +73,15 @@ def log_profile_changes(sender, instance, created, **kwargs):
 
         if not created:
             # Track what fields changed
-            if instance.tracker.has_changed('role'):
-                changes['role_changed'] = {
-                    'from': instance.tracker.previous('role'),
-                    'to': instance.role,
-                }
+            try:
+                if hasattr(instance, 'tracker') and instance.tracker.has_changed('role'):
+                    changes['role_changed'] = {
+                        'from': instance.tracker.previous('role'),
+                        'to': instance.role,
+                    }
+            except AttributeError:
+                # Model doesn't have tracker (field tracking not set up)
+                pass
 
         AuditLog.objects.create(
             user=instance.user,
@@ -82,11 +91,9 @@ def log_profile_changes(sender, instance, created, **kwargs):
             changes=changes
         )
         logger.info(f"Logged UserProfile {action}: {instance.user.email}")
-    except AttributeError:
-        # Model doesn't have tracker (field tracking not set up)
-        pass
     except Exception as e:
         logger.error(f"Failed to log UserProfile changes for {instance.user.email}: {str(e)}")
+        # Don't re-raise - audit logging should not block user creation
 
 
 @receiver(pre_delete, sender=User)

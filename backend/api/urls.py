@@ -26,6 +26,9 @@ urlpatterns = [
     # Supabase webhooks (no authentication required - verified via signature)
     path('webhooks/supabase/user/', supabase_user_webhook, name='supabase-user-webhook'),
 
+    # WhatsApp Bot API endpoints
+    path('whatsapp/', include('api.urls.whatsapp_urls')),
+
     # Core API endpoints
     path('', include('api.core_views')),  # If you have a separate core views module
     path('political/', include('api.political_views')),  # If you have political views

@@ -1436,3 +1436,13 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.get_expense_type_display()} - {self.amount} {self.currency}"
+
+
+# Import WhatsApp Chatbot Models
+# TODO: Uncomment when whatsapp_conversation models are created as a separate file
+# from .models.whatsapp_conversation import (
+#     WhatsAppConversation,
+#     WhatsAppMessage,
+#     VoterProfile,
+#     BotConfiguration
+# )
