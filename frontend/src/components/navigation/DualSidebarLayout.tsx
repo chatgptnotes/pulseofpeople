@@ -167,7 +167,7 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
 
   // Calculate content margin based on sidebar state
   const getContentMarginLeft = () => {
-    const primaryWidth = isPrimaryExpanded ? 240 : 64;
+    const primaryWidth = isPrimaryExpanded ? 200 : 64;
     if (secondarySidebarOpen) {
       return primaryWidth + 280; // Primary + Secondary
     }

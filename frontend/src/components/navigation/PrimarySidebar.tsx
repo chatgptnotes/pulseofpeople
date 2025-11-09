@@ -220,7 +220,7 @@ export default function PrimarySidebar({
         }
 
         .primary-sidebar.expanded {
-          width: 240px;
+          width: 200px;
         }
 
         .logo-section {
@@ -370,7 +370,7 @@ function CategoryButton({ category, isActive, onClick, isExpanded }: CategoryBut
         }
 
         .category-button.expanded {
-          width: 224px;
+          width: 184px;
           justify-content: flex-start;
         }
 

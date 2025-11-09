@@ -58,7 +58,7 @@ export default function SecondarySidebar({
           className="sidebar-overlay"
           onClick={onClose}
           style={{
-            left: `${isPrimaryExpanded ? 240 : 64}px`,
+            left: `${isPrimaryExpanded ? 200 : 64}px`,
           }}
         />
       )}
@@ -68,7 +68,7 @@ export default function SecondarySidebar({
         className={`secondary-sidebar ${isOpen ? 'open' : 'closed'} ${className}`}
         onMouseLeave={onMouseLeave}
         style={{
-          left: `${isPrimaryExpanded ? 240 : 64}px`,
+          left: `${isPrimaryExpanded ? 200 : 64}px`,
           transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease-in-out',
         }}
       >
