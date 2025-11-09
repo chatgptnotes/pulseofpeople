@@ -581,8 +581,7 @@ LOGGING = {
 # Create logs directory if it doesn't exist
 import os
 logs_dir = BASE_DIR / 'logs'
-if not os.path.exists(logs_dir):
-    os.makedirs(logs_dir)
+os.makedirs(logs_dir, exist_ok=True)
 
 # =====================================================
 # RATE LIMITING CONFIGURATION
