@@ -1,0 +1,185 @@
+# =============================================================================
+# RENDER BACKEND ENVIRONMENT VARIABLES
+# =============================================================================
+# Copy these into Render Web Service → Environment tab
+# Service: pulseofpeople-backend
+# https://dashboard.render.com
+# =============================================================================
+
+# =============================================================================
+# STEP 1: GENERATE NEW SECRET KEY FIRST
+# =============================================================================
+# Run this command locally to generate a secure SECRET_KEY:
+# python3 -c "import secrets; chars='abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*-_=+'; print('django-insecure-' + ''.join(secrets.choice(chars) for i in range(50)))"
+#
+# Example output: django-insecure-%\5wu$@chhaxd4=+xjcsu=8^6s#$y@-jw4yn%l#0*_ldb\pn=%
+# =============================================================================
+
+# =============================================================================
+# DJANGO CORE SETTINGS
+# =============================================================================
+
+Key: SECRET_KEY
+Value: django-insecure-%\5wu$@chhaxd4=+xjcsu=8^6s#$y@-jw4yn%l#0*_ldb\pn=%
+# ⚠️ IMPORTANT: Use the one you generated above, not this example
+
+Key: DEBUG
+Value: False
+
+Key: ALLOWED_HOSTS
+Value: pulseofpeople-backend.onrender.com,.onrender.com
+
+# =============================================================================
+# DATABASE CONFIGURATION (Supabase PostgreSQL)
+# =============================================================================
+
+Key: USE_SQLITE
+Value: False
+
+Key: DB_NAME
+Value: postgres
+
+Key: DB_USER
+Value: postgres.iwtgbseaoztjbnvworyq
+
+Key: DB_PASSWORD
+Value: Chindwada@1
+
+Key: DB_HOST
+Value: aws-1-ap-south-1.pooler.supabase.com
+
+Key: DB_PORT
+Value: 6543
+
+Key: DB_SSLMODE
+Value: require
+
+# =============================================================================
+# SUPABASE AUTHENTICATION
+# =============================================================================
+
+Key: SUPABASE_URL
+Value: https://iwtgbseaoztjbnvworyq.supabase.co
+
+Key: SUPABASE_ANON_KEY
+Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3dGdic2Vhb3p0amJudndvcnlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNjAzOTksImV4cCI6MjA3NjczNjM5OX0.xA4B0XZJE_4MdjFCkw2yVsf4vlHmHfpeV6Bk5tG2T94
+
+Key: SUPABASE_JWT_SECRET
+Value: X6j+39tynhesQLZuzPc9IXP8H9UONWcKmkKdonFBnrvIqXMO+T+PACOWxpks6fVaKoPblX0FPyI3vc3X5J1x7g==
+
+# =============================================================================
+# CORS & SECURITY SETTINGS
+# =============================================================================
+
+Key: CORS_ALLOWED_ORIGINS
+Value: https://pulseofpeople.onrender.com
+
+Key: CSRF_TRUSTED_ORIGINS
+Value: https://pulseofpeople.onrender.com,https://pulseofpeople-backend.onrender.com
+
+# =============================================================================
+# APPLICATION URLS
+# =============================================================================
+
+Key: FRONTEND_URL
+Value: https://pulseofpeople.onrender.com
+
+Key: BACKEND_URL
+Value: https://pulseofpeople-backend.onrender.com
+
+# =============================================================================
+# OPTIONAL: MONITORING & PERFORMANCE
+# =============================================================================
+
+# Sentry DSN (if you have Sentry account)
+# Key: SENTRY_DSN
+# Value: your-sentry-dsn-here
+
+# Redis URL (if using caching)
+# Key: REDIS_URL
+# Value: your-redis-url-here
+
+# =============================================================================
+# QUICK COPY-PASTE FORMAT
+# =============================================================================
+
+TOTAL REQUIRED: 17 environment variables
+
+✅ Django Core (3):
+  - SECRET_KEY
+  - DEBUG
+  - ALLOWED_HOSTS
+
+✅ Database (7):
+  - USE_SQLITE
+  - DB_NAME
+  - DB_USER
+  - DB_PASSWORD
+  - DB_HOST
+  - DB_PORT
+  - DB_SSLMODE
+
+✅ Supabase (3):
+  - SUPABASE_URL
+  - SUPABASE_ANON_KEY
+  - SUPABASE_JWT_SECRET
+
+✅ CORS & URLs (4):
+  - CORS_ALLOWED_ORIGINS
+  - CSRF_TRUSTED_ORIGINS
+  - FRONTEND_URL
+  - BACKEND_URL
+
+# =============================================================================
+# DEPLOYMENT CHECKLIST
+# =============================================================================
+
+1. ✅ Generate new SECRET_KEY (don't use example above)
+2. ✅ Add all 17 environment variables to Render
+3. ✅ Click "Save Changes"
+4. ✅ Create Web Service with:
+   - Name: pulseofpeople-backend
+   - Root Directory: backend
+   - Dockerfile Path: backend/Dockerfile
+5. ✅ Wait for deployment (~3-5 minutes)
+6. ✅ Verify health check: https://pulseofpeople-backend.onrender.com/api/health/
+7. ✅ Update frontend VITE_DJANGO_API_URL to point to backend
+
+# =============================================================================
+# AFTER DEPLOYMENT
+# =============================================================================
+
+Test backend API:
+curl https://pulseofpeople-backend.onrender.com/api/health/
+
+Expected response:
+{
+  "status": "healthy",
+  "database": "connected",
+  "timestamp": "2025-11-09T..."
+}
+
+# =============================================================================
+# TROUBLESHOOTING
+# =============================================================================
+
+If build fails:
+  - Check Render logs for errors
+  - Verify all environment variables are set
+  - Ensure Dockerfile path is correct: backend/Dockerfile
+  - Check database credentials are correct
+
+If database connection fails:
+  - Verify DB_HOST uses session pooler: aws-1-ap-south-1.pooler.supabase.com
+  - Verify DB_PORT is 6543 (not 5432)
+  - Verify DB_SSLMODE is "require"
+  - Check Supabase database is not paused
+
+If CORS errors:
+  - Verify CORS_ALLOWED_ORIGINS includes frontend URL
+  - Add both http and https versions if needed
+  - Check django-cors-headers is in requirements.txt
+
+# =============================================================================
+# END OF FILE
+# =============================================================================
