@@ -4,13 +4,28 @@ Political sentiment analysis platform with voter feedback, field reports, AI ins
 
 ## Features
 
+### Core Features
 - **Role-Based Access Control**: 7 roles with 67 granular permissions
-- **Interactive Maps**: Mapbox GL JS with state → districts → constituencies → booths drill-down
+- **Interactive Maps**: Mapbox GL JS with state → districts → constituencies → wards → booths drill-down
 - **Voter Feedback**: Public feedback submission with AI sentiment analysis
 - **Field Reports**: Ground-level reports from party workers
 - **Analytics Dashboard**: Real-time sentiment tracking and competitor analysis
 - **Admin Management**: Complete superadmin and admin dashboards
-- **Polling Booth Management**: CSV bulk upload with validation
+
+### Electoral Data Management
+- **Ward Management**: Organize constituencies into wards with demographic data
+- **Polling Booth Management**: Complete booth database with GPS coordinates
+- **CSV Bulk Upload**: Upload thousands of wards/booths via CSV with validation
+- **GeoJSON Support**: Import ward boundaries for map visualization
+- **Data Validation**: Automatic validation of GPS coordinates, voter counts, and relationships
+
+### Advanced Features
+- **Multi-level Geography**: State → District → Constituency → Ward → Booth hierarchy
+- **Demographic Tracking**: Population, voter counts, literacy rates, income levels
+- **Urbanization Classification**: Urban, semi-urban, rural categorization
+- **Accessibility Info**: Wheelchair accessibility and facilities tracking
+- **Audit Logging**: Complete audit trail of all data changes
+- **Bulk Operations**: Import, update, export thousands of records at once
 
 ## Tech Stack
 
@@ -152,7 +167,10 @@ VITE_APP_VERSION=1.0
 - `GET /api/states/` - List all states
 - `GET /api/districts/?state=TN` - List districts
 - `GET /api/constituencies/?state=TN&type=assembly` - List constituencies
+- `GET /api/wards/` - List wards (auth required)
+- `POST /api/wards/bulk-upload/` - Upload wards CSV (admin only)
 - `GET /api/polling-booths/` - List polling booths
+- `POST /api/polling-booths/bulk-upload/` - Upload booths CSV (admin only)
 - `GET /api/issue-categories/` - TVK's 9 priorities
 - `GET /api/political-parties/` - Political parties
 
@@ -298,12 +316,93 @@ Railway can deploy both frontend and backend from the same repository:
 
 MIT License - see LICENSE file for details
 
+## Documentation
+
+Comprehensive documentation is available in the `/docs` directory:
+
+### User Guides
+- **[Quick Start Guide](docs/QUICK_START.md)** - Get started in 5 minutes
+- **[User Guide: Wards & Booths](docs/USER_GUIDE_WARDS_BOOTHS.md)** - Complete guide to uploading and managing electoral data
+- **[CSV Format Guide](docs/CSV_FORMAT_GUIDE.md)** - Detailed CSV format specifications and examples
+
+### Technical Documentation
+- **[API Reference](docs/API_REFERENCE.md)** - Complete API documentation with examples
+- **[Database Schema](docs/DATABASE_SCHEMA.md)** - Database structure, tables, and relationships
+
+### Additional Resources
+- **[Implementation Checklist](MASTER_IMPLEMENTATION_CHECKLIST.md)** - Complete feature checklist
+- **[Ward & Booth Import Guide](WARDS_AND_BOOTHS_IMPORT_GUIDE.md)** - Detailed import instructions
+- **[CSV Import README](CSV_IMPORT_README.md)** - CSV import best practices
+
+## Data Import
+
+### Quick Import (5 minutes)
+
+1. **Download CSV templates:**
+   - `csv_templates/wards_template.csv`
+   - `csv_templates/booths_template.csv`
+
+2. **Fill in your data** following the [CSV Format Guide](docs/CSV_FORMAT_GUIDE.md)
+
+3. **Upload via Admin UI:**
+   - Navigate to Master Data → Wards → Upload CSV
+   - Navigate to Master Data → Polling Booths → Upload CSV
+
+4. **Verify on map** - Check your data appears correctly
+
+See [Quick Start Guide](docs/QUICK_START.md) for detailed instructions.
+
+### Sample Data
+
+Import sample constituencies, wards, and booths:
+
+```bash
+# Run sample data import
+cd backend
+python manage.py loaddata sample_constituencies.json
+python manage.py loaddata sample_wards.json
+python manage.py loaddata sample_booths.json
+```
+
 ## Support
 
 For issues and questions:
-- GitHub Issues: https://github.com/yourusername/pulseofpeople/issues
-- Email: support@pulseofpeople.com
+- **Documentation**: Check `/docs` directory for detailed guides
+- **GitHub Issues**: https://github.com/yourusername/pulseofpeople/issues
+- **Email**: support@pulseofpeople.com
+- **Quick Start**: See [Quick Start Guide](docs/QUICK_START.md)
+
+## Roadmap
+
+### Phase 1: Core Platform (Completed)
+- ✅ User authentication and RBAC
+- ✅ Basic master data (states, districts, constituencies)
+- ✅ Interactive maps
+- ✅ Feedback and field reports
+
+### Phase 2: Electoral Data Management (Current)
+- ✅ Ward management with demographics
+- ✅ Polling booth database
+- ✅ CSV bulk upload
+- ✅ Data validation
+- ✅ Comprehensive documentation
+- 🔄 GeoJSON boundary import
+- 🔄 Advanced analytics by ward
+
+### Phase 3: Advanced Features (Planned)
+- ⏳ Real-time sentiment tracking
+- ⏳ Mobile app for volunteers
+- ⏳ WhatsApp integration
+- ⏳ Advanced reporting and exports
+- ⏳ API webhooks
 
 ---
 
-**Version**: 1.0 | **Last Updated**: 2025-11-08 | **Status**: Active Development
+**Version**: 2.0 | **Last Updated**: 2025-11-09 | **Status**: Active Development
+
+**New in v2.0:**
+- Ward management system
+- Comprehensive CSV import/export
+- Complete documentation suite
+- Enhanced data validation
+- Demographic tracking

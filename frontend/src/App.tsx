@@ -83,6 +83,12 @@ import UserBoothDashboard from './pages/dashboards/UserBoothDashboard'
 import VolunteerDashboard from './pages/dashboards/VolunteerDashboard'
 import ViewerDashboard from './pages/dashboards/ViewerDashboard'
 import UserManagementNew from './pages/UserManagement'
+import WardsUpload from './pages/WardsUpload'
+import BoothsUpload from './pages/BoothsUpload'
+import WardsList from './pages/WardsList'
+import BoothsList from './pages/BoothsList'
+import BoothsMap from './pages/BoothsMap'
+import WardsBoothsAnalytics from './pages/WardsBoothsAnalytics'
 
 // Inner component that uses auth context
 function AppRoutes() {
@@ -178,6 +184,50 @@ function AppRoutes() {
                 <ProtectedRoute>
                   <Layout>
                     <UserManagementNew />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+
+              {/* Wards & Booths Management */}
+              <Route path="/wards" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <WardsList />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/wards/upload" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <WardsUpload />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/booths" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <BoothsList />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/booths/upload" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <BoothsUpload />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/booths/map" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <BoothsMap />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/wards-booths/analytics" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <WardsBoothsAnalytics />
                   </Layout>
                 </ProtectedRoute>
               } />

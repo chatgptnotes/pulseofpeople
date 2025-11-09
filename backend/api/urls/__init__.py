@@ -70,6 +70,9 @@ urlpatterns = [
     # Core Platform APIs (Workstream 2 - NEW)
     path('', include('api.urls.core_urls')),
 
+    # Geography APIs (Wards and Polling Booths)
+    path('geography/', include('api.urls.geography_urls')),
+
     # Router URLs (legacy)
     path('', include(router.urls)),
 ]

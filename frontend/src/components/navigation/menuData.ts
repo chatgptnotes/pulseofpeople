@@ -25,6 +25,8 @@ import {
   Public as GlobalIcon,
   Storage as DatabaseIcon,
   Place as PlaceIcon,
+  LocationOn as LocationIcon,
+  CloudUpload as UploadIcon,
   // Competitors
   People as PeopleIcon,
   Monitor as MonitorIcon,
@@ -192,6 +194,39 @@ export const categoryMenuItems: Record<string, MenuItem[]> = {
       name: 'My Constituency',
       href: '/constituency',
       icon: PlaceIcon
+    },
+    // Wards & Booths Management
+    {
+      name: 'Wards List',
+      href: '/wards',
+      icon: LocationIcon
+    },
+    {
+      name: 'Upload Wards',
+      href: '/wards/upload',
+      icon: UploadIcon,
+      badge: 'New'
+    },
+    {
+      name: 'Booths List',
+      href: '/booths',
+      icon: LocationIcon
+    },
+    {
+      name: 'Upload Booths',
+      href: '/booths/upload',
+      icon: UploadIcon,
+      badge: 'New'
+    },
+    {
+      name: 'Booths Map',
+      href: '/booths/map',
+      icon: MapIcon
+    },
+    {
+      name: 'Wards & Booths Analytics',
+      href: '/wards-booths/analytics',
+      icon: AssessmentIcon
     },
   ],
 

@@ -244,6 +244,19 @@ export function EnhancedNavigation() {
       ],
     },
     {
+      title: 'Wards & Booths',
+      categoryIcon: LocationIcon,
+      categoryColor: 'indigo',
+      items: [
+        { name: 'Wards List', href: '/wards', icon: LocationIcon },
+        { name: 'Upload Wards', href: '/wards/upload', icon: UploadIcon },
+        { name: 'Booths List', href: '/booths', icon: LocationIcon },
+        { name: 'Upload Booths', href: '/booths/upload', icon: UploadIcon },
+        { name: 'Booths Map', href: '/booths/map', icon: MapIcon },
+        { name: 'Analytics', href: '/wards-booths/analytics', icon: AssessmentIcon },
+      ],
+    },
+    {
       title: 'Maps & Territory',
       categoryIcon: MapIcon,
       categoryColor: 'orange',
@@ -313,13 +326,24 @@ export function EnhancedNavigation() {
   ];
 
   function getMenuSections(): MenuSection[] {
+    let sections: MenuSection[];
+
     if (isSuperAdmin) {
-      return superAdminMenu;
+      // Superadmins get platform management tools + all user features
+      sections = [...superAdminMenu, ...userMenu];
+      console.log('[Navigation] 🔑 Superadmin menu loaded:', sections.length, 'sections');
     } else if (isAdmin) {
-      return [...adminMenu, ...userMenu];
+      sections = [...adminMenu, ...userMenu];
+      console.log('[Navigation] 👤 Admin menu loaded:', sections.length, 'sections');
     } else {
-      return userMenu;
+      sections = userMenu;
+      console.log('[Navigation] 👥 User menu loaded:', sections.length, 'sections');
     }
+
+    // Debug: Log section titles
+    console.log('[Navigation] 📋 Menu sections:', sections.map(s => s.title));
+
+    return sections;
   }
 
   function handleTenantSwitch(tenant: any) {
