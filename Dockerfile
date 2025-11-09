@@ -14,7 +14,19 @@ RUN npm install
 # Copy source code
 COPY frontend/ ./
 
-# Build production bundle
+# Accept build arguments from Render environment variables
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+ARG VITE_APP_NAME
+ARG VITE_APP_URL
+
+# Set as environment variables for Vite build
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+ENV VITE_APP_NAME=$VITE_APP_NAME
+ENV VITE_APP_URL=$VITE_APP_URL
+
+# Build production bundle (now with env vars available)
 RUN npm run build
 
 # Install serve to host the static files
