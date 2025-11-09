@@ -13,7 +13,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install ALL dependencies (need devDependencies for build)
-RUN npm ci && npm cache clean --force
+# Using npm install instead of npm ci to handle lock file inconsistencies
+RUN npm install && npm cache clean --force
 
 # Copy application source
 COPY . .
