@@ -15,177 +15,188 @@ import { useState, useEffect } from 'react'
 import { realTimeService } from '../services/realTimeService'
 import { crisisDetection } from '../services/crisisDetection'
 import { recommendationsEngine } from '../services/recommendationsEngine'
+import { dashboardService } from '../services/dashboardService'
+import type { DashboardMetrics, LocationSentiment, TrendingTopic, ActiveAlert, SocialMediaPost } from '../services/dashboardService'
 
 
 export default function Dashboard() {
-  const [liveMetrics, setLiveMetrics] = useState<any>(null);
-  const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
-  const [recommendations, setRecommendations] = useState<any[]>([]);
-  const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
-  const [recentPosts, setRecentPosts] = useState<any[]>([]);
-  const [showAdvancedFeatures, setShowAdvancedFeatures] = useState(false);
+  // Real data from Supabase
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [locations, setLocations] = useState<LocationSentiment[]>([]);
+  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
+  const [activeAlerts, setActiveAlerts] = useState<ActiveAlert[]>([]);
+  const [recentPosts, setRecentPosts] = useState<SocialMediaPost[]>([]);
+  const [platformDistribution, setPlatformDistribution] = useState<{ [key: string]: number }>({});
 
-  // Initialize real-time services
+  // Legacy state for compatibility
+  const [liveMetrics, setLiveMetrics] = useState<any>(null);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [showAdvancedFeatures, setShowAdvancedFeatures] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Load real data from Supabase on mount
   useEffect(() => {
-    const initServices = async () => {
+    const loadDashboardData = async () => {
       try {
-        await realTimeService.connect();
-        crisisDetection.startMonitoring();
-        
-        // Update context for recommendations - Tamil Nadu & Puducherry specific
-        const context = {
-          current_sentiment: {
-            overall: 0.67,
-            by_issue: {
-              'water': 0.42, // Critical issue in TN
-              'jobs': 0.48,
-              'agriculture': 0.51,
-              'education': 0.65,
-              'caste_reservation': 0.58,
-              'health': 0.70,
-              'prohibition': 0.55,
-              'tamil_language': 0.73
-            },
-            by_location: {
-              'Chennai': 0.68,
-              'Coimbatore': 0.71,
-              'Madurai': 0.62,
-              'Tiruchirappalli': 0.58,
-              'Salem': 0.65,
-              'Tirunelveli': 0.56,
-              'Tiruppur': 0.69,
-              'Puducherry': 0.64
-            },
-            trend_direction: 'improving' as const
+        setLoading(true);
+        console.log('[Dashboard] Loading real data from Supabase...');
+
+        // Load all dashboard data in parallel
+        const [
+          metricsData,
+          locationsData,
+          trendingData,
+          alertsData,
+          postsData,
+          platformData,
+          sentimentContext,
+        ] = await Promise.all([
+          dashboardService.getDashboardMetrics(),
+          dashboardService.getLocationSentiment(),
+          dashboardService.getTrendingTopics(20),
+          dashboardService.getActiveAlerts(10),
+          dashboardService.getRecentSocialPosts(20),
+          dashboardService.getPlatformDistribution(),
+          dashboardService.getSentimentContext(),
+        ]);
+
+        // Update state with real data
+        setMetrics(metricsData);
+        setLocations(locationsData);
+        setTrendingTopics(trendingData);
+        setActiveAlerts(alertsData);
+        setRecentPosts(postsData);
+        setPlatformDistribution(platformData);
+
+        // Set legacy liveMetrics for backward compatibility
+        setLiveMetrics({
+          overallSentiment: metricsData.overallSentiment,
+          activeConversations: metricsData.activeConversations,
+          criticalAlerts: metricsData.criticalAlerts,
+          engagement: {
+            twitter: platformData.twitter || 0,
+            facebook: platformData.facebook || 0,
+            instagram: platformData.instagram || 0,
+            youtube: platformData.youtube || 0,
+            news: platformData.news || 0,
           },
-          trending_topics: realTimeService.getTrendingTopics(),
-          recent_posts: realTimeService.getSocialMediaPosts(50),
-          active_crises: crisisDetection.getActiveEvents(),
-          field_reports: [],
-          competitor_activity: {
-            sentiment: 0.45,
-            volume: 250,
-            key_messages: [
-              'DMK: Social welfare schemes',
-              'AIADMK: MGR-Amma legacy',
-              'BJP: Development & nationalism',
-              'PMK: Vanniyar reservation',
-              'NTK: Tamil nationalism'
-            ]
-          },
-          campaign_calendar: {
-            upcoming_events: [
-              {
-                date: new Date(Date.now() + 86400000 * 3),
-                type: 'rally' as const,
-                location: 'Chennai',
-                expected_attendance: 50000
-              },
-              {
-                date: new Date(Date.now() + 86400000 * 7),
-                type: 'rally' as const,
-                location: 'Coimbatore',
-                expected_attendance: 30000
-              }
-            ],
-            recent_activities: []
-          },
-          resource_availability: {
-            budget: 10000000,
-            volunteers: 5000,
-            time_to_election: 180, // Assuming 6 months to election
-            key_demographics: [
-              'Youth (18-35)',
-              'First-time voters',
-              'OBC/MBC communities',
-              'Urban middle class',
-              'Farmers',
-              'Women voters'
-            ]
-          }
-        };
-        
-        recommendationsEngine.updateContext(context);
-        await recommendationsEngine.generateRecommendations();
-        
-        console.log('Dashboard services initialized successfully');
+        });
+
+        // Initialize AI services with real data context
+        if (sentimentContext) {
+          await realTimeService.connect();
+          crisisDetection.startMonitoring();
+          recommendationsEngine.updateContext(sentimentContext as any);
+          await recommendationsEngine.generateRecommendations();
+        }
+
+        console.log('[Dashboard] ✓ Real data loaded successfully');
       } catch (error) {
-        console.error('Failed to initialize dashboard services:', error);
+        console.error('[Dashboard] Failed to load data:', error);
+      } finally {
+        setLoading(false);
       }
     };
-    
-    initServices();
-    
-    // Set up real-time subscriptions
+
+    loadDashboardData();
+
+    // Set up real-time subscriptions for live updates
     const unsubscribeMetrics = realTimeService.subscribe('metrics-live', (data: any) => {
-      setLiveMetrics(data.data);
-    });
-    
-    const unsubscribeAlerts = realTimeService.subscribe('alerts-live', (data: any) => {
       if (data.data) {
-        setActiveAlerts(prev => [data.data, ...prev.slice(0, 9)]);
+        setLiveMetrics(data.data);
       }
     });
-    
+
     const unsubscribeCrisis = crisisDetection.subscribe((event) => {
-      setActiveAlerts(prev => [{
-        id: event.id,
-        title: event.title,
-        description: event.description,
-        severity: event.severity,
-        timestamp: event.detected_at,
-        type: 'crisis'
-      }, ...prev.slice(0, 9)]);
+      setActiveAlerts((prev) => [
+        {
+          id: event.id,
+          title: event.title,
+          description: event.description,
+          severity: event.severity as any,
+          type: 'crisis',
+          timestamp: event.detected_at,
+        },
+        ...prev.slice(0, 9),
+      ]);
     });
-    
+
     const unsubscribeRecommendations = recommendationsEngine.subscribe((recs) => {
       setRecommendations(recs.slice(0, 5));
     });
-    
-    // Update data periodically
-    const interval = setInterval(() => {
-      setTrendingTopics(realTimeService.getTrendingTopics().slice(0, 8));
-      setRecentPosts(realTimeService.getSocialMediaPosts(10));
-    }, 30000);
-    
+
+    // Refresh data every 2 minutes
+    const refreshInterval = setInterval(() => {
+      console.log('[Dashboard] Refreshing data...');
+      loadDashboardData();
+    }, 120000); // 2 minutes
+
     return () => {
       unsubscribeMetrics();
-      unsubscribeAlerts();
       unsubscribeCrisis();
       unsubscribeRecommendations();
-      clearInterval(interval);
+      clearInterval(refreshInterval);
       realTimeService.disconnect();
       crisisDetection.stopMonitoring();
     };
   }, []);
 
+  // Calculate KPIs from real metrics
   const kpis = [
-    { label: 'TVK Overall Sentiment', value: liveMetrics?.overallSentiment ? `${liveMetrics.overallSentiment}%` : '67%', change: '+5%', icon: TrendingUp, color: 'text-green-600' },
-    { label: 'Active Conversations (Tamil)', value: liveMetrics?.activeConversations?.toLocaleString() || '25.3K', change: '+18%', icon: Users, color: 'text-blue-600' },
-    { label: 'Critical Alerts', value: activeAlerts.filter(a => a.severity === 'critical').length.toString() || '3', change: '-2', icon: AlertTriangle, color: 'text-red-600' },
-    { label: 'Top Issue (TN)', value: trendingTopics[0]?.keyword || 'Water', change: '32%', icon: Target, color: 'text-purple-600' },
-    { label: 'Constituencies Covered', value: '264', change: 'TN+PY', icon: Globe, color: 'text-orange-600' }
-  ]
+    {
+      label: 'Overall Sentiment',
+      value: metrics ? `${metrics.overallSentiment}%` : (liveMetrics?.overallSentiment ? `${liveMetrics.overallSentiment}%` : '...'),
+      change: metrics ? (metrics.sentimentTrend === 'improving' ? '+5%' : metrics.sentimentTrend === 'declining' ? '-3%' : '0%') : '+5%',
+      icon: TrendingUp,
+      color: 'text-green-600',
+    },
+    {
+      label: 'Active Conversations',
+      value: metrics ? metrics.activeConversations.toLocaleString() : (liveMetrics?.activeConversations?.toLocaleString() || '...'),
+      change: '+18%',
+      icon: Users,
+      color: 'text-blue-600',
+    },
+    {
+      label: 'Critical Alerts',
+      value: metrics ? metrics.criticalAlerts.toString() : activeAlerts.filter((a) => a.severity === 'critical').length.toString(),
+      change: '-2',
+      icon: AlertTriangle,
+      color: 'text-red-600',
+    },
+    {
+      label: 'Top Issue',
+      value: metrics ? metrics.topIssue : (trendingTopics[0]?.keyword || '...'),
+      change: trendingTopics[0] ? `${Math.round(trendingTopics[0].growth_rate * 100)}%` : '32%',
+      icon: Target,
+      color: 'text-purple-600',
+    },
+    {
+      label: 'Constituencies Covered',
+      value: metrics ? metrics.constituenciesCovered.toString() : '264',
+      change: 'TN+PY',
+      icon: Globe,
+      color: 'text-orange-600',
+    },
+  ];
 
-  // Tamil Nadu Districts Map Data (38 districts)
-  const tamilNaduMapData = [
-    { id: 'TN-Chennai', title: 'Chennai', value: 68, sentiment: 0.68, constituencies: 16 },
-    { id: 'TN-Coimbatore', title: 'Coimbatore', value: 71, sentiment: 0.71, constituencies: 10 },
-    { id: 'TN-Madurai', title: 'Madurai', value: 62, sentiment: 0.62, constituencies: 6 },
-    { id: 'TN-Tiruchirappalli', title: 'Tiruchirappalli', value: 58, sentiment: 0.58, constituencies: 6 },
-    { id: 'TN-Salem', title: 'Salem', value: 65, sentiment: 0.65, constituencies: 7 },
-    { id: 'TN-Tirunelveli', title: 'Tirunelveli', value: 56, sentiment: 0.56, constituencies: 6 },
-    { id: 'TN-Tiruppur', title: 'Tiruppur', value: 69, sentiment: 0.69, constituencies: 6 },
-    { id: 'TN-Erode', title: 'Erode', value: 63, sentiment: 0.63, constituencies: 6 },
-    { id: 'TN-Vellore', title: 'Vellore', value: 64, sentiment: 0.64, constituencies: 5 },
-    { id: 'TN-Thanjavur', title: 'Thanjavur', value: 60, sentiment: 0.60, constituencies: 5 },
-    { id: 'TN-Kanchipuram', title: 'Kanchipuram', value: 67, sentiment: 0.67, constituencies: 7 },
-    { id: 'TN-Cuddalore', title: 'Cuddalore', value: 61, sentiment: 0.61, constituencies: 4 },
-    { id: 'TN-Dindigul', title: 'Dindigul', value: 59, sentiment: 0.59, constituencies: 5 },
-    { id: 'TN-Karur', title: 'Karur', value: 66, sentiment: 0.66, constituencies: 3 },
-    { id: 'TN-Namakkal', title: 'Namakkal', value: 68, sentiment: 0.68, constituencies: 4 },
-    { id: 'TN-Puducherry', title: 'Puducherry', value: 64, sentiment: 0.64, constituencies: 30 }
-  ]
+  // Tamil Nadu Districts Map Data - from real Supabase data
+  const tamilNaduMapData = locations.length > 0 ? locations : [
+    // Fallback data if no real data available
+    { id: 'TN-Loading', title: 'Loading...', value: 50, sentiment: 0.5, constituencies: 0 },
+  ];
+
+  // Show loading state while fetching data
+  if (loading && !metrics) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -353,26 +364,27 @@ export default function Dashboard() {
                         <h3 className="text-responsive-sm font-semibold text-gray-900">Recent Social Media Activity</h3>
                       </div>
                       <div className="space-y-2 max-h-64 overflow-y-auto">
-                        {recentPosts.slice(0, 5).map((post, index) => (
-                          <div key={index} className="p-2 bg-gray-50 rounded text-responsive-xs">
+                        {recentPosts.slice(0, 5).map((post) => (
+                          <div key={post.id} className="p-2 bg-gray-50 rounded text-responsive-xs">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="font-medium text-gray-800 truncate flex-1">{post.source?.platform || 'Social Media'}</span>
+                              <span className="font-medium text-gray-800 truncate flex-1 capitalize">
+                                {post.platform || 'Social Media'}
+                              </span>
                               <span className={`px-1 py-0.5 rounded text-xs flex-shrink-0 ${
-                                post.sentiment?.polarity === 'positive' ? 'bg-green-200 text-green-800' :
-                                post.sentiment?.polarity === 'negative' ? 'bg-red-200 text-red-800' :
+                                post.sentiment_polarity === 'positive' ? 'bg-green-200 text-green-800' :
+                                post.sentiment_polarity === 'negative' ? 'bg-red-200 text-red-800' :
                                 'bg-gray-200 text-gray-800'
                               }`}>
-                                {post.sentiment?.polarity || 'neutral'}
+                                {post.sentiment_polarity || 'neutral'}
                               </span>
                             </div>
-                            <div className="text-gray-600 truncate">
+                            <div className="text-gray-600 line-clamp-2">
                               {post.content?.substring(0, 100) || 'Sample social media content'}...
                             </div>
-                            <div className="text-gray-500 mt-1 text-xs">
-                              {post.engagement_metrics ? 
-                                `👍 ${post.engagement_metrics.likes} 🔄 ${post.engagement_metrics.shares} 💬 ${post.engagement_metrics.comments}` :
-                                'Engagement metrics'
-                              }
+                            <div className="text-gray-500 mt-1 text-xs flex items-center gap-3">
+                              <span>👍 {post.likes || 0}</span>
+                              <span>🔄 {post.shares || 0}</span>
+                              <span>💬 {post.comments || 0}</span>
                             </div>
                           </div>
                         ))}

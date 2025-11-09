@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: pulseofpeople-frontend
+    runtime: docker
+    rootDir: frontend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_APP_URL
+        sync: false
+      - key: VITE_APP_NAME
+        value: Pulse of People

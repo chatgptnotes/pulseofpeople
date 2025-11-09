@@ -1,5 +1,6 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
-import { overallSentimentDistribution } from '../data/mockData'
+import { useEffect, useState } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { dashboardService } from '../services/dashboardService';
 
 const COLORS = {
   positive: '#22c55e',
@@ -9,11 +10,40 @@ const COLORS = {
 }
 
 export default function SentimentDistribution() {
-  const data = Object.entries(overallSentimentDistribution).map(([key, value]) => ({
-    name: key.charAt(0).toUpperCase() + key.slice(1),
-    value,
-    color: COLORS[key as keyof typeof COLORS]
-  }))
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  async function loadData() {
+    try {
+      setLoading(true);
+      const distribution = await dashboardService.getSentimentDistribution();
+      const formattedData = Object.entries(distribution).map(([key, value]) => ({
+        name: key.charAt(0).toUpperCase() + key.slice(1),
+        value,
+        color: COLORS[key as keyof typeof COLORS],
+      }));
+      setData(formattedData);
+    } catch (error) {
+      console.error('Failed to load sentiment distribution:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="card">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Overall Sentiment Distribution</h3>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
     const RADIAN = Math.PI / 180

@@ -1,13 +1,44 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts'
-import { mockTrendData } from '../data/mockData'
+import { useEffect, useState } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
+import { dashboardService } from '../services/dashboardService';
 
 export default function SentimentTrends() {
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  async function loadData() {
+    try {
+      setLoading(true);
+      const trendsData = await dashboardService.getSentimentTrends(30);
+      setData(trendsData);
+    } catch (error) {
+      console.error('Failed to load sentiment trends:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="card">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Sentiment Trends Over Time</h3>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="card">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Sentiment Trends Over Time</h3>
       <div className="chart-container">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={mockTrendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+          <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
             <XAxis 
               dataKey="date" 

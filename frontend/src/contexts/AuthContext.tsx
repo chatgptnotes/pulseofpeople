@@ -42,7 +42,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Check for existing session on mount and listen for auth changes
   useEffect(() => {
-    checkSession();
+    // Add timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      console.log('[AuthContext] ⏰ Initialization timeout - forcing completion');
+      setIsInitializing(false);
+    }, 5000); // 5 second timeout
+
+    checkSession().finally(() => {
+      clearTimeout(timeout);
+    });
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -61,6 +69,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
 
     return () => {
+      clearTimeout(timeout);
       subscription.unsubscribe();
     };
   }, []);
