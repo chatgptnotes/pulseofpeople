@@ -9,6 +9,20 @@ FROM node:22-alpine as builder
 # Set working directory
 WORKDIR /app
 
+# Accept build arguments for environment variables
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+ARG VITE_DJANGO_API_URL
+ARG VITE_APP_NAME
+ARG VITE_APP_VERSION
+
+# Set environment variables for Vite build
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+ENV VITE_DJANGO_API_URL=$VITE_DJANGO_API_URL
+ENV VITE_APP_NAME=$VITE_APP_NAME
+ENV VITE_APP_VERSION=$VITE_APP_VERSION
+
 # Copy package files
 COPY package*.json ./
 
@@ -19,7 +33,7 @@ RUN npm install && npm cache clean --force
 # Copy application source
 COPY . .
 
-# Build application
+# Build application (environment variables will be baked into JS bundle)
 RUN npm run build
 
 # ============================================
