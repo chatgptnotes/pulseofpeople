@@ -1,0 +1,21 @@
+{
+  "generated_at": "2025-11-09T14:18:31.176266",
+  "statistics": {
+    "downloaded": 0,
+    "converted": 20000,
+    "duplicates": 0,
+    "errors": 0
+  },
+  "counts": {
+    "states": 1,
+    "districts": 5,
+    "constituencies": 5,
+    "polling_booths": 20000
+  },
+  "files": {
+    "states": "production_tn/states.csv",
+    "districts": "production_tn/districts.csv",
+    "constituencies": "production_tn/constituencies.csv",
+    "polling_booths": "production_tn/polling_booths.csv"
+  }
+}

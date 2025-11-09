@@ -1,0 +1,157 @@
+# =============================================================================
+# RENDER ENVIRONMENT VARIABLES - FRONTEND (pulseofpeople-frontend)
+# =============================================================================
+# Copy and paste these into your Render service's Environment tab
+# https://dashboard.render.com/web/YOUR_SERVICE_ID/env
+#
+# HOW TO ADD:
+# 1. Go to your Render service
+# 2. Click "Environment" tab
+# 3. Click "Add Environment Variable"
+# 4. Add each variable below (one at a time)
+# 5. Click "Save Changes"
+# =============================================================================
+
+# --- FRONTEND ENVIRONMENT VARIABLES ---
+
+# Supabase Configuration
+VITE_SUPABASE_URL=https://iwtgbseaoztjbnvworyq.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3dGdic2Vhb3p0amJudndvcnlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNjAzOTksImV4cCI6MjA3NjczNjM5OX0.xA4B0XZJE_4MdjFCkw2yVsf4vlHmHfpeV6Bk5tG2T94
+
+# App Configuration
+VITE_APP_NAME=Pulse of People
+VITE_APP_URL=https://pulseofpeople.onrender.com
+
+# Optional: Mapbox Token (if you have one)
+# VITE_MAPBOX_TOKEN=your_mapbox_token_here
+
+
+# =============================================================================
+# RENDER ENVIRONMENT VARIABLES - BACKEND (pulseofpeople-backend)
+# =============================================================================
+# Only needed if you're deploying the Django backend to Render
+# =============================================================================
+
+# --- BACKEND ENVIRONMENT VARIABLES ---
+
+# Django Settings
+SECRET_KEY=django-insecure-development-key-change-in-production
+DEBUG=False
+ALLOWED_HOSTS=pulseofpeople-backend.onrender.com,pulseofpeople.onrender.com
+
+# Supabase PostgreSQL Database (Production - Session Pooler)
+DB_NAME=postgres
+DB_USER=postgres.iwtgbseaoztjbnvworyq
+DB_PASSWORD=Chindwada@1
+DB_HOST=aws-1-ap-south-1.pooler.supabase.com
+DB_PORT=6543
+DB_SSLMODE=require
+USE_SQLITE=False
+
+# CORS Settings (Update with your Render frontend URL)
+CORS_ALLOWED_ORIGINS=https://pulseofpeople.onrender.com
+
+# Supabase Authentication
+SUPABASE_URL=https://iwtgbseaoztjbnvworyq.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3dGdic2Vhb3p0amJudndvcnlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNjAzOTksImV4cCI6MjA3NjczNjM5OX0.xA4B0XZJE_4MdjFCkw2yVsf4vlHmHfpeV6Bk5tG2T94
+SUPABASE_JWT_SECRET=X6j+39tynhesQLZuzPc9IXP8H9UONWcKmkKdonFBnrvIqXMO+T+PACOWxpks6fVaKoPblX0FPyI3vc3X5J1x7g==
+
+
+# =============================================================================
+# QUICK COPY-PASTE FORMAT (For Render UI)
+# =============================================================================
+# Copy each line below (key and value) into Render's environment variable form
+# =============================================================================
+
+FRONTEND VARIABLES (4 required):
+------------------------------------
+Key: VITE_SUPABASE_URL
+Value: https://iwtgbseaoztjbnvworyq.supabase.co
+
+Key: VITE_SUPABASE_ANON_KEY
+Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3dGdic2Vhb3p0amJudndvcnlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNjAzOTksImV4cCI6MjA3NjczNjM5OX0.xA4B0XZJE_4MdjFCkw2yVsf4vlHmHfpeV6Bk5tG2T94
+
+Key: VITE_APP_NAME
+Value: Pulse of People
+
+Key: VITE_APP_URL
+Value: https://pulseofpeople.onrender.com
+
+
+BACKEND VARIABLES (11 required - if deploying backend):
+--------------------------------------------------------
+Key: SECRET_KEY
+Value: django-insecure-development-key-change-in-production
+
+Key: DEBUG
+Value: False
+
+Key: ALLOWED_HOSTS
+Value: pulseofpeople-backend.onrender.com,pulseofpeople.onrender.com
+
+Key: DB_NAME
+Value: postgres
+
+Key: DB_USER
+Value: postgres.iwtgbseaoztjbnvworyq
+
+Key: DB_PASSWORD
+Value: Chindwada@1
+
+Key: DB_HOST
+Value: aws-1-ap-south-1.pooler.supabase.com
+
+Key: DB_PORT
+Value: 6543
+
+Key: DB_SSLMODE
+Value: require
+
+Key: USE_SQLITE
+Value: False
+
+Key: CORS_ALLOWED_ORIGINS
+Value: https://pulseofpeople.onrender.com
+
+Key: SUPABASE_URL
+Value: https://iwtgbseaoztjbnvworyq.supabase.co
+
+Key: SUPABASE_ANON_KEY
+Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3dGdic2Vhb3p0amJudndvcnlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNjAzOTksImV4cCI6MjA3NjczNjM5OX0.xA4B0XZJE_4MdjFCkw2yVsf4vlHmHfpeV6Bk5tG2T94
+
+Key: SUPABASE_JWT_SECRET
+Value: X6j+39tynhesQLZuzPc9IXP8H9UONWcKmkKdonFBnrvIqXMO+T+PACOWxpks6fVaKoPblX0FPyI3vc3X5J1x7g==
+
+
+# =============================================================================
+# IMPORTANT NOTES
+# =============================================================================
+
+1. VITE_APP_URL: Update this to your actual Render URL after deployment
+   - Initial: https://pulseofpeople.onrender.com
+   - Or use custom domain: https://yourdomain.com
+
+2. Security:
+   - Change DEBUG=False for production backend
+   - Generate a new SECRET_KEY for production (use: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())")
+   - Use DB_SSLMODE=require (not prefer) for production
+
+3. After Adding Variables:
+   - Click "Save Changes"
+   - Trigger "Manual Deploy" > "Clear build cache & deploy"
+   - Wait for build to complete (2-3 minutes)
+
+4. Verification:
+   - Visit your Render URL
+   - Check browser console for errors
+   - Verify Supabase connection works
+   - Test dashboard data loading
+
+5. Custom Domain (Optional):
+   - Add custom domain in Render settings
+   - Update VITE_APP_URL to match your domain
+   - Redeploy after changing
+
+# =============================================================================
+# END OF FILE
+# =============================================================================

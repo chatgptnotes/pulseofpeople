@@ -5,7 +5,7 @@ Utility functions for API operations
 import logging
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from .models import UserProfile, Organization
+from ..models import UserProfile, Organization
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -326,7 +326,7 @@ def ensure_user_profile_exists(user):
     Returns:
         UserProfile: The user's profile
     """
-    from .models import AuditLog
+    from ..models import AuditLog
 
     try:
         return user.profile
