@@ -17,8 +17,10 @@ interface SecondarySidebarProps {
   activeCategory: string | null;
   isOpen: boolean;
   isPinned: boolean;
+  isPrimaryExpanded: boolean;
   onClose: () => void;
   onTogglePin: () => void;
+  onMouseLeave?: () => void;
   className?: string;
 }
 
@@ -26,8 +28,10 @@ export default function SecondarySidebar({
   activeCategory,
   isOpen,
   isPinned,
+  isPrimaryExpanded,
   onClose,
   onTogglePin,
+  onMouseLeave,
   className = '',
 }: SecondarySidebarProps) {
   const navigate = useNavigate();
@@ -50,11 +54,24 @@ export default function SecondarySidebar({
     <>
       {/* Overlay for mobile */}
       {isOpen && !isPinned && (
-        <div className="sidebar-overlay" onClick={onClose} />
+        <div
+          className="sidebar-overlay"
+          onClick={onClose}
+          style={{
+            left: `${isPrimaryExpanded ? 200 : 64}px`,
+          }}
+        />
       )}
 
       {/* Secondary Sidebar */}
-      <div className={`secondary-sidebar ${isOpen ? 'open' : 'closed'} ${className}`}>
+      <div
+        className={`secondary-sidebar ${isOpen ? 'open' : 'closed'} ${className}`}
+        onMouseLeave={onMouseLeave}
+        style={{
+          left: `${isPrimaryExpanded ? 200 : 64}px`,
+          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease-in-out',
+        }}
+      >
         {/* Header */}
         <div className="sidebar-header">
           <div>
@@ -107,12 +124,12 @@ export default function SecondarySidebar({
         .sidebar-overlay {
           position: fixed;
           top: 0;
-          left: 64px;
           right: 0;
           bottom: 0;
           background: rgba(0, 0, 0, 0.3);
           z-index: 39;
           animation: fadeIn 0.2s ease;
+          /* left position is now set via inline styles to support dynamic primary sidebar expansion */
         }
 
         @keyframes fadeIn {
@@ -126,12 +143,11 @@ export default function SecondarySidebar({
           background: #F9FAFB;
           border-right: 1px solid #E5E7EB;
           position: fixed;
-          left: 64px;
           top: 0;
           z-index: 40;
           display: flex;
           flex-direction: column;
-          transition: transform 0.3s ease-in-out;
+          /* left position is now set via inline styles to support dynamic primary sidebar expansion */
         }
 
         .secondary-sidebar.closed {

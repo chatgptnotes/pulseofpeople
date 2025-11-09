@@ -27,6 +27,7 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [secondarySidebarOpen, setSecondarySidebarOpen] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
+  const [isPrimaryExpanded, setIsPrimaryExpanded] = useState(false);
 
   // Prevent flickering during mount
   const [isMounted, setIsMounted] = useState(true); // Start as true to show sidebars immediately
@@ -144,6 +145,16 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
     }
   };
 
+  // Auto-collapse secondary sidebar on mouse leave
+  const handleSecondaryMouseLeave = () => {
+    if (!isPinned) {
+      // Add small delay before closing to prevent accidental closes
+      setTimeout(() => {
+        setSecondarySidebarOpen(false);
+      }, 300);
+    }
+  };
+
   const handleTogglePin = () => {
     const newPinned = !isPinned;
     setIsPinned(newPinned);
@@ -156,10 +167,11 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
 
   // Calculate content margin based on sidebar state
   const getContentMarginLeft = () => {
+    const primaryWidth = isPrimaryExpanded ? 200 : 64;
     if (secondarySidebarOpen) {
-      return 64 + 280; // Primary + Secondary
+      return primaryWidth + 280; // Primary + Secondary
     }
-    return 64; // Just primary
+    return primaryWidth; // Just primary
   };
 
   // Don't render until state is loaded to prevent flicker
@@ -190,6 +202,7 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
       <PrimarySidebar
         activeCategory={activeCategory}
         onCategoryClick={handleCategoryClick}
+        onExpandChange={setIsPrimaryExpanded}
         className="primary-sidebar-always-visible"
       />
 
@@ -198,8 +211,10 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
         activeCategory={activeCategory}
         isOpen={secondarySidebarOpen}
         isPinned={isPinned}
+        isPrimaryExpanded={isPrimaryExpanded}
         onClose={handleCloseSecondarySidebar}
         onTogglePin={handleTogglePin}
+        onMouseLeave={handleSecondaryMouseLeave}
       />
 
       {/* Main Content */}

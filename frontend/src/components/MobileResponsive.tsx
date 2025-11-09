@@ -48,7 +48,7 @@ export function MobileNavigation() {
       id: 'dashboard',
       label: 'Dashboard',
       icon: BarChart3,
-      href: '/dashboard',
+      href: '/dashboard/legacy',
       children: [
         { id: 'analytics', label: 'Analytics', icon: BarChart3, href: '/analytics' },
         { id: 'pulse', label: 'Pulse Monitor', icon: Zap, href: '/pulse' },

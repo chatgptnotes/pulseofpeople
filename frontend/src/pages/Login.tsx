@@ -38,7 +38,7 @@ export default function Login() {
           localStorage.setItem('auth_remember', 'true');
         }
 
-        navigate('/dashboard');
+        navigate('/dashboard/legacy');
       } else {
         setError('Invalid email or password. Please check your credentials.');
       }
@@ -87,7 +87,7 @@ export default function Login() {
       const { error } = await supabase.auth.signInWithOtp({
         email: credentials.email,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/dashboard/legacy`,
         },
       });
 

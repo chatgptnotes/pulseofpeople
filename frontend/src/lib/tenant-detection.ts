@@ -169,7 +169,7 @@ export async function validateTenantAccess(
 /**
  * Redirect to tenant subdomain
  */
-export function redirectToTenant(tenantSubdomain: string, path: string = '/dashboard') {
+export function redirectToTenant(tenantSubdomain: string, path: string = '/dashboard/legacy') {
   const protocol = window.location.protocol;
   const domain = window.location.hostname.split('.').slice(-2).join('.');
   const port = window.location.port ? `:${window.location.port}` : '';
