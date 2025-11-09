@@ -1,8 +1,15 @@
-# 🎉 Pulse of People - Database Implementation Complete
+# 🎉 Pulse of People - TVK Platform Implementation Complete
 
 ## Overview
 
-Successfully migrated from hard-coded dummy data to a complete **Supabase-powered database architecture** with 8 tables, 50,000+ sample voters, and production-ready services.
+Successfully built a complete **Supabase-powered political sentiment analysis platform** for **Tamilaga Vettri Kazhagam (TVK)** with 8 database tables, 55,000 Tamil Nadu voters, and production-ready services.
+
+### Platform Details
+- **Organization**: Tamilaga Vettri Kazhagam (TVK)
+- **Founder**: Vijay
+- **State**: Tamil Nadu
+- **Voter Database**: 55,000 realistic Tamil Nadu voter profiles
+- **Coverage**: 5 constituencies, 10 polling booths with GPS coordinates
 
 ---
 
@@ -179,15 +186,18 @@ pulseofpeople/
 ## 🎯 Sample Data Created
 
 ### Phase 1 Sample Data
-- **3 Organizations**: Democratic Alliance Party, Progressive Coalition, Citizens Forum
+- **3 Organizations**:
+  - **TVK (Tamilaga Vettri Kazhagam)** - Primary organization with 55,000 voters
+  - DMK (Dravida Munnetra Kazhagam) - Competitor data for analysis
+  - AIADMK (All India Anna Dravida Munnetra Kazhagam) - Competitor data for analysis
 - **8 Users**: 1 superadmin, 3 admins, 1 manager, 1 analyst, 1 user, 1 viewer
 - **7 User Permissions**: Across different roles
 
-### Phase 2 Sample Data
+### Phase 2 Sample Data - Tamil Nadu Focus
 - **5 Constituencies**: Chennai North, Chennai Central, Chennai South, Coimbatore, Madurai
 - **3 Wards**: Anna Nagar, Kilpauk, Egmore
 - **10 Polling Booths**: With GPS coordinates in Chennai
-- **50,000+ Voters**: Ready to generate with Python script
+- **55,000 Voters**: Realistic Tamil Nadu voter profiles with demographics and political sentiment
 
 ---
 
