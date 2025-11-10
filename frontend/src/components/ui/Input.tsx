@@ -36,6 +36,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     ref
   ) => {
     const widthStyle = fullWidth ? 'w-full' : ''
+    const errorId = error && props.id ? `${props.id}-error` : undefined
+    const helperId = helperText && props.id ? `${props.id}-helper` : undefined
+    const describedBy = errorId || helperId
 
     return (
       <div className={`${widthStyle} ${className}`}>
@@ -57,6 +60,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
           <input
             ref={ref}
+            aria-invalid={error ? 'true' : 'false'}
+            aria-describedby={describedBy}
             className={`
               w-full px-4 py-2.5 text-base text-gray-900
               bg-white border rounded-lg
@@ -87,9 +92,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
         {(error || helperText) && (
           <p
+            id={error ? errorId : helperId}
             className={`mt-1.5 text-sm ${
               error ? 'text-red-600' : 'text-gray-500'
             }`}
+            role={error ? 'alert' : undefined}
           >
             {error || helperText}
           </p>
@@ -125,6 +132,9 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
   ) => {
     const widthStyle = fullWidth ? 'w-full' : ''
     const resizeStyle = resize ? 'resize-y' : 'resize-none'
+    const errorId = error && props.id ? `${props.id}-error` : undefined
+    const helperId = helperText && props.id ? `${props.id}-helper` : undefined
+    const describedBy = errorId || helperId
 
     return (
       <div className={`${widthStyle} ${className}`}>
@@ -139,6 +149,8 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
         <textarea
           ref={ref}
+          aria-invalid={error ? 'true' : 'false'}
+          aria-describedby={describedBy}
           className={`
             w-full px-4 py-2.5 text-base text-gray-900
             bg-white border rounded-lg
@@ -157,9 +169,11 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
         {(error || helperText) && (
           <p
+            id={error ? errorId : helperId}
             className={`mt-1.5 text-sm ${
               error ? 'text-red-600' : 'text-gray-500'
             }`}
+            role={error ? 'alert' : undefined}
           >
             {error || helperText}
           </p>

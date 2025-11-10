@@ -12,6 +12,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PrimarySidebar from './PrimarySidebar';
 import SecondarySidebar from './SecondarySidebar';
+import { MobileNavigation } from '../MobileResponsive';
 
 interface DualSidebarLayoutProps {
   children: React.ReactNode;
@@ -206,6 +207,9 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
 
   return (
     <div className="dual-sidebar-layout">
+      {/* Mobile Navigation - Only visible on mobile */}
+      <MobileNavigation />
+
       {/* Primary Sidebar - Always visible, explicitly shown */}
       <PrimarySidebar
         activeCategory={activeCategory}

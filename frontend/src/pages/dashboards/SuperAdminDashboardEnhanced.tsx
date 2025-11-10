@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { useUsers, useFeedbackStats, useAnalyticsOverview } from '../../hooks/useApiHooks';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
-import { EmptyState } from '../../components/common/EmptyState';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { StatCard } from '../../components/charts/StatCard';
 import { LineChart } from '../../components/charts/LineChart';
 import { PieChart, DonutChart } from '../../components/charts/PieChart';

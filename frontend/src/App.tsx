@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { TenantProvider } from './contexts/TenantContext'
 import { PermissionProvider } from './contexts/PermissionContext'
 import { OnboardingProvider } from './contexts/OnboardingContext'
+import { ToastProvider } from './contexts/ToastContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import FullScreenLoader from './components/FullScreenLoader'
 import Layout from './components/Layout'
@@ -677,20 +678,22 @@ function AppRoutes() {
 function App() {
   return (
     <ErrorBoundary>
-      <TenantProvider>
-        <AuthProvider>
-          <PermissionProvider>
-            <OnboardingProvider>
-              <RealTimeProvider>
-                <ErrorBoundary>
-                  <AppRoutes />
-                  <MobileContactBar />
-                </ErrorBoundary>
-              </RealTimeProvider>
-            </OnboardingProvider>
-          </PermissionProvider>
-        </AuthProvider>
-      </TenantProvider>
+      <ToastProvider>
+        <TenantProvider>
+          <AuthProvider>
+            <PermissionProvider>
+              <OnboardingProvider>
+                <RealTimeProvider>
+                  <ErrorBoundary>
+                    <AppRoutes />
+                    <MobileContactBar />
+                  </ErrorBoundary>
+                </RealTimeProvider>
+              </OnboardingProvider>
+            </PermissionProvider>
+          </AuthProvider>
+        </TenantProvider>
+      </ToastProvider>
     </ErrorBoundary>
   );
 }
