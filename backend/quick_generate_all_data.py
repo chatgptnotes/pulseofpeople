@@ -112,15 +112,21 @@ print("\n[3/6] Creating Polling Booths...")
 booth_count = 0
 for const in constituencies[:10]:  # Create booths for first 10 constituencies
     for i in range(1, 51):  # 50 booths per constituency
+        total = random.randint(800, 1200)
         PollingBooth.objects.get_or_create(
             booth_number=f"{const.code}-{i:03d}",
             constituency=const,
             defaults={
+                'state': const.state,
+                'district': const.district,
                 'name': f"{const.name} Booth {i}",
                 'address': f"{i} Main Road, {const.name}",
                 'latitude': 10.0 + random.uniform(-2, 2),
                 'longitude': 78.0 + random.uniform(-2, 2),
-                'total_voters': random.randint(800, 1200)
+                'total_voters': total,
+                'male_voters': int(total * 0.48),
+                'female_voters': int(total * 0.48),
+                'other_voters': int(total * 0.04)
             }
         )
         booth_count += 1
@@ -187,13 +193,12 @@ parties = [
 
 for code, name, color in parties:
     PoliticalParty.objects.get_or_create(
-        code=code,
+        short_name=code,
         defaults={
             'name': name,
-            'full_name': name,
-            'color': color,
             'symbol': code.lower(),
-            'is_active': True
+            'status': 'active',
+            'description': f'{name} - {code}'
         }
     )
 
@@ -206,7 +211,9 @@ org, created = Organization.objects.get_or_create(
     defaults={
         'slug': 'tvk',
         'organization_type': 'party',
-        'description': 'Tamilaga Vettri Kazhagam - Tamil Nadu Political Party',
+        'subscription_plan': 'enterprise',
+        'subscription_status': 'active',
+        'max_users': 1000,
         'is_active': True
     }
 )

@@ -100,7 +100,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Fetch user details from database with extended timeout (30 seconds)
       console.log('[AuthContext] 🔄 Step 2/2: Fetching user data from database...');
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('User data fetch timeout after 30 seconds')), 30000);
+        setTimeout(() => reject(new Error('User data fetch timeout after 5 seconds')), 5000);
       });
 
       const userDataPromise = supabase
@@ -185,7 +185,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Fetch user details from database with extended timeout (30 seconds)
       console.log('[AuthContext] 🔄 Fetching user data from database for:', session.user.email);
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('User data fetch timeout after 30 seconds')), 30000);
+        setTimeout(() => reject(new Error('User data fetch timeout after 5 seconds')), 5000);
       });
 
       const userDataPromise = supabase
@@ -292,7 +292,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Fetch user details from database with timeout
       console.log('[AuthContext] 🔄 Fetching user data from database...');
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('User data fetch timeout after 30 seconds')), 30000);
+        setTimeout(() => reject(new Error('User data fetch timeout after 5 seconds')), 5000);
       });
 
       const userDataPromise = supabase

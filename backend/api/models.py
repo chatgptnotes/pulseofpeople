@@ -94,6 +94,16 @@ class UserProfile(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+
+    # Supabase Auth Integration
+    supabase_uid = models.UUIDField(
+        unique=True,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Supabase Auth user ID (UUID) for hybrid authentication"
+    )
+
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
 
     # Organization support

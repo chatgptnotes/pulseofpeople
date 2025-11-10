@@ -229,7 +229,7 @@ class Command(BaseCommand):
 
         # Meeting templates
         meeting_names = [
-            ('Town Hall - Water Crisis Solutions - T Nagar', 'T Nagar Community Hall', 13.0418, 80.2341, 'town_hall'),
+            ('Town Hall - Water Crisis Solutions - T Nagar', 'T Nagar Community Hall', 13.0418, 80.2341, 'meeting'),
             ('Youth Connect Meeting - Anna University', 'Anna University Auditorium', 13.0113, 80.2336, 'meeting'),
             ('Women Forum - Coimbatore Gandhipuram', 'Gandhipuram Hall', 11.0168, 76.9558, 'meeting'),
             ('Fisher Community Dialogue - Ramanathapuram', 'Fishermen Community Center', 9.3623, 78.8379, 'meeting'),
@@ -238,7 +238,7 @@ class Command(BaseCommand):
             ('Ward Meeting - Mylapore Zone', 'Mylapore Cultural Center', 13.0339, 80.2619, 'meeting'),
             ('Business Community Meet - Coimbatore', 'RS Puram Business Center', 11.0030, 76.9630, 'meeting'),
             ('Auto Drivers Association Meet - Salem', 'Salem Bus Stand', 11.6643, 78.1460, 'meeting'),
-            ('Town Hall - Education Reform - Trichy', 'Trichy City Hall', 10.8155, 78.7047, 'town_hall'),
+            ('Town Hall - Education Reform - Trichy', 'Trichy City Hall', 10.8155, 78.7047, 'meeting'),
             ('Women Self Help Groups - Vellore', 'Vellore Women Center', 12.9165, 79.1325, 'meeting'),
             ('Youth Employment Forum - Erode', 'Erode IT Park', 11.3410, 77.7172, 'meeting'),
             ('Senior Citizens Meet - Adyar', 'Adyar Club', 13.0067, 80.2577, 'meeting'),
@@ -534,7 +534,6 @@ class Command(BaseCommand):
         volunteer_ranges = {
             'rally': (20, 50),
             'meeting': (10, 25),
-            'town_hall': (15, 30),
             'door_to_door': (5, 15),
             'booth_visit': (5, 12),
         }

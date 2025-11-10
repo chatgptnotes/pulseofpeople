@@ -126,7 +126,8 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
   }, []);
 
   const handleCategoryHover = (categoryId: string | null) => {
-    if (categoryId && !isPinned) {
+    // Only update if the category is different AND not pinned
+    if (categoryId && !isPinned && categoryId !== activeCategory) {
       // Hover on icon opens secondary panel (if not pinned)
       setActiveCategory(categoryId);
       setSecondarySidebarOpen(true);
@@ -220,6 +221,7 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
 
       {/* Secondary Sidebar - Slides in/out */}
       <SecondarySidebar
+        key={activeCategory || 'none'}
         activeCategory={activeCategory}
         isOpen={secondarySidebarOpen}
         isPinned={isPinned}
