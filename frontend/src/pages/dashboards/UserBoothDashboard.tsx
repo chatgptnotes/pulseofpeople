@@ -3,15 +3,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { djangoApi } from '../../services/djangoApi';
 import {
   MapPin, Users, MessageSquare, TrendingUp, FileText,
-  CheckCircle, Camera, ClipboardList, Award, Target,
-  ThumbsUp, MinusCircle, ThumbsDown
+  CheckCircle, Camera, ClipboardList, Award, Target
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { LineChart } from '../../components/charts/LineChart';
-import { PieChart } from '../../components/charts/PieChart';
-import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
-import { ExportButton } from '../../components/common/ExportButton';
-import { format, subDays } from 'date-fns';
 
 /**
  * User Dashboard - Booth Level (Booth Agent/Field Worker)
@@ -109,9 +103,9 @@ export default function UserBoothDashboard() {
   };
 
   const getSentimentIcon = (sentiment: string) => {
-    if (sentiment === 'positive') return <ThumbsUp className="h-5 w-5 text-green-600" />;
-    if (sentiment === 'neutral') return <MinusCircle className="h-5 w-5 text-yellow-600" />;
-    return <ThumbsDown className="h-5 w-5 text-red-600" />;
+    if (sentiment === 'positive') return '😊';
+    if (sentiment === 'neutral') return '😐';
+    return '😟';
   };
 
   const getSentimentColor = (sentiment: string) => {
@@ -122,10 +116,11 @@ export default function UserBoothDashboard() {
 
   if (loading) {
     return (
-      <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
-        <LoadingSkeleton type="stats" count={4} />
-        <LoadingSkeleton type="chart" />
-        <LoadingSkeleton type="list" count={3} />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your booth dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -133,28 +128,19 @@ export default function UserBoothDashboard() {
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center text-sm text-gray-500 mb-2">
-            <MapPin className="h-4 w-4 mr-1" />
-            <span>{districtName}</span>
-            <span className="mx-2">→</span>
-            <span>{constituencyName}</span>
-            <span className="mx-2">→</span>
-            <span className="font-medium text-gray-900">Booth {boothNumber}</span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My Booth Dashboard</h1>
-          <p className="mt-2 text-gray-600">
-            Welcome back, {user?.name}! Track your daily field work.
-          </p>
+      <div className="mb-6">
+        <div className="flex items-center text-sm text-gray-500 mb-2">
+          <MapPin className="h-4 w-4 mr-1" />
+          <span>{districtName}</span>
+          <span className="mx-2">→</span>
+          <span>{constituencyName}</span>
+          <span className="mx-2">→</span>
+          <span className="font-medium text-gray-900">Booth {boothNumber}</span>
         </div>
-        <div className="flex-shrink-0">
-          <ExportButton
-            data={recentFeedback}
-            filename={`booth-${boothNumber}-${format(new Date(), 'yyyy-MM-dd')}`}
-            formats={['csv', 'excel']}
-          />
-        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My Booth Dashboard</h1>
+        <p className="mt-2 text-gray-600">
+          Welcome back, {user?.name}! Track your daily field work.
+        </p>
       </div>
 
       {/* Performance Card */}
@@ -167,37 +153,6 @@ export default function UserBoothDashboard() {
           </div>
           <Award className="h-16 w-16 opacity-50" />
         </div>
-      </div>
-
-      {/* Daily Progress Chart */}
-      <div className="mb-6">
-        <LineChart
-          data={Array.from({ length: 7 }, (_, i) => ({
-            day: format(subDays(new Date(), 6 - i), 'EEE'),
-            feedback: Math.floor(8 + Math.random() * 8),
-          }))}
-          xKey="day"
-          yKey="feedback"
-          title="Daily Feedback Collection (Last 7 Days)"
-          color="#3b82f6"
-          height={250}
-        />
-      </div>
-
-      {/* Sentiment Distribution Chart */}
-      <div className="mb-6">
-        <PieChart
-          data={[
-            { name: 'Positive', value: 45 },
-            { name: 'Neutral', value: 28 },
-            { name: 'Negative', value: 10 },
-          ]}
-          dataKey="value"
-          nameKey="name"
-          title="Sentiment Distribution"
-          colors={['#10b981', '#f59e0b', '#ef4444']}
-          height={300}
-        />
       </div>
 
       {/* Today's Stats */}
@@ -314,7 +269,7 @@ export default function UserBoothDashboard() {
           {recentFeedback.map((feedback) => (
             <div key={feedback.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center">
-                <div className="mr-3">{getSentimentIcon(feedback.sentiment)}</div>
+                <div className="text-2xl mr-3">{getSentimentIcon(feedback.sentiment)}</div>
                 <div>
                   <p className="font-medium text-gray-900">{feedback.name}</p>
                   <p className="text-sm text-gray-500">Issue: {feedback.issue}</p>

@@ -34,6 +34,7 @@ import { djangoApi } from '../services/djangoApi';
 import BulkUserImport from './BulkUserImport';
 import PageHeader from './PageHeader';
 import CascadingLocationDropdown from './CascadingLocationDropdown';
+import { exportToCSV, exportToExcel, flattenForExport } from '../utils/exportUtils';
 
 // Role hierarchy - matches backend
 const ROLE_HIERARCHY: Record<string, string[]> = {
@@ -151,6 +152,45 @@ export default function FieldWorkerManagement() {
 
   // Check if current user can create users
   const canCreateUsers = allowedRoles.length > 0;
+
+  // Export handlers for user list
+  const handleExportUsersCSV = () => {
+    if (filteredUsers.length === 0) {
+      alert('No users to export');
+      return;
+    }
+    const exportData = filteredUsers.map(user => ({
+      Name: user.name,
+      Email: user.email,
+      Role: user.role,
+      Phone: user.phone || '-',
+      City: user.city || '-',
+      Constituency: user.constituency || '-',
+      'Created Date': new Date(user.created_at).toLocaleDateString(),
+      Status: 'Active'
+    }));
+    const timestamp = new Date().toISOString().split('T')[0];
+    exportToCSV(exportData, `users-${timestamp}.csv`);
+  };
+
+  const handleExportUsersExcel = () => {
+    if (filteredUsers.length === 0) {
+      alert('No users to export');
+      return;
+    }
+    const exportData = filteredUsers.map(user => ({
+      Name: user.name,
+      Email: user.email,
+      Role: user.role,
+      Phone: user.phone || '-',
+      City: user.city || '-',
+      Constituency: user.constituency || '-',
+      'Created Date': new Date(user.created_at).toLocaleDateString(),
+      Status: 'Active'
+    }));
+    const timestamp = new Date().toISOString().split('T')[0];
+    exportToExcel(exportData, `users-${timestamp}`, 'Users');
+  };
 
   // Mock field worker data for analytics/graphs
   const fieldWorkers = [
@@ -713,27 +753,48 @@ export default function FieldWorkerManagement() {
           )}
 
           {/* Action Buttons */}
-          {canCreateUsers && (
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="relative flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg border-2 border-blue-300 font-semibold"
-              >
-                <UserPlus className="h-5 w-5" />
-                Create User
-                <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-md">NEW</span>
-              </button>
+          <div className="flex flex-wrap gap-4">
+            {canCreateUsers && (
+              <>
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="relative flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg border-2 border-blue-300 font-semibold"
+                >
+                  <UserPlus className="h-5 w-5" />
+                  Create User
+                  <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-md">NEW</span>
+                </button>
 
-              <button
-                onClick={() => setShowBulkUploadModal(true)}
-                className="relative flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg border-2 border-green-300 font-semibold"
-              >
-                <Upload className="h-5 w-5" />
-                Bulk Import Users
-                <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-md">NEW</span>
-              </button>
-            </div>
-          )}
+                <button
+                  onClick={() => setShowBulkUploadModal(true)}
+                  className="relative flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg border-2 border-green-300 font-semibold"
+                >
+                  <Upload className="h-5 w-5" />
+                  Bulk Import Users
+                  <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-md">NEW</span>
+                </button>
+              </>
+            )}
+
+            {/* Export Buttons - Available to all users */}
+            <button
+              onClick={handleExportUsersCSV}
+              disabled={filteredUsers.length === 0}
+              className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download className="h-5 w-5" />
+              Export CSV
+            </button>
+
+            <button
+              onClick={handleExportUsersExcel}
+              disabled={filteredUsers.length === 0}
+              className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download className="h-5 w-5" />
+              Export Excel
+            </button>
+          </div>
 
           {/* Search */}
           <div className="relative">

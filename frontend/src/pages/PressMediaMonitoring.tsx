@@ -30,7 +30,6 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { MobileCard, ResponsiveGrid, MobileButton, MobileTabs } from '../components/MobileResponsive';
-import { newsApi, NewsArticle as ApiNewsArticle, NewsSentimentStats, NewsSourceStats } from '../services/newsApi';
 
 interface NewsSource {
   id: string;
@@ -45,7 +44,6 @@ interface NewsSource {
   reachEstimate: number;
 }
 
-// Map API response to local interface for compatibility
 interface NewsArticle {
   id: string;
   title: string;
@@ -65,27 +63,6 @@ interface NewsArticle {
   priority: 'high' | 'medium' | 'low';
   verified: boolean;
 }
-
-// Helper to map API article to display article
-const mapApiArticle = (apiArticle: ApiNewsArticle): NewsArticle => ({
-  id: apiArticle.id,
-  title: apiArticle.title,
-  summary: apiArticle.excerpt_preview || apiArticle.title,
-  source: apiArticle.source,
-  timestamp: new Date(apiArticle.published_at),
-  sentiment: apiArticle.tvk_sentiment,
-  sentimentScore: apiArticle.tvk_sentiment_score,
-  credibilityScore: 85, // Default credibility
-  engagement: apiArticle.vijay_mentions + apiArticle.tvk_mentions,
-  topics: [], // Will be populated from key_topics in detail view
-  mentions: [`Vijay: ${apiArticle.vijay_mentions}`, `TVK: ${apiArticle.tvk_mentions}`, `DMK: ${apiArticle.dmk_mentions}`],
-  region: 'Tamil Nadu',
-  language: apiArticle.language === 'ta' ? 'Tamil' : 'English',
-  url: apiArticle.url,
-  isBreaking: apiArticle.is_relevant && apiArticle.vijay_mentions > 3,
-  priority: apiArticle.vijay_mentions > 5 ? 'high' : apiArticle.vijay_mentions > 2 ? 'medium' : 'low',
-  verified: apiArticle.ai_processed
-});
 
 interface TrendingTopic {
   id: string;
@@ -196,129 +173,126 @@ const newsSources: NewsSource[] = [
   }
 ];
 
-// Removed mock data - now fetching from real API
+const mockArticles: NewsArticle[] = [
+  {
+    id: '1',
+    title: 'Tamil Nadu Budget 2026: Focus on Education and Healthcare Infrastructure',
+    summary: 'State government announces major allocation for educational reforms and healthcare modernization across all districts.',
+    source: 'Malayala Manorama',
+    timestamp: new Date(Date.now() - 1800000), // 30 minutes ago
+    sentiment: 'positive',
+    sentimentScore: 0.72,
+    credibilityScore: 92,
+    engagement: 1245,
+    topics: ['Budget', 'Education', 'Healthcare', 'Infrastructure'],
+    mentions: ['Chief Minister', 'Finance Minister', 'Education Department'],
+    region: 'Tamil Nadu',
+    language: 'Tamil',
+    url: '#',
+    isBreaking: true,
+    priority: 'high',
+    verified: true
+  },
+  {
+    id: '2',
+    title: 'Public Opinion Poll Shows Shift in Voter Preferences',
+    summary: 'Latest survey reveals changing political landscape with emerging issues taking center stage.',
+    source: 'The Hindu',
+    timestamp: new Date(Date.now() - 3600000), // 1 hour ago
+    sentiment: 'neutral',
+    sentimentScore: 0.05,
+    credibilityScore: 94,
+    engagement: 892,
+    topics: ['Election', 'Polling', 'Politics', 'Survey'],
+    mentions: ['Opposition Leader', 'Political Parties', 'Voters'],
+    region: 'Tamil Nadu',
+    language: 'English',
+    url: '#',
+    isBreaking: false,
+    priority: 'high',
+    verified: true
+  },
+  {
+    id: '3',
+    title: 'Infrastructure Development Projects Face Delays',
+    summary: 'Several key infrastructure projects across the state experiencing timeline extensions due to various challenges.',
+    source: 'Mathrubhumi',
+    timestamp: new Date(Date.now() - 7200000), // 2 hours ago
+    sentiment: 'negative',
+    sentimentScore: -0.58,
+    credibilityScore: 89,
+    engagement: 654,
+    topics: ['Infrastructure', 'Development', 'Government', 'Projects'],
+    mentions: ['PWD', 'Contractors', 'Local Bodies'],
+    region: 'Tamil Nadu',
+    language: 'Tamil',
+    url: '#',
+    isBreaking: false,
+    priority: 'medium',
+    verified: true
+  }
+];
+
+const trendingTopics: TrendingTopic[] = [
+  {
+    id: '1',
+    topic: 'Budget Allocation',
+    mentions: 1247,
+    sentiment: 0.68,
+    growth: 145,
+    relatedKeywords: ['education', 'healthcare', 'infrastructure', 'funding'],
+    timeframe: '24h'
+  },
+  {
+    id: '2',
+    topic: 'Election Reforms',
+    mentions: 892,
+    sentiment: 0.34,
+    growth: 78,
+    relatedKeywords: ['voting', 'transparency', 'digital', 'process'],
+    timeframe: '24h'
+  },
+  {
+    id: '3',
+    topic: 'Employment Schemes',
+    mentions: 756,
+    sentiment: 0.52,
+    growth: 92,
+    relatedKeywords: ['jobs', 'youth', 'skill development', 'training'],
+    timeframe: '24h'
+  }
+];
 
 export default function PressMediaMonitoring() {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedTimeframe, setSelectedTimeframe] = useState('24h');
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
-  const [selectedSentiment, setSelectedSentiment] = useState<'all' | 'positive' | 'negative' | 'neutral'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredArticles, setFilteredArticles] = useState<NewsArticle[]>([]);
-  const [allArticles, setAllArticles] = useState<NewsArticle[]>([]);
+  const [filteredArticles, setFilteredArticles] = useState<NewsArticle[]>(mockArticles);
   const [isMonitoring, setIsMonitoring] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const [sentimentStats, setSentimentStats] = useState<NewsSentimentStats | null>(null);
-  const [sourceStats, setSourceStats] = useState<NewsSourceStats[]>([]);
-  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
 
   const [analytics, setAnalytics] = useState({
-    totalArticles: 0,
-    positivesentiment: 0,
-    negativeSentiment: 0,
-    neutralSentiment: 0,
-    breakingNews: 0,
-    verifiedSources: 0,
-    avgCredibility: 0,
-    totalReach: 0
+    totalArticles: 12456,
+    positivesentiment: 62,
+    negativeSentiment: 23,
+    neutralSentiment: 15,
+    breakingNews: 5,
+    verifiedSources: 28,
+    avgCredibility: 87,
+    totalReach: 18500000
   });
 
-  // Convert timeframe to days
-  const getDaysFromTimeframe = (timeframe: string): number => {
-    switch (timeframe) {
-      case '1h': return 1;
-      case '6h': return 1;
-      case '24h': return 1;
-      case '7d': return 7;
-      default: return 7;
-    }
-  };
-
-  // Fetch data from API
-  const fetchNewsData = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const days = getDaysFromTimeframe(selectedTimeframe);
-
-      // Fetch all data in parallel
-      const [articlesResponse, stats, sources, trending] = await Promise.all([
-        newsApi.getArticles({
-          days,
-          sentiment: selectedSentiment === 'all' ? undefined : selectedSentiment,
-          language: selectedLanguage === 'all' ? undefined : (selectedLanguage.toLowerCase() as 'en' | 'ta'),
-          search: searchQuery || undefined,
-          page_size: 50
-        }),
-        newsApi.getSentimentStats(days),
-        newsApi.getSourceStats(days),
-        newsApi.getTrendingTopics(days, 10)
-      ]);
-
-      // Map API articles to display format
-      const mappedArticles = articlesResponse.results.map(mapApiArticle);
-      setAllArticles(mappedArticles);
-      setFilteredArticles(mappedArticles);
-
-      // Set stats
-      setSentimentStats(stats);
-      setSourceStats(sources);
-
-      // Map trending topics
-      const mappedTrending = trending.trending_topics.map((t, idx) => ({
-        id: idx.toString(),
-        topic: t.topic,
-        mentions: t.count,
-        sentiment: (t.percentage || 50) / 100, // Convert percentage to 0-1
-        growth: t.percentage || 0,
-        relatedKeywords: [],
-        timeframe: selectedTimeframe as any
-      }));
-      setTrendingTopics(mappedTrending);
-
-      // Calculate analytics
-      const totalPositive = stats.positive_count;
-      const totalNegative = stats.negative_count;
-      const totalNeutral = stats.neutral_count;
-      const total = stats.total_articles;
-
-      setAnalytics({
-        totalArticles: total,
-        positivesentiment: total > 0 ? Math.round((totalPositive / total) * 100) : 0,
-        negativeSentiment: total > 0 ? Math.round((totalNegative / total) * 100) : 0,
-        neutralSentiment: total > 0 ? Math.round((totalNeutral / total) * 100) : 0,
-        breakingNews: mappedArticles.filter(a => a.isBreaking).length,
-        verifiedSources: Object.keys(stats.articles_by_source).length,
-        avgCredibility: Math.round(stats.avg_sentiment_score * 100),
-        totalReach: 18500000 // Mock reach data
-      });
-
-    } catch (err: any) {
-      console.error('Error fetching news data:', err);
-      setError(err.message || 'Failed to load news data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch data on mount and when filters change
   useEffect(() => {
-    fetchNewsData();
-  }, [selectedTimeframe, selectedSentiment, selectedLanguage]);
-
-  // Local filtering for search (to avoid too many API calls)
-  useEffect(() => {
-    let filtered = allArticles;
-
+    // Filter articles based on search and filters
+    let filtered = mockArticles;
+    
     if (searchQuery) {
-      filtered = filtered.filter(article =>
+      filtered = filtered.filter(article => 
         article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        article.summary.toLowerCase().includes(searchQuery.toLowerCase())
+        article.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.topics.some(topic => topic.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
 
@@ -326,8 +300,12 @@ export default function PressMediaMonitoring() {
       filtered = filtered.filter(article => article.region === selectedRegion);
     }
 
+    if (selectedLanguage !== 'all') {
+      filtered = filtered.filter(article => article.language === selectedLanguage);
+    }
+
     setFilteredArticles(filtered);
-  }, [searchQuery, selectedRegion, allArticles]);
+  }, [searchQuery, selectedRegion, selectedLanguage]);
 
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {
@@ -365,39 +343,6 @@ export default function PressMediaMonitoring() {
     { key: 'analytics', label: 'Analytics', icon: Activity }
   ];
 
-  // Loading state
-  if (loading && allArticles.length === 0) {
-    return (
-      <div className="container-mobile py-6">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <RefreshCw className="w-12 h-12 text-blue-600 mx-auto mb-4 animate-spin" />
-            <p className="text-gray-600">Loading Tamil Nadu political news...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="container-mobile py-6">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-            <p className="text-gray-900 font-semibold mb-2">Failed to load news</p>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <MobileButton onClick={fetchNewsData}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Try Again
-            </MobileButton>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="container-mobile py-6">
       <div className="space-responsive">
@@ -412,7 +357,7 @@ export default function PressMediaMonitoring() {
                 Press & Media Monitoring
               </h1>
               <p className="text-responsive-sm text-gray-600">
-                Real-time Tamil Nadu political news (TVK/Vijay)
+                Real-time news analysis and sentiment tracking
               </p>
             </div>
           </div>
@@ -420,19 +365,18 @@ export default function PressMediaMonitoring() {
           {/* Real-time Status */}
           <div className="flex items-center justify-center space-x-4 mb-4">
             <div className="flex items-center space-x-2">
-              <div className={`w-3 h-3 rounded-full ${loading ? 'bg-yellow-500 animate-pulse' : 'bg-green-500 animate-pulse'}`} />
+              <div className={`w-3 h-3 rounded-full ${isMonitoring ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
               <span className="text-responsive-sm font-medium text-gray-700">
-                {loading ? 'Updating...' : 'Live Monitoring'}
+                {isMonitoring ? 'Live Monitoring' : 'Monitoring Paused'}
               </span>
             </div>
             <MobileButton
               variant="outline"
               size="small"
-              onClick={fetchNewsData}
-              disabled={loading}
+              onClick={() => setIsMonitoring(!isMonitoring)}
             >
-              <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              {isMonitoring ? <Pause className="w-4 h-4 mr-1" /> : <Play className="w-4 h-4 mr-1" />}
+              {isMonitoring ? 'Pause' : 'Resume'}
             </MobileButton>
           </div>
         </div>
@@ -483,7 +427,7 @@ export default function PressMediaMonitoring() {
             </ResponsiveGrid>
 
             {/* Breaking News Alert */}
-            {allArticles.some(article => article.isBreaking) && (
+            {mockArticles.some(article => article.isBreaking) && (
               <MobileCard padding="default" className="border-red-200 bg-red-50">
                 <div className="flex items-center space-x-3">
                   <Zap className="w-6 h-6 text-red-600 animate-pulse" />
@@ -492,7 +436,7 @@ export default function PressMediaMonitoring() {
                       Breaking News Alert
                     </h3>
                     <p className="text-responsive-sm text-red-700">
-                      {allArticles.find(article => article.isBreaking)?.title}
+                      {mockArticles.find(article => article.isBreaking)?.title}
                     </p>
                   </div>
                   <MobileButton variant="outline" size="small">
@@ -693,43 +637,6 @@ export default function PressMediaMonitoring() {
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   <Filter className="w-4 h-4" />
-                </MobileButton>
-              </div>
-
-              {/* Sentiment Filter Buttons */}
-              <div className="flex flex-wrap gap-2">
-                <MobileButton
-                  variant={selectedSentiment === 'all' ? 'primary' : 'outline'}
-                  size="small"
-                  onClick={() => setSelectedSentiment('all')}
-                >
-                  All
-                </MobileButton>
-                <MobileButton
-                  variant={selectedSentiment === 'positive' ? 'primary' : 'outline'}
-                  size="small"
-                  onClick={() => setSelectedSentiment('positive')}
-                  className="border-green-600 text-green-600 hover:bg-green-50"
-                >
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  Positive
-                </MobileButton>
-                <MobileButton
-                  variant={selectedSentiment === 'neutral' ? 'primary' : 'outline'}
-                  size="small"
-                  onClick={() => setSelectedSentiment('neutral')}
-                  className="border-gray-600 text-gray-600 hover:bg-gray-50"
-                >
-                  Neutral
-                </MobileButton>
-                <MobileButton
-                  variant={selectedSentiment === 'negative' ? 'primary' : 'outline'}
-                  size="small"
-                  onClick={() => setSelectedSentiment('negative')}
-                  className="border-red-600 text-red-600 hover:bg-red-50"
-                >
-                  <XCircle className="w-4 h-4 mr-1" />
-                  Negative
                 </MobileButton>
               </div>
 

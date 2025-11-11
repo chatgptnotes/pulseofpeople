@@ -73,9 +73,6 @@ urlpatterns = [
     # Geography APIs (Wards and Polling Booths)
     path('geography/', include('api.urls.geography_urls')),
 
-    # News Articles & Sentiment Analysis
-    path('news/', include('api.urls.news_urls')),
-
     # Router URLs (legacy)
     path('', include(router.urls)),
 ]

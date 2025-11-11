@@ -39,7 +39,13 @@ export default function SecondarySidebar({
 
   if (!activeCategory) return null;
 
-  const menuItems = categoryMenuItems[activeCategory] || [];
+  const rawMenuItems = categoryMenuItems[activeCategory] || [];
+
+  // Deduplicate menu items by href to prevent duplicates
+  const menuItems = rawMenuItems.filter((item, index, self) =>
+    index === self.findIndex((t) => t.href === item.href)
+  );
+
   const categoryLabel = getCategoryLabel(activeCategory);
 
   const handleItemClick = (href: string) => {

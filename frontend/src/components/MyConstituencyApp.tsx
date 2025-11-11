@@ -24,14 +24,16 @@ import {
   Building,
   Zap,
   Shield,
-  Target
+  Target,
+  X as CloseIcon
 } from 'lucide-react';
+import { issueCategoriesService, IssueCategory } from '../services/supabase/issue-categories.service';
 
 interface Issue {
   id: string;
   title: string;
   description: string;
-  category: 'infrastructure' | 'healthcare' | 'education' | 'employment' | 'environment' | 'safety' | 'utilities' | 'transport';
+  category: string; // Maps to issue_categories.code from database
   priority: 'low' | 'medium' | 'high' | 'urgent';
   status: 'reported' | 'acknowledged' | 'in_progress' | 'resolved' | 'closed';
   location: string;
@@ -52,248 +54,131 @@ interface Issue {
   }>;
 }
 
-interface Representative {
-  id: string;
-  name: string;
-  position: string;
-  party: string;
-  contact: {
-    phone: string;
-    email: string;
-    office: string;
-  };
-  availability: {
-    publicMeeting: string;
-    onlineHours: string;
-  };
-  responsiveness: number; // 0-1 score
-  issuesHandled: number;
-  satisfactionRating: number; // 0-5 stars
-}
-
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: Date;
-  location: string;
-  organizer: string;
-  category: 'town_hall' | 'public_meeting' | 'development_update' | 'community_event';
-  attendees: number;
-  maxCapacity?: number;
-  isOnline: boolean;
-  meetingLink?: string;
-}
+// Removed Representative and Event interfaces - using only dynamic data from database
 
 export default function MyConstituencyApp() {
-  const [activeTab, setActiveTab] = useState<'issues' | 'representatives' | 'events' | 'insights' | 'report'>('issues');
+  const [activeTab, setActiveTab] = useState<'issues' | 'insights' | 'report'>('issues');
   const [selectedConstituency] = useState('Thiruvananthapuram Central');
   const [showReportForm, setShowReportForm] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [filterCategory, setFilterCategory] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
+  const [issueCategories, setIssueCategories] = useState<IssueCategory[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
-  // Mock data for Thiruvananthapuram Central constituency
-  const [issues, setIssues] = useState<Issue[]>([
-    {
-      id: '1',
-      title: 'Poor Street Lighting on MG Road',
-      description: 'Several street lights have been non-functional for over 2 months, creating safety concerns for evening commuters and pedestrians.',
-      category: 'infrastructure',
-      priority: 'high',
-      status: 'acknowledged',
-      location: 'MG Road, Near Central Station',
-      reportedBy: 'Rajesh Kumar',
-      reportedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      supporters: 23,
-      comments: 8,
-      assignedTo: 'PWD Team',
-      estimatedResolution: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
-      updates: [
-        {
-          id: '1',
-          message: 'Issue acknowledged by PWD department. Survey team dispatched.',
-          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-          author: 'PWD Officer',
-          type: 'status_change'
-        }
-      ]
-    },
-    {
-      id: '2',
-      title: 'Overcrowding at Government Hospital',
-      description: 'Long waiting times at the OPD, insufficient seating arrangements, and need for additional consultation rooms.',
-      category: 'healthcare',
-      priority: 'urgent',
-      status: 'in_progress',
-      location: 'Government General Hospital',
-      reportedBy: 'Dr. Priya Nair',
-      reportedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-      supporters: 67,
-      comments: 15,
-      assignedTo: 'Health Department',
-      updates: [
-        {
-          id: '1',
-          message: 'Additional temporary consultation rooms being set up. New appointment system under testing.',
-          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          author: 'Health Secretary',
-          type: 'update'
-        }
-      ]
-    },
-    {
-      id: '3',
-      title: 'Need for Children\'s Park in Residential Area',
-      description: 'The Pattom residential area lacks recreational facilities for children. Request for establishing a small park with playground equipment.',
-      category: 'environment',
-      priority: 'medium',
-      status: 'reported',
-      location: 'Pattom Residential Complex',
-      reportedBy: 'Residents Association',
-      reportedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      supporters: 41,
-      comments: 12
-    },
-    {
-      id: '4',
-      title: 'Irregular Water Supply',
-      description: 'Water supply has been irregular for the past month. Many households receiving water only on alternate days.',
-      category: 'utilities',
-      priority: 'high',
-      status: 'acknowledged',
-      location: 'Vazhuthacaud Area',
-      reportedBy: 'Multiple Citizens',
-      reportedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
-      supporters: 89,
-      comments: 23,
-      assignedTo: 'Water Authority'
-    }
-  ]);
+  // Form submission states
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const representatives: Representative[] = [
-    {
-      id: '1',
-      name: 'Shashi Tharoor',
-      position: 'Member of Parliament',
-      party: 'Indian National Congress',
-      contact: {
-        phone: '+91-471-2345678',
-        email: 'mp.thiruvananthapuram@parliament.gov.in',
-        office: 'MP Office, Statue Junction'
-      },
-      availability: {
-        publicMeeting: 'Every Saturday 10 AM - 12 PM',
-        onlineHours: 'Monday & Wednesday 6 PM - 8 PM'
-      },
-      responsiveness: 0.87,
-      issuesHandled: 142,
-      satisfactionRating: 4.2
-    },
-    {
-      id: '2',
-      name: 'V.S. Sivakumar',
-      position: 'MLA Thiruvananthapuram',
-      party: 'Indian National Congress',
-      contact: {
-        phone: '+91-471-2456789',
-        email: 'mla.tvpm@kerala.gov.in',
-        office: 'MLA Office, Secretariat'
-      },
-      availability: {
-        publicMeeting: 'Tuesday & Thursday 11 AM - 1 PM',
-        onlineHours: 'Friday 5 PM - 7 PM'
-      },
-      responsiveness: 0.92,
-      issuesHandled: 89,
-      satisfactionRating: 4.5
-    },
-    {
-      id: '3',
-      name: 'Arya Rajendran',
-      position: 'Mayor of Thiruvananthapuram',
-      party: 'CPI(M)',
-      contact: {
-        phone: '+91-471-2567890',
-        email: 'mayor@corporationtvm.kerala.gov.in',
-        office: 'Mayor Office, Corporation Building'
-      },
-      availability: {
-        publicMeeting: 'Every Wednesday 2 PM - 4 PM',
-        onlineHours: 'Thursday 7 PM - 9 PM'
-      },
-      responsiveness: 0.89,
-      issuesHandled: 156,
-      satisfactionRating: 4.3
-    }
-  ];
+  // Issues loading
+  const [loadingIssues, setLoadingIssues] = useState(true);
 
-  const events: Event[] = [
-    {
-      id: '1',
-      title: 'Monthly Town Hall Meeting',
-      description: 'Discuss ongoing development projects, citizen concerns, and upcoming initiatives for Thiruvananthapuram Central.',
-      date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-      location: 'Community Hall, Statue Junction',
-      organizer: 'MLA Office',
-      category: 'town_hall',
-      attendees: 0,
-      maxCapacity: 200,
-      isOnline: false
-    },
-    {
-      id: '2',
-      title: 'Smart City Project Updates',
-      description: 'Presentation on progress of Smart City initiatives including digital infrastructure, traffic management, and e-governance.',
-      date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      location: 'Online Meeting',
-      organizer: 'Smart City Mission',
-      category: 'development_update',
-      attendees: 0,
-      maxCapacity: 500,
-      isOnline: true,
-      meetingLink: 'https://meet.google.com/xyz-abc-def'
-    },
-    {
-      id: '3',
-      title: 'Health Camp & Awareness Program',
-      description: 'Free health checkups, vaccination drive, and awareness session on preventive healthcare measures.',
-      date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
-      location: 'Government Higher Secondary School',
-      organizer: 'Health Department',
-      category: 'community_event',
-      attendees: 0,
-      maxCapacity: 300,
-      isOnline: false
-    }
-  ];
+  // Fetch issue categories from database
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const categories = await issueCategoriesService.getAll();
+        setIssueCategories(categories);
+      } catch (error) {
+        console.error('Error loading issue categories:', error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'infrastructure': return <Building className="h-4 w-4" />;
-      case 'healthcare': return <Heart className="h-4 w-4" />;
-      case 'education': return <FileText className="h-4 w-4" />;
-      case 'employment': return <Users className="h-4 w-4" />;
-      case 'environment': return <Shield className="h-4 w-4" />;
-      case 'safety': return <AlertTriangle className="h-4 w-4" />;
-      case 'utilities': return <Zap className="h-4 w-4" />;
-      case 'transport': return <Globe className="h-4 w-4" />;
-      default: return <Flag className="h-4 w-4" />;
-    }
+    fetchCategories();
+  }, []);
+
+  // Issues state - loaded from database
+  const [issues, setIssues] = useState<Issue[]>([]);
+
+  // Fetch issues from issue_categories table
+  useEffect(() => {
+    const fetchIssues = async () => {
+      try {
+        setLoadingIssues(true);
+
+        // Get all issue categories (including citizen-reported ones)
+        const allCategories = await issueCategoriesService.getAll();
+
+        // Filter to show only recently created entries (potential citizen reports)
+        // Or show all - you can customize this filter
+        const transformedIssues: Issue[] = allCategories.map((category) => {
+          // Map priority_level back to form priority
+          const priorityMap: Record<string, 'low' | 'medium' | 'high' | 'urgent'> = {
+            'Low': 'low',
+            'Medium': 'medium',
+            'High': 'high',
+            'Critical': 'urgent'
+          };
+
+          return {
+            id: category.id,
+            title: category.name,
+            description: category.description,
+            category: category.category,
+            priority: priorityMap[category.priority_level] || 'medium',
+            status: category.is_hot_topic ? 'in_progress' : 'reported',
+            location: category.geographic_focus?.[0] || 'Not specified',
+            reportedBy: 'Citizen',
+            reportedAt: new Date(category.created_at),
+            supporters: 0,
+            comments: 0,
+            updates: [],
+          };
+        });
+
+        setIssues(transformedIssues);
+      } catch (error) {
+        console.error('Error loading issues:', error);
+      } finally {
+        setLoadingIssues(false);
+      }
+    };
+
+    fetchIssues();
+  }, []);
+
+  // Removed static representatives and events arrays - only using dynamic issue_categories data
+
+  const getCategoryIcon = (categoryCode: string) => {
+    // Map database category codes to icons
+    const upperCode = categoryCode.toUpperCase();
+
+    if (upperCode.includes('INFRA')) return <Building className="h-4 w-4" />;
+    if (upperCode.includes('HEALTH')) return <Heart className="h-4 w-4" />;
+    if (upperCode.includes('EDUCATION') || upperCode.includes('NEET')) return <FileText className="h-4 w-4" />;
+    if (upperCode.includes('JOB') || upperCode.includes('EMPLOYMENT')) return <Users className="h-4 w-4" />;
+    if (upperCode.includes('ENVIRONMENT') || upperCode.includes('POLLUTION')) return <Shield className="h-4 w-4" />;
+    if (upperCode.includes('SAFETY') || upperCode.includes('LAW') || upperCode.includes('WOMEN')) return <AlertTriangle className="h-4 w-4" />;
+    if (upperCode.includes('WATER') || upperCode.includes('ELECTRICITY')) return <Zap className="h-4 w-4" />;
+    if (upperCode.includes('METRO') || upperCode.includes('TRANSPORT')) return <Globe className="h-4 w-4" />;
+
+    return <Flag className="h-4 w-4" />;
   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'infrastructure': return 'text-blue-600 bg-blue-100';
-      case 'healthcare': return 'text-red-600 bg-red-100';
-      case 'education': return 'text-green-600 bg-green-100';
-      case 'employment': return 'text-purple-600 bg-purple-100';
-      case 'environment': return 'text-emerald-600 bg-emerald-100';
-      case 'safety': return 'text-orange-600 bg-orange-100';
-      case 'utilities': return 'text-yellow-600 bg-yellow-100';
-      case 'transport': return 'text-indigo-600 bg-indigo-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
+  const getCategoryColor = (categoryCode: string) => {
+    // Map database category codes to colors
+    const upperCode = categoryCode.toUpperCase();
+
+    if (upperCode.includes('INFRA')) return 'text-blue-600 bg-blue-100';
+    if (upperCode.includes('HEALTH')) return 'text-red-600 bg-red-100';
+    if (upperCode.includes('EDUCATION') || upperCode.includes('NEET')) return 'text-green-600 bg-green-100';
+    if (upperCode.includes('JOB') || upperCode.includes('EMPLOYMENT') || upperCode.includes('STARTUP')) return 'text-purple-600 bg-purple-100';
+    if (upperCode.includes('ENVIRONMENT') || upperCode.includes('POLLUTION')) return 'text-emerald-600 bg-emerald-100';
+    if (upperCode.includes('SAFETY') || upperCode.includes('LAW') || upperCode.includes('WOMEN')) return 'text-orange-600 bg-orange-100';
+    if (upperCode.includes('WATER') || upperCode.includes('ELECTRICITY')) return 'text-yellow-600 bg-yellow-100';
+    if (upperCode.includes('METRO') || upperCode.includes('TRANSPORT')) return 'text-indigo-600 bg-indigo-100';
+
+    return 'text-gray-600 bg-gray-100';
+  };
+
+  // Get category display name from code
+  const getCategoryDisplayName = (code: string): string => {
+    const category = issueCategories.find(cat => cat.code === code);
+    return category ? category.name : code;
   };
 
   const getPriorityColor = (priority: string) => {
@@ -342,22 +227,54 @@ export default function MyConstituencyApp() {
     ));
   };
 
-  const handleReportIssue = (formData: any) => {
-    const newIssue: Issue = {
-      id: Date.now().toString(),
-      title: formData.title,
-      description: formData.description,
-      category: formData.category,
-      priority: formData.priority,
-      status: 'reported',
-      location: formData.location,
-      reportedBy: 'Current User', // Would come from auth context
-      reportedAt: new Date(),
-      supporters: 1,
-      comments: 0
-    };
-    setIssues(prev => [newIssue, ...prev]);
-    setShowReportForm(false);
+  const handleReportIssue = async (formData: any) => {
+    try {
+      setIsSubmitting(true);
+      setSubmitError(null);
+      setSubmitSuccess(false);
+
+      // Create issue in issue_categories table
+      const newCategory = await issueCategoriesService.createFromReport({
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        priority: formData.priority,
+        location: formData.location,
+      });
+
+      // Transform IssueCategory to Issue interface for display
+      const transformedIssue: Issue = {
+        id: newCategory.id,
+        title: newCategory.name,
+        description: newCategory.description,
+        category: newCategory.category,
+        priority: formData.priority as 'low' | 'medium' | 'high' | 'urgent',
+        status: 'reported',
+        location: newCategory.geographic_focus?.[0] || formData.location,
+        reportedBy: 'Current User',
+        reportedAt: new Date(newCategory.created_at),
+        supporters: 0,
+        comments: 0,
+      };
+
+      setIssues(prev => [transformedIssue, ...prev]);
+      setSubmitSuccess(true);
+
+      // Refresh categories list to include the new entry
+      const updatedCategories = await issueCategoriesService.getAll();
+      setIssueCategories(updatedCategories);
+
+      // Close modal after 1.5 seconds
+      setTimeout(() => {
+        setShowReportForm(false);
+        setSubmitSuccess(false);
+      }, 1500);
+    } catch (error: any) {
+      console.error('Error submitting issue:', error);
+      setSubmitError(error.message || 'Failed to submit issue. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -383,8 +300,8 @@ export default function MyConstituencyApp() {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      {/* Quick Stats - All from issue_categories table */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-blue-50 p-4 rounded-lg">
           <div className="flex items-center">
             <Flag className="h-8 w-8 text-blue-600 mr-3" />
@@ -416,25 +333,14 @@ export default function MyConstituencyApp() {
             </div>
           </div>
         </div>
-        <div className="bg-orange-50 p-4 rounded-lg">
-          <div className="flex items-center">
-            <Calendar className="h-8 w-8 text-orange-600 mr-3" />
-            <div>
-              <div className="text-2xl font-bold text-orange-900">{events.length}</div>
-              <div className="text-sm text-orange-700">Upcoming Events</div>
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* Tab Navigation */}
+      {/* Tab Navigation - Only Issues, Insights, Report */}
       <div className="mb-6">
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
             {[
               { key: 'issues', label: 'Local Issues', icon: Flag },
-              { key: 'representatives', label: 'Representatives', icon: Users },
-              { key: 'events', label: 'Events', icon: Calendar },
               { key: 'insights', label: 'Insights', icon: TrendingUp },
               { key: 'report', label: 'Report', icon: FileText }
             ].map(({ key, label, icon: Icon }) => (
@@ -462,19 +368,18 @@ export default function MyConstituencyApp() {
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center space-x-2">
               <Filter className="h-4 w-4 text-gray-500" />
-              <select 
-                value={filterCategory} 
+              <select
+                value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
                 className="border border-gray-300 rounded-md px-3 py-1 text-sm"
+                disabled={loadingCategories}
               >
                 <option value="all">All Categories</option>
-                <option value="infrastructure">Infrastructure</option>
-                <option value="healthcare">Healthcare</option>
-                <option value="education">Education</option>
-                <option value="environment">Environment</option>
-                <option value="utilities">Utilities</option>
-                <option value="transport">Transport</option>
-                <option value="safety">Safety</option>
+                {issueCategories.map((category) => (
+                  <option key={category.id} value={category.code}>
+                    {category.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="flex items-center space-x-2">
@@ -493,14 +398,31 @@ export default function MyConstituencyApp() {
 
           {/* Issues List */}
           <div className="space-y-4">
-            {filteredIssues.map((issue) => (
+            {loadingIssues ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading issues...</p>
+              </div>
+            ) : filteredIssues.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-lg">
+                <Flag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-2">No issues reported yet</p>
+                <button
+                  onClick={() => setShowReportForm(true)}
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                >
+                  Be the first to report an issue
+                </button>
+              </div>
+            ) : (
+              filteredIssues.map((issue) => (
               <div key={issue.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
                       <div className={`flex items-center px-2 py-1 rounded text-xs font-medium ${getCategoryColor(issue.category)}`}>
                         {getCategoryIcon(issue.category)}
-                        <span className="ml-1 capitalize">{issue.category}</span>
+                        <span className="ml-1 capitalize">{getCategoryDisplayName(issue.category)}</span>
                       </div>
                       <div className={`px-2 py-1 rounded border text-xs font-medium ${getPriorityColor(issue.priority)}`}>
                         {issue.priority.toUpperCase()}
@@ -566,141 +488,9 @@ export default function MyConstituencyApp() {
                   </div>
                 )}
               </div>
-            ))}
+              ))
+            )}
           </div>
-        </div>
-      )}
-
-      {/* Representatives Tab */}
-      {activeTab === 'representatives' && (
-        <div className="space-y-4">
-          {representatives.map((rep) => (
-            <div key={rep.id} className="border border-gray-200 rounded-lg p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h4 className="text-lg font-semibold text-gray-900">{rep.name}</h4>
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">{rep.party}</span>
-                  </div>
-                  <p className="text-gray-700 mb-3">{rep.position}</p>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{rep.issuesHandled}</div>
-                    <div className="text-xs text-gray-500">Issues Handled</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`h-4 w-4 ${i < rep.satisfactionRating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                      ))}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">{rep.satisfactionRating}/5</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h5 className="font-medium text-gray-900 mb-3">Contact Information</h5>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <Phone className="h-4 w-4 text-gray-500 mr-2" />
-                      <span className="text-gray-700">{rep.contact.phone}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Mail className="h-4 w-4 text-gray-500 mr-2" />
-                      <span className="text-gray-700">{rep.contact.email}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Building className="h-4 w-4 text-gray-500 mr-2" />
-                      <span className="text-gray-700">{rep.contact.office}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h5 className="font-medium text-gray-900 mb-3">Availability</h5>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="text-gray-600">Public Meetings:</span>
-                      <div className="text-gray-800">{rep.availability.publicMeeting}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Online Hours:</span>
-                      <div className="text-gray-800">{rep.availability.onlineHours}</div>
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-600">Responsiveness</span>
-                      <span className="text-sm font-medium">{Math.round(rep.responsiveness * 100)}%</span>
-                    </div>
-                    <div className="bg-gray-200 rounded-full h-2 relative">
-                      <div 
-                        className="bg-green-600 h-2 rounded-full" 
-                        style={{ width: `${rep.responsiveness * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Events Tab */}
-      {activeTab === 'events' && (
-        <div className="space-y-4">
-          {events.map((event) => (
-            <div key={event.id} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <h4 className="font-medium text-gray-900">{event.title}</h4>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      event.category === 'town_hall' ? 'bg-blue-100 text-blue-700' :
-                      event.category === 'development_update' ? 'bg-green-100 text-green-700' :
-                      'bg-purple-100 text-purple-700'
-                    }`}>
-                      {event.category.replace('_', ' ').toUpperCase()}
-                    </span>
-                    {event.isOnline && (
-                      <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium">
-                        ONLINE
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-700 mb-3">{event.description}</p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      {event.date.toLocaleString()}
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {event.location}
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 mr-1" />
-                      {event.organizer}
-                    </div>
-                  </div>
-                </div>
-                <div className="ml-4 text-right">
-                  {event.maxCapacity && (
-                    <div className="text-sm text-gray-600 mb-2">
-                      {event.attendees}/{event.maxCapacity} attending
-                    </div>
-                  )}
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm">
-                    {event.isOnline ? 'Join Online' : 'Register'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       )}
 
@@ -711,14 +501,14 @@ export default function MyConstituencyApp() {
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-3">Issue Categories</h4>
               <div className="space-y-3">
-                {['infrastructure', 'healthcare', 'utilities', 'environment'].map(category => {
-                  const count = issues.filter(i => i.category === category).length;
-                  const percentage = Math.round((count / issues.length) * 100);
+                {issueCategories.slice(0, 6).map(category => {
+                  const count = issues.filter(i => i.category === category.code).length;
+                  const percentage = issues.length > 0 ? Math.round((count / issues.length) * 100) : 0;
                   return (
-                    <div key={category} className="flex items-center justify-between">
+                    <div key={category.id} className="flex items-center justify-between">
                       <div className="flex items-center">
-                        {getCategoryIcon(category)}
-                        <span className="ml-2 text-sm capitalize">{category}</span>
+                        {getCategoryIcon(category.code)}
+                        <span className="ml-2 text-sm">{category.name}</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <div className="bg-blue-200 rounded-full h-2 w-20 relative">
@@ -801,8 +591,33 @@ export default function MyConstituencyApp() {
       {/* Report Issue Modal */}
       {showReportForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-96 overflow-y-auto">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[600px] overflow-y-auto">
             <h4 className="text-lg font-semibold mb-4">Report New Issue</h4>
+
+            {/* Success Message */}
+            {submitSuccess && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                <span className="text-sm text-green-800">Issue reported successfully!</span>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {submitError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-start">
+                <AlertTriangle className="h-5 w-5 text-red-600 mr-2 mt-0.5" />
+                <div className="flex-1">
+                  <span className="text-sm text-red-800">{submitError}</span>
+                </div>
+                <button
+                  onClick={() => setSubmitError(null)}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  <CloseIcon className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
@@ -821,15 +636,13 @@ export default function MyConstituencyApp() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <select name="category" required className="w-full border border-gray-300 rounded-md px-3 py-2">
+                  <select name="category" required className="w-full border border-gray-300 rounded-md px-3 py-2" disabled={loadingCategories}>
                     <option value="">Select Category</option>
-                    <option value="infrastructure">Infrastructure</option>
-                    <option value="healthcare">Healthcare</option>
-                    <option value="education">Education</option>
-                    <option value="utilities">Utilities</option>
-                    <option value="environment">Environment</option>
-                    <option value="transport">Transport</option>
-                    <option value="safety">Safety</option>
+                    {issueCategories.map((category) => (
+                      <option key={category.id} value={category.code}>
+                        {category.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
@@ -854,16 +667,29 @@ export default function MyConstituencyApp() {
               <div className="flex justify-end space-x-3 mt-6">
                 <button
                   type="button"
-                  onClick={() => setShowReportForm(false)}
+                  onClick={() => {
+                    setShowReportForm(false);
+                    setSubmitError(null);
+                    setSubmitSuccess(false);
+                  }}
                   className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+                  disabled={isSubmitting}
                 >
-                  Submit Issue
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Submitting...
+                    </>
+                  ) : (
+                    'Submit Issue'
+                  )}
                 </button>
               </div>
             </form>

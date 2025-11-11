@@ -90,7 +90,6 @@ import WardsList from './pages/WardsList'
 import BoothsList from './pages/BoothsList'
 import BoothsMap from './pages/BoothsMap'
 import WardsBoothsAnalytics from './pages/WardsBoothsAnalytics'
-import NewsMonitor from './pages/dashboards/NewsMonitor'
 
 // Inner component that uses auth context
 function AppRoutes() {
@@ -233,15 +232,6 @@ function AppRoutes() {
                 <ProtectedRoute>
                   <Layout>
                     <WardsBoothsAnalytics />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-
-              {/* News Monitor - AI-powered sentiment analysis */}
-              <Route path="/news-monitor" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <NewsMonitor />
                   </Layout>
                 </ProtectedRoute>
               } />

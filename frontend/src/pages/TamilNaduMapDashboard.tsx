@@ -87,7 +87,6 @@ const TamilNaduMapDashboard: React.FC = () => {
             'S.No': index + 1,
             'Constituency Name': constituencyName,
             'District': feature.properties.DIST_NAME,
-            'Parliament Constituency': feature.properties.PC_NAME,
             'AC Number': feature.properties.AC_NO,
             'Sentiment Score (%)': sentiment?.sentiment || 50,
             'Sentiment Status': sentiment?.status || 'Neutral',
@@ -231,7 +230,6 @@ const TamilNaduMapDashboard: React.FC = () => {
                     <li>✓ All 234 constituencies</li>
                     <li>✓ Accurate boundaries</li>
                     <li>✓ District information</li>
-                    <li>✓ Parliament mapping</li>
                   </ul>
                 </div>
                 <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
@@ -505,7 +503,7 @@ const TamilNaduMapDashboard: React.FC = () => {
                       <ul className="text-xs text-gray-500 space-y-1">
                         <li>✓ All 234 constituencies</li>
                         <li>✓ Sentiment scores and status</li>
-                        <li>✓ District and parliament constituency info</li>
+                        <li>✓ District and constituency info</li>
                       </ul>
                     </div>
                     <button

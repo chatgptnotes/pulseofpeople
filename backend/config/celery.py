@@ -68,15 +68,6 @@ app.conf.beat_schedule = {
             'expires': 3600,
         }
     },
-
-    # News Scraping & Sentiment Analysis - Runs every 6 hours (12 AM, 6 AM, 12 PM, 6 PM)
-    'scrape-and-analyze-tn-news': {
-        'task': 'api.tasks.scrape_and_analyze_news_pipeline',
-        'schedule': crontab(hour='0,6,12,18', minute=0),  # Every 6 hours
-        'options': {
-            'expires': 21600,  # Task expires after 6 hours
-        }
-    },
 }
 
 # Celery Configuration
