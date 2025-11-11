@@ -54,41 +54,10 @@ interface Issue {
   }>;
 }
 
-interface Representative {
-  id: string;
-  name: string;
-  position: string;
-  party: string;
-  contact: {
-    phone: string;
-    email: string;
-    office: string;
-  };
-  availability: {
-    publicMeeting: string;
-    onlineHours: string;
-  };
-  responsiveness: number; // 0-1 score
-  issuesHandled: number;
-  satisfactionRating: number; // 0-5 stars
-}
-
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: Date;
-  location: string;
-  organizer: string;
-  category: 'town_hall' | 'public_meeting' | 'development_update' | 'community_event';
-  attendees: number;
-  maxCapacity?: number;
-  isOnline: boolean;
-  meetingLink?: string;
-}
+// Removed Representative and Event interfaces - using only dynamic data from database
 
 export default function MyConstituencyApp() {
-  const [activeTab, setActiveTab] = useState<'issues' | 'representatives' | 'events' | 'insights' | 'report'>('issues');
+  const [activeTab, setActiveTab] = useState<'issues' | 'insights' | 'report'>('issues');
   const [selectedConstituency] = useState('Thiruvananthapuram Central');
   const [showReportForm, setShowReportForm] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
@@ -172,102 +141,7 @@ export default function MyConstituencyApp() {
     fetchIssues();
   }, []);
 
-  const representatives: Representative[] = [
-    {
-      id: '1',
-      name: 'Shashi Tharoor',
-      position: 'Member of Parliament',
-      party: 'Indian National Congress',
-      contact: {
-        phone: '+91-471-2345678',
-        email: 'mp.thiruvananthapuram@parliament.gov.in',
-        office: 'MP Office, Statue Junction'
-      },
-      availability: {
-        publicMeeting: 'Every Saturday 10 AM - 12 PM',
-        onlineHours: 'Monday & Wednesday 6 PM - 8 PM'
-      },
-      responsiveness: 0.87,
-      issuesHandled: 142,
-      satisfactionRating: 4.2
-    },
-    {
-      id: '2',
-      name: 'V.S. Sivakumar',
-      position: 'MLA Thiruvananthapuram',
-      party: 'Indian National Congress',
-      contact: {
-        phone: '+91-471-2456789',
-        email: 'mla.tvpm@kerala.gov.in',
-        office: 'MLA Office, Secretariat'
-      },
-      availability: {
-        publicMeeting: 'Tuesday & Thursday 11 AM - 1 PM',
-        onlineHours: 'Friday 5 PM - 7 PM'
-      },
-      responsiveness: 0.92,
-      issuesHandled: 89,
-      satisfactionRating: 4.5
-    },
-    {
-      id: '3',
-      name: 'Arya Rajendran',
-      position: 'Mayor of Thiruvananthapuram',
-      party: 'CPI(M)',
-      contact: {
-        phone: '+91-471-2567890',
-        email: 'mayor@corporationtvm.kerala.gov.in',
-        office: 'Mayor Office, Corporation Building'
-      },
-      availability: {
-        publicMeeting: 'Every Wednesday 2 PM - 4 PM',
-        onlineHours: 'Thursday 7 PM - 9 PM'
-      },
-      responsiveness: 0.89,
-      issuesHandled: 156,
-      satisfactionRating: 4.3
-    }
-  ];
-
-  const events: Event[] = [
-    {
-      id: '1',
-      title: 'Monthly Town Hall Meeting',
-      description: 'Discuss ongoing development projects, citizen concerns, and upcoming initiatives for Thiruvananthapuram Central.',
-      date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-      location: 'Community Hall, Statue Junction',
-      organizer: 'MLA Office',
-      category: 'town_hall',
-      attendees: 0,
-      maxCapacity: 200,
-      isOnline: false
-    },
-    {
-      id: '2',
-      title: 'Smart City Project Updates',
-      description: 'Presentation on progress of Smart City initiatives including digital infrastructure, traffic management, and e-governance.',
-      date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      location: 'Online Meeting',
-      organizer: 'Smart City Mission',
-      category: 'development_update',
-      attendees: 0,
-      maxCapacity: 500,
-      isOnline: true,
-      meetingLink: 'https://meet.google.com/xyz-abc-def'
-    },
-    {
-      id: '3',
-      title: 'Health Camp & Awareness Program',
-      description: 'Free health checkups, vaccination drive, and awareness session on preventive healthcare measures.',
-      date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
-      location: 'Government Higher Secondary School',
-      organizer: 'Health Department',
-      category: 'community_event',
-      attendees: 0,
-      maxCapacity: 300,
-      isOnline: false
-    }
-  ];
+  // Removed static representatives and events arrays - only using dynamic issue_categories data
 
   const getCategoryIcon = (categoryCode: string) => {
     // Map database category codes to icons
@@ -426,8 +300,8 @@ export default function MyConstituencyApp() {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      {/* Quick Stats - All from issue_categories table */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-blue-50 p-4 rounded-lg">
           <div className="flex items-center">
             <Flag className="h-8 w-8 text-blue-600 mr-3" />
@@ -459,25 +333,14 @@ export default function MyConstituencyApp() {
             </div>
           </div>
         </div>
-        <div className="bg-orange-50 p-4 rounded-lg">
-          <div className="flex items-center">
-            <Calendar className="h-8 w-8 text-orange-600 mr-3" />
-            <div>
-              <div className="text-2xl font-bold text-orange-900">{events.length}</div>
-              <div className="text-sm text-orange-700">Upcoming Events</div>
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* Tab Navigation */}
+      {/* Tab Navigation - Only Issues, Insights, Report */}
       <div className="mb-6">
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
             {[
               { key: 'issues', label: 'Local Issues', icon: Flag },
-              { key: 'representatives', label: 'Representatives', icon: Users },
-              { key: 'events', label: 'Events', icon: Calendar },
               { key: 'insights', label: 'Insights', icon: TrendingUp },
               { key: 'report', label: 'Report', icon: FileText }
             ].map(({ key, label, icon: Icon }) => (
@@ -628,139 +491,6 @@ export default function MyConstituencyApp() {
               ))
             )}
           </div>
-        </div>
-      )}
-
-      {/* Representatives Tab */}
-      {activeTab === 'representatives' && (
-        <div className="space-y-4">
-          {representatives.map((rep) => (
-            <div key={rep.id} className="border border-gray-200 rounded-lg p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h4 className="text-lg font-semibold text-gray-900">{rep.name}</h4>
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">{rep.party}</span>
-                  </div>
-                  <p className="text-gray-700 mb-3">{rep.position}</p>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{rep.issuesHandled}</div>
-                    <div className="text-xs text-gray-500">Issues Handled</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`h-4 w-4 ${i < rep.satisfactionRating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                      ))}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">{rep.satisfactionRating}/5</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h5 className="font-medium text-gray-900 mb-3">Contact Information</h5>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <Phone className="h-4 w-4 text-gray-500 mr-2" />
-                      <span className="text-gray-700">{rep.contact.phone}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Mail className="h-4 w-4 text-gray-500 mr-2" />
-                      <span className="text-gray-700">{rep.contact.email}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Building className="h-4 w-4 text-gray-500 mr-2" />
-                      <span className="text-gray-700">{rep.contact.office}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h5 className="font-medium text-gray-900 mb-3">Availability</h5>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="text-gray-600">Public Meetings:</span>
-                      <div className="text-gray-800">{rep.availability.publicMeeting}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Online Hours:</span>
-                      <div className="text-gray-800">{rep.availability.onlineHours}</div>
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-600">Responsiveness</span>
-                      <span className="text-sm font-medium">{Math.round(rep.responsiveness * 100)}%</span>
-                    </div>
-                    <div className="bg-gray-200 rounded-full h-2 relative">
-                      <div 
-                        className="bg-green-600 h-2 rounded-full" 
-                        style={{ width: `${rep.responsiveness * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Events Tab */}
-      {activeTab === 'events' && (
-        <div className="space-y-4">
-          {events.map((event) => (
-            <div key={event.id} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <h4 className="font-medium text-gray-900">{event.title}</h4>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      event.category === 'town_hall' ? 'bg-blue-100 text-blue-700' :
-                      event.category === 'development_update' ? 'bg-green-100 text-green-700' :
-                      'bg-purple-100 text-purple-700'
-                    }`}>
-                      {event.category.replace('_', ' ').toUpperCase()}
-                    </span>
-                    {event.isOnline && (
-                      <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium">
-                        ONLINE
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-700 mb-3">{event.description}</p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      {event.date.toLocaleString()}
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {event.location}
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 mr-1" />
-                      {event.organizer}
-                    </div>
-                  </div>
-                </div>
-                <div className="ml-4 text-right">
-                  {event.maxCapacity && (
-                    <div className="text-sm text-gray-600 mb-2">
-                      {event.attendees}/{event.maxCapacity} attending
-                    </div>
-                  )}
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm">
-                    {event.isOnline ? 'Join Online' : 'Register'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       )}
 
