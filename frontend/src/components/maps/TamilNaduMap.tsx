@@ -416,8 +416,7 @@ export const TamilNaduMap: React.FC<TamilNaduMapProps> = ({
         additionalInfo={
           selectedFeature?.type === 'constituency'
             ? {
-                Type: selectedFeature.data.type,
-                'Parliamentary Constituency': selectedFeature.data.parliamentaryConstituency
+                Type: selectedFeature.data.type
               }
             : undefined
         }

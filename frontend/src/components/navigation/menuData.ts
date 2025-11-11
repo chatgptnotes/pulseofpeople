@@ -59,11 +59,6 @@ export const categoryMenuItems: Record<string, MenuItem[]> = {
       icon: DashboardIcon,
       badge: 'Live'
     },
-    {
-      name: 'Role-Based Dashboard',
-      href: '/dashboard/legacy',
-      icon: DashboardIcon
-    },
   ],
 
   // DATA INTELLIGENCE

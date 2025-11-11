@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { 
+import { useState, useEffect } from 'react';
+import {
   MessageSquare,
   CheckCircle,
   AlertTriangle,
@@ -10,7 +10,9 @@ import {
   Clock,
   Send
 } from 'lucide-react';
-// import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
+import { submissionsService, DataSubmissionInsert } from '../services/supabase/submissions.service';
+import { useAutoSave } from '../hooks/useAutoSave';
 
 interface SentimentEntry {
   id: string;
@@ -48,7 +50,7 @@ interface SubmissionData {
 }
 
 export default function DataSubmission() {
-  // const { user } = useAuth();
+  const { user } = useAuth();
   const [formData, setFormData] = useState<SubmissionData>({
     submissionType: 'daily',
     workerRole: 'ward-coordinator',
@@ -64,10 +66,33 @@ export default function DataSubmission() {
     verifiedBy: '',
     attachments: []
   });
-  
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+
+  // Auto-save functionality
+  const { savedData, lastSaved, clearSaved, isSaving } = useAutoSave({
+    key: `data-submission-draft-${user?.id || 'anonymous'}`,
+    data: formData,
+    interval: 30000, // Save every 30 seconds
+    enabled: !submitSuccess && !isSubmitting // Disable during submission
+  });
+
+  // Restore saved data on mount
+  useEffect(() => {
+    if (savedData && formData.sentimentEntries.length === 0) {
+      // Ask user if they want to restore
+      if (window.confirm('You have an unsaved draft. Would you like to restore it?')) {
+        setFormData(savedData);
+      } else {
+        clearSaved();
+      }
+    }
+  }, [savedData]); // Only run when savedData is available
 
   const steps = [
     { id: 1, title: 'Basic Info', icon: FileText },
@@ -134,13 +159,76 @@ export default function DataSubmission() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    
-    // Simulate API submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Reset form or show success message
-    alert('Data submitted successfully!');
-    setIsSubmitting(false);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+
+    try {
+      // Prepare submission data
+      const submissionData: DataSubmissionInsert = {
+        user_id: user?.id,
+        organization_id: user?.organization_id,
+        submission_type: formData.submissionType,
+        worker_role: formData.workerRole,
+        location: formData.location,
+        sentiment_entries: formData.sentimentEntries,
+        viral_content: formData.viralContent,
+        issues: formData.issues,
+        additional_notes: formData.additionalNotes,
+        verified_by: formData.verifiedBy
+      };
+
+      // Create submission
+      const result = await submissionsService.createSubmission(submissionData);
+      setSubmissionId(result.id || null);
+
+      // Upload attachments if any
+      if (formData.attachments.length > 0 && result.id) {
+        try {
+          const attachmentUrls = await submissionsService.uploadAttachments(
+            formData.attachments,
+            result.id
+          );
+
+          // Update submission with attachment URLs
+          await submissionsService.update(result.id, {
+            attachments: attachmentUrls
+          } as any);
+        } catch (uploadError) {
+          console.error('Failed to upload attachments:', uploadError);
+          // Continue anyway - submission was created
+        }
+      }
+
+      // Success!
+      setSubmitSuccess(true);
+
+      // Clear auto-saved draft
+      clearSaved();
+
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setFormData({
+          submissionType: 'daily',
+          workerRole: 'ward-coordinator',
+          location: { ward: '', area: '', coordinates: '' },
+          sentimentEntries: [],
+          viralContent: [],
+          issues: [],
+          additionalNotes: '',
+          verifiedBy: '',
+          attachments: []
+        });
+        setCurrentStep(1);
+        setSubmitSuccess(false);
+        setSubmissionId(null);
+      }, 3000);
+
+    } catch (error: any) {
+      console.error('Submission failed:', error);
+      setSubmitError(error.message || 'Failed to submit data. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const validateStep = (step: number): boolean => {
@@ -182,9 +270,26 @@ export default function DataSubmission() {
           <h1 className="text-2xl font-bold text-gray-900">Data Submission</h1>
           <p className="text-gray-600">Submit ground intelligence data to Animal-I dashboard</p>
         </div>
-        <div className="text-sm text-gray-500">
-          <Clock className="w-4 h-4 inline mr-1" />
-          Step {currentStep} of {steps.length}
+        <div className="flex flex-col items-end gap-2">
+          <div className="text-sm text-gray-500">
+            <Clock className="w-4 h-4 inline mr-1" />
+            Step {currentStep} of {steps.length}
+          </div>
+          {lastSaved && (
+            <div className="text-xs text-gray-500 flex items-center gap-1">
+              {isSaving ? (
+                <>
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                  <span>Saving draft...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-3 h-3 text-green-600" />
+                  <span>Draft saved at {lastSaved.toLocaleTimeString()}</span>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -722,16 +827,60 @@ export default function DataSubmission() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center mb-2">
-                  <CheckCircle className="w-5 h-5 text-blue-600 mr-2" />
-                  <h4 className="font-semibold text-blue-900">Ready to Submit</h4>
+              {!submitSuccess && !submitError && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <CheckCircle className="w-5 h-5 text-blue-600 mr-2" />
+                    <h4 className="font-semibold text-blue-900">Ready to Submit</h4>
+                  </div>
+                  <p className="text-blue-800 text-sm">
+                    Your data will be processed and integrated into the Animal-I dashboard.
+                    You'll receive a confirmation once the submission is complete.
+                  </p>
                 </div>
-                <p className="text-blue-800 text-sm">
-                  Your data will be processed and integrated into the Animal-I dashboard. 
-                  You'll receive a confirmation once the submission is complete.
-                </p>
-              </div>
+              )}
+
+              {/* Success Message */}
+              {submitSuccess && (
+                <div className="bg-green-50 border-2 border-green-500 rounded-lg p-6">
+                  <div className="flex items-center mb-4">
+                    <CheckCircle className="w-8 h-8 text-green-600 mr-3" />
+                    <div>
+                      <h4 className="text-lg font-bold text-green-900">Submission Successful!</h4>
+                      <p className="text-green-700 text-sm">Your data has been submitted successfully.</p>
+                    </div>
+                  </div>
+                  {submissionId && (
+                    <div className="bg-white rounded-lg p-3 mt-3">
+                      <p className="text-sm text-gray-600">
+                        Submission ID: <span className="font-mono font-semibold text-gray-900">{submissionId}</span>
+                      </p>
+                    </div>
+                  )}
+                  <p className="text-green-600 text-sm mt-3">
+                    Redirecting to a new submission form in 3 seconds...
+                  </p>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {submitError && (
+                <div className="bg-red-50 border-2 border-red-500 rounded-lg p-6">
+                  <div className="flex items-start mb-2">
+                    <AlertTriangle className="w-6 h-6 text-red-600 mr-3 mt-1" />
+                    <div>
+                      <h4 className="text-lg font-bold text-red-900 mb-2">Submission Failed</h4>
+                      <p className="text-red-700 text-sm mb-4">{submitError}</p>
+                      <button
+                        onClick={() => setSubmitError(null)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+                      >
+                        Try Again
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
