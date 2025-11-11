@@ -310,7 +310,7 @@ if not DEBUG:
 
 # Remove duplicates and print for debugging
 CORS_ALLOWED_ORIGINS = list(set(CORS_ALLOWED_ORIGINS))
-print(f"🔧 CORS_ALLOWED_ORIGINS configured: {CORS_ALLOWED_ORIGINS}")
+print(f"[CONFIG] CORS_ALLOWED_ORIGINS configured: {CORS_ALLOWED_ORIGINS}")
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = False  # Explicitly set to False for security
@@ -394,7 +394,7 @@ if not DEBUG:
 
 # Remove duplicates
 CSRF_TRUSTED_ORIGINS = list(set(CSRF_TRUSTED_ORIGINS))
-print(f"🔧 CSRF_TRUSTED_ORIGINS configured: {CSRF_TRUSTED_ORIGINS}")
+print(f"[CONFIG] CSRF_TRUSTED_ORIGINS configured: {CSRF_TRUSTED_ORIGINS}")
 
 # Email Configuration
 # For development, use console backend (prints emails to console)

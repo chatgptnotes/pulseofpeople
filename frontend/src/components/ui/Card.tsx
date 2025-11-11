@@ -42,8 +42,8 @@ export const Card: React.FC<CardProps> = ({
 
   const variantStyles = {
     default: 'border border-gray-200',
-    bordered: 'border-2 border-red-200',
-    elevated: 'shadow-md border border-red-100'
+    bordered: 'border-2 border-gray-200',
+    elevated: 'shadow-md border border-gray-100'
   }
 
   const paddingStyles = {
@@ -54,7 +54,7 @@ export const Card: React.FC<CardProps> = ({
   }
 
   const hoverStyles = hoverable
-    ? 'hover:shadow-lg hover:border-red-300 cursor-pointer'
+    ? 'hover:shadow-lg hover:border-gray-300 cursor-pointer'
     : ''
 
   const clickableStyles = clickable && onClick
@@ -162,8 +162,8 @@ export const StatCard: React.FC<StatCardProps> = ({
         </div>
 
         {icon && (
-          <div className="flex-shrink-0 p-3 bg-gradient-to-br from-red-50 to-yellow-50 border border-red-200 rounded-lg">
-            <div className="text-red-600">{icon}</div>
+          <div className="flex-shrink-0 p-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-gray-200 rounded-lg">
+            <div className="text-blue-600">{icon}</div>
           </div>
         )}
       </div>

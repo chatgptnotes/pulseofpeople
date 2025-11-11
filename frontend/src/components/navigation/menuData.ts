@@ -16,6 +16,7 @@ import {
   Twitter as TwitterIcon,
   Tv as TvIcon,
   Newspaper as NewspaperIcon,
+  Article as NewsMonitorIcon,
   RecordVoiceOver as InfluencerIcon,
   SmartToy as BotIcon,
   Poll as PollIcon,
@@ -68,6 +69,12 @@ export const categoryMenuItems: Record<string, MenuItem[]> = {
 
   // DATA INTELLIGENCE
   'data-intelligence': [
+    {
+      name: 'News Monitor',
+      href: '/news-monitor',
+      icon: NewsMonitorIcon,
+      badge: 'AI'
+    },
     {
       name: 'Social Media Channels',
       href: '/social-media-channels',

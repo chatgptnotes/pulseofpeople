@@ -7,11 +7,16 @@ from django.utils import timezone
 from django.core.mail import EmailMessage
 from datetime import datetime, timedelta
 from io import BytesIO
+import logging
 
 from api.models_analytics import ReportTemplate, GeneratedReport, ExportJob
 from api.utils.pdf_generator import generate_executive_summary_pdf, generate_campaign_report_pdf
 from api.utils.excel_exporter import export_analytics_to_excel
 from api.models import DirectFeedback, FieldReport
+from api.services.news_scraper import scrape_tamil_nadu_news, save_articles_to_database
+from api.services.tvk_sentiment_analyzer import analyze_all_unprocessed_articles
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task
@@ -359,6 +364,118 @@ def cleanup_expired_exports():
     expired.delete()
 
     return f"Cleaned up {count} expired exports"
+
+
+# =====================================================
+# NEWS SCRAPING & SENTIMENT ANALYSIS TASKS
+# =====================================================
+
+@shared_task
+def scrape_tamil_nadu_news_task():
+    """
+    Scrape Tamil Nadu political news from all configured sources
+    Scheduled to run every 6 hours (12 AM, 6 AM, 12 PM, 6 PM)
+    """
+    try:
+        logger.info("🚀 Starting news scraping task...")
+
+        # Scrape all sources
+        articles = scrape_tamil_nadu_news()
+
+        # Save to database
+        saved_count = save_articles_to_database(articles)
+
+        logger.info(f"✅ News scraping complete: {len(articles)} scraped, {saved_count} saved")
+
+        return {
+            'status': 'success',
+            'articles_scraped': len(articles),
+            'articles_saved': saved_count,
+            'timestamp': timezone.now().isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"❌ News scraping failed: {str(e)}")
+        return {
+            'status': 'error',
+            'error': str(e),
+            'timestamp': timezone.now().isoformat()
+        }
+
+
+@shared_task
+def analyze_news_sentiment_task():
+    """
+    Analyze sentiment of unprocessed news articles using LLM
+    Runs after news scraping to process newly scraped articles
+    """
+    try:
+        logger.info("🤖 Starting sentiment analysis task...")
+
+        # Process unprocessed articles (batch of 50)
+        success_count, error_count = analyze_all_unprocessed_articles()
+
+        logger.info(f"✅ Sentiment analysis complete: {success_count} analyzed, {error_count} errors")
+
+        return {
+            'status': 'success',
+            'articles_analyzed': success_count,
+            'errors': error_count,
+            'timestamp': timezone.now().isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"❌ Sentiment analysis failed: {str(e)}")
+        return {
+            'status': 'error',
+            'error': str(e),
+            'timestamp': timezone.now().isoformat()
+        }
+
+
+@shared_task
+def scrape_and_analyze_news_pipeline():
+    """
+    Complete news pipeline: Scrape → Save → Analyze
+    Scheduled to run every 6 hours
+    This is the main task that orchestrates the entire news workflow
+    """
+    try:
+        logger.info("📰 Starting news scraping and analysis pipeline...")
+
+        # Step 1: Scrape news
+        scrape_result = scrape_tamil_nadu_news_task()
+
+        if scrape_result['status'] != 'success':
+            logger.error("News scraping failed, skipping analysis")
+            return scrape_result
+
+        # Step 2: Analyze sentiment (if articles were saved)
+        if scrape_result['articles_saved'] > 0:
+            analysis_result = analyze_news_sentiment_task()
+
+            return {
+                'status': 'success',
+                'scraping': scrape_result,
+                'analysis': analysis_result,
+                'timestamp': timezone.now().isoformat()
+            }
+        else:
+            logger.info("No new articles to analyze")
+            return {
+                'status': 'success',
+                'scraping': scrape_result,
+                'analysis': {'status': 'skipped', 'reason': 'no new articles'},
+                'timestamp': timezone.now().isoformat()
+            }
+
+    except Exception as e:
+        logger.error(f"❌ News pipeline failed: {str(e)}")
+        return {
+            'status': 'error',
+            'error': str(e),
+            'timestamp': timezone.now().isoformat()
+        }
 
 
 # Schedule configuration (to be added to celery beat schedule)

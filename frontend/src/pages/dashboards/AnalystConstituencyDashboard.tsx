@@ -6,6 +6,10 @@ import {
   AlertCircle, BarChart3, FileText, UserCheck, Map
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { BarChart } from '../../components/charts/BarChart';
+import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
+import { ExportButton } from '../../components/common/ExportButton';
+import { format } from 'date-fns';
 
 /**
  * Analyst Dashboard - Constituency Level
@@ -96,31 +100,39 @@ export default function AnalystConstituencyDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading constituency dashboard...</p>
-        </div>
+      <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
+        <LoadingSkeleton type="stats" count={4} />
+        <LoadingSkeleton type="chart" />
+        <LoadingSkeleton type="table" rows={5} />
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
       {/* Header with Breadcrumb */}
-      <div className="mb-8">
-        <div className="flex items-center text-sm text-gray-500 mb-2">
-          <MapPin className="h-4 w-4 mr-1" />
-          <span>Tamil Nadu</span>
-          <span className="mx-2">→</span>
-          <span>{districtName} District</span>
-          <span className="mx-2">→</span>
-          <span className="font-medium text-gray-900">{constituencyName} Constituency</span>
+      <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex-1">
+          <div className="flex items-center text-sm text-gray-500 mb-2 flex-wrap">
+            <MapPin className="h-4 w-4 mr-1" />
+            <span>Tamil Nadu</span>
+            <span className="mx-2">→</span>
+            <span>{districtName} District</span>
+            <span className="mx-2">→</span>
+            <span className="font-medium text-gray-900">{constituencyName} Constituency</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{constituencyName} Constituency Dashboard</h1>
+          <p className="mt-2 text-gray-600">
+            Welcome back, {user?.name}. Managing {constituencyName} constituency operations.
+          </p>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">{constituencyName} Constituency Dashboard</h1>
-        <p className="mt-2 text-gray-600">
-          Welcome back, {user?.name}. Managing {constituencyName} constituency operations.
-        </p>
+        <div className="flex-shrink-0">
+          <ExportButton
+            data={booths}
+            filename={`constituency-${constituencyName}-${format(new Date(), 'yyyy-MM-dd')}`}
+            formats={['csv', 'excel']}
+          />
+        </div>
       </div>
 
       {/* Constituency Sentiment Overview */}
@@ -145,7 +157,7 @@ export default function AnalystConstituencyDashboard() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -190,7 +202,7 @@ export default function AnalystConstituencyDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
         <Link
           to="/tamil-nadu-map"
           className="bg-white rounded-lg shadow-sm border-2 border-gray-200 p-6 hover:border-green-500 hover:shadow-md transition-all"
@@ -222,10 +234,27 @@ export default function AnalystConstituencyDashboard() {
         </Link>
       </div>
 
+      {/* Booth Performance Comparison Chart */}
+      <div className="mb-6 md:mb-8">
+        <BarChart
+          data={booths.map(booth => ({
+            booth: booth.number,
+            sentiment: Math.floor(booth.sentiment * 100),
+            feedback: booth.feedback,
+          }))}
+          xKey="booth"
+          yKey="sentiment"
+          title="Top 5 Booth Performance Comparison"
+          color="#10b981"
+          height={300}
+          colorByValue={true}
+        />
+      </div>
+
       {/* Booth Performance Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Booth Performance</h2>
-        <div className="overflow-x-auto">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mb-6 md:mb-8">
+        <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-4">Booth Performance</h2>
+        <div className="overflow-x-auto -mx-4 md:mx-0">
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
               <tr>
@@ -282,8 +311,8 @@ export default function AnalystConstituencyDashboard() {
       </div>
 
       {/* Top Issues in Constituency */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Top Issues in {constituencyName}</h2>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
+        <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-4">Top Issues in {constituencyName}</h2>
         <div className="space-y-4">
           {topIssues.map((issue, index) => (
             <div key={issue.id} className="flex items-center justify-between">
