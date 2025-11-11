@@ -56,16 +56,13 @@ def sync_supabase_user(supabase_user_id, email, user_metadata=None, app_metadata
         logger.warning(f"Invalid role '{role}' for user {email}, defaulting to 'user'")
         role = 'user'
 
-    # CRITICAL FIX: Try to find existing user by supabase_uid FIRST
-    # This is the most efficient and reliable lookup method
+    # Try to find existing user by email (unique identifier)
     user = None
     user_created = False
 
-    # Step 1: Try to find by supabase_uid (fastest, most reliable)
     try:
-        profile = UserProfile.objects.select_related('user').get(supabase_uid=supabase_user_id)
-        user = profile.user
-        logger.info(f"Found existing user via supabase_uid: {email} (ID: {user.id})")
+        user = User.objects.get(email=email)
+        logger.info(f"Found existing user with email: {email}")
 
         # Update user fields if they've changed
         updated_fields = []
@@ -88,56 +85,28 @@ def sync_supabase_user(supabase_user_id, email, user_metadata=None, app_metadata
             user.save(update_fields=updated_fields)
             logger.info(f"Updated user {email} fields: {', '.join(updated_fields)}")
 
-    except UserProfile.DoesNotExist:
-        # Step 2: User not found by supabase_uid, try email (migration/fallback)
-        try:
-            user = User.objects.get(email=email)
-            logger.info(f"Found existing user by email (migration): {email}")
+    except User.DoesNotExist:
+        # Create new user
+        # Ensure username is unique
+        base_username = username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
 
-            # Update user fields if they've changed
-            updated_fields = []
-
-            if first_name and user.first_name != first_name:
-                user.first_name = first_name
-                updated_fields.append('first_name')
-
-            if last_name and user.last_name != last_name:
-                user.last_name = last_name
-                updated_fields.append('last_name')
-
-            # Update username if it's different and unique
-            if username and user.username != username:
-                if not User.objects.filter(username=username).exclude(pk=user.pk).exists():
-                    user.username = username
-                    updated_fields.append('username')
-
-            if updated_fields:
-                user.save(update_fields=updated_fields)
-                logger.info(f"Updated user {email} fields: {', '.join(updated_fields)}")
-
-        except User.DoesNotExist:
-            # Step 3: Create new user (first time login)
-            # Ensure username is unique
-            base_username = username
-            counter = 1
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
-
-            user = User.objects.create(
-                username=username,
-                email=email,
-                first_name=first_name,
-                last_name=last_name,
-            )
-            user_created = True
-            logger.info(f"Created new user: {email} (username: {username})")
+        user = User.objects.create(
+            username=username,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+        )
+        user_created = True
+        logger.info(f"Created new user: {email} (username: {username})")
 
     # Get or create UserProfile
     profile, profile_created = UserProfile.objects.get_or_create(
         user=user,
         defaults={
-            'supabase_uid': supabase_user_id,  # CRITICAL: Store Supabase UUID
             'role': role,
             'bio': bio,
             'phone': phone,
@@ -146,45 +115,32 @@ def sync_supabase_user(supabase_user_id, email, user_metadata=None, app_metadata
     )
 
     if profile_created:
-        logger.info(f"Created UserProfile for {email} with role: {role}, supabase_uid: {supabase_user_id}")
+        logger.info(f"Created UserProfile for {email} with role: {role}")
     else:
         # Update profile fields if they've changed
         updated = False
-        update_fields = []
-
-        # CRITICAL: Always ensure supabase_uid is set (for migration from old users)
-        if not profile.supabase_uid or profile.supabase_uid != supabase_user_id:
-            old_uid = profile.supabase_uid
-            profile.supabase_uid = supabase_user_id
-            updated = True
-            update_fields.append('supabase_uid')
-            logger.info(f"Set supabase_uid for {email}: {old_uid} -> {supabase_user_id}")
 
         if profile.role != role:
             old_role = profile.role
             profile.role = role
             updated = True
-            update_fields.append('role')
             logger.info(f"Updated role for {email}: {old_role} -> {role}")
 
         if bio and profile.bio != bio:
             profile.bio = bio
             updated = True
-            update_fields.append('bio')
 
         if phone and profile.phone != phone:
             profile.phone = phone
             updated = True
-            update_fields.append('phone')
 
         if avatar_url and profile.avatar_url != avatar_url:
             profile.avatar_url = avatar_url
             updated = True
-            update_fields.append('avatar_url')
 
         if updated:
-            profile.save(update_fields=update_fields)
-            logger.info(f"Updated UserProfile for {email} (fields: {', '.join(update_fields)})")
+            profile.save()
+            logger.info(f"Updated UserProfile for {email}")
 
     # Handle organization assignment
     if organization_id:
@@ -276,7 +232,7 @@ def handle_user_deletion(email=None, supabase_user_id=None):
 
     Args:
         email (str): User email
-        supabase_user_id (str): Supabase user ID (UUID)
+        supabase_user_id (str): Supabase user ID
 
     Returns:
         bool: True if user was deactivated, False if not found
@@ -285,18 +241,11 @@ def handle_user_deletion(email=None, supabase_user_id=None):
         raise ValueError("Either email or supabase_user_id is required")
 
     try:
-        # FIXED: Now we can lookup by supabase_uid!
-        if supabase_user_id:
-            try:
-                profile = UserProfile.objects.select_related('user').get(supabase_uid=supabase_user_id)
-                user = profile.user
-                logger.info(f"Found user via supabase_uid for deletion: {user.email}")
-            except UserProfile.DoesNotExist:
-                logger.warning(f"User with supabase_uid {supabase_user_id} not found")
-                return False
-        elif email:
+        if email:
             user = User.objects.get(email=email)
         else:
+            # If we store supabase_user_id in the future, use it here
+            logger.warning("Supabase user ID lookup not implemented")
             return False
 
         with transaction.atomic():
@@ -306,7 +255,7 @@ def handle_user_deletion(email=None, supabase_user_id=None):
             # Also deactivate the profile if exists
             if hasattr(user, 'profile'):
                 # Mark any related records as inactive
-                logger.info(f"Deactivated user: {user.email}")
+                logger.info(f"Deactivated user: {email}")
 
         return True
 

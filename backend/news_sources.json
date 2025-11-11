@@ -1,0 +1,211 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-11-10",
+  "description": "Configuration for Tamil Nadu political news sources",
+  "scraping_schedule": {
+    "frequency": "every 6 hours",
+    "times": ["00:00", "06:00", "12:00", "18:00"],
+    "timezone": "Asia/Kolkata"
+  },
+  "sources": {
+    "tamil": [
+      {
+        "name": "Dinamalar",
+        "url": "https://www.dinamalar.com/chennai_news.asp",
+        "language": "ta",
+        "type": "html",
+        "active": true,
+        "scraper_function": "scrape_dinamalar",
+        "selectors": {
+          "news_list": ".NewsList",
+          "title": "a",
+          "link": "a[href]"
+        },
+        "description": "Leading Tamil daily newspaper with strong Chennai/TN coverage",
+        "political_focus": true
+      },
+      {
+        "name": "Dinakaran",
+        "url": "https://www.dinakaran.com/tamilnadu",
+        "language": "ta",
+        "type": "html",
+        "active": true,
+        "scraper_function": "scrape_dinakaran",
+        "selectors": {
+          "news_list": ".news-item",
+          "title": "h2, h3",
+          "link": "a[href]"
+        },
+        "description": "Popular Tamil newspaper with Tamil Nadu political coverage",
+        "political_focus": true
+      },
+      {
+        "name": "Maalaimalar",
+        "url": "https://www.maalaimalar.com/tamil-nadu-news",
+        "language": "ta",
+        "type": "html",
+        "active": false,
+        "scraper_function": "scrape_maalaimalar",
+        "description": "Tamil evening daily (not yet implemented)",
+        "political_focus": true,
+        "note": "To be implemented in future"
+      },
+      {
+        "name": "Polimer News",
+        "url": "https://www.polimernews.com/tamil-nadu",
+        "language": "ta",
+        "type": "html",
+        "active": false,
+        "scraper_function": "scrape_polimer",
+        "description": "Tamil news channel website (not yet implemented)",
+        "political_focus": true,
+        "note": "To be implemented in future"
+      }
+    ],
+    "english": [
+      {
+        "name": "The Hindu",
+        "url": "https://www.thehindu.com/news/national/tamil-nadu/feeder/default.rss",
+        "language": "en",
+        "type": "rss",
+        "active": true,
+        "scraper_function": "scrape_the_hindu_tn",
+        "description": "Leading English daily with comprehensive TN political coverage",
+        "political_focus": true
+      },
+      {
+        "name": "Times of India",
+        "url": "https://timesofindia.indiatimes.com/city/chennai",
+        "language": "en",
+        "type": "html",
+        "active": true,
+        "scraper_function": "scrape_times_of_india_chennai",
+        "selectors": {
+          "news_list": ".uwU81",
+          "title": "a",
+          "link": "a[href]"
+        },
+        "description": "Major English newspaper with Chennai/TN coverage",
+        "political_focus": true
+      },
+      {
+        "name": "Indian Express",
+        "url": "https://indianexpress.com/section/cities/chennai/",
+        "language": "en",
+        "type": "html",
+        "active": true,
+        "scraper_function": "scrape_indian_express_tn",
+        "selectors": {
+          "news_list": ".articles",
+          "title": "h2 a",
+          "link": "h2 a[href]"
+        },
+        "description": "National daily with strong Chennai political coverage",
+        "political_focus": true
+      },
+      {
+        "name": "Deccan Chronicle",
+        "url": "https://www.deccanchronicle.com/south",
+        "language": "en",
+        "type": "html",
+        "active": false,
+        "scraper_function": "scrape_deccan_chronicle",
+        "description": "South India focused newspaper (not yet implemented)",
+        "political_focus": true,
+        "note": "To be implemented in future"
+      }
+    ]
+  },
+  "filtering": {
+    "political_keywords": [
+      "tvk",
+      "vijay",
+      "thalapathy",
+      "dmk",
+      "stalin",
+      "aiadmk",
+      "bjp",
+      "congress",
+      "nda",
+      "upa",
+      "election",
+      "politics",
+      "government",
+      "minister",
+      "mla",
+      "mp",
+      "assembly",
+      "parliament",
+      "campaign",
+      "rally",
+      "party",
+      "neet",
+      "cauvery",
+      "kaveri",
+      "water",
+      "fishermen",
+      "farmer"
+    ],
+    "min_article_length": 100,
+    "max_articles_per_source": 20
+  },
+  "sentiment_analysis": {
+    "provider": "openai",
+    "model": "gpt-4",
+    "temperature": 0.3,
+    "max_retries": 3,
+    "fallback_enabled": true,
+    "focus_entities": [
+      "Vijay",
+      "Thalapathy",
+      "TVK",
+      "Thamizhaga Vettri Kazhagam",
+      "DMK",
+      "Stalin",
+      "AIADMK",
+      "BJP",
+      "Congress"
+    ],
+    "key_topics": [
+      "neet",
+      "jobs",
+      "employment",
+      "education",
+      "water_crisis",
+      "fishermen",
+      "farmers",
+      "youth",
+      "women",
+      "corruption",
+      "governance",
+      "cauvery",
+      "social_justice",
+      "healthcare",
+      "infrastructure",
+      "economy",
+      "environment",
+      "human_rights",
+      "language",
+      "cultural_identity"
+    ]
+  },
+  "database": {
+    "model": "NewsArticle",
+    "duplicate_check": "url",
+    "max_processing_attempts": 3,
+    "retention_days": 365
+  },
+  "monitoring": {
+    "log_level": "INFO",
+    "notify_on_errors": true,
+    "metrics_tracked": [
+      "articles_scraped",
+      "articles_saved",
+      "articles_analyzed",
+      "sentiment_distribution",
+      "source_performance",
+      "scraping_duration",
+      "analysis_duration"
+    ]
+  }
+}

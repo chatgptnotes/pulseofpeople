@@ -12,7 +12,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PrimarySidebar from './PrimarySidebar';
 import SecondarySidebar from './SecondarySidebar';
-import { MobileNavigation } from '../MobileResponsive';
 
 interface DualSidebarLayoutProps {
   children: React.ReactNode;
@@ -126,8 +125,7 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
   }, []);
 
   const handleCategoryHover = (categoryId: string | null) => {
-    // Only update if the category is different AND not pinned
-    if (categoryId && !isPinned && categoryId !== activeCategory) {
+    if (categoryId && !isPinned) {
       // Hover on icon opens secondary panel (if not pinned)
       setActiveCategory(categoryId);
       setSecondarySidebarOpen(true);
@@ -208,9 +206,6 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
 
   return (
     <div className="dual-sidebar-layout">
-      {/* Mobile Navigation - Only visible on mobile */}
-      <MobileNavigation />
-
       {/* Primary Sidebar - Always visible, explicitly shown */}
       <PrimarySidebar
         activeCategory={activeCategory}
@@ -221,7 +216,6 @@ export default function DualSidebarLayout({ children }: DualSidebarLayoutProps) 
 
       {/* Secondary Sidebar - Slides in/out */}
       <SecondarySidebar
-        key={activeCategory || 'none'}
         activeCategory={activeCategory}
         isOpen={secondarySidebarOpen}
         isPinned={isPinned}

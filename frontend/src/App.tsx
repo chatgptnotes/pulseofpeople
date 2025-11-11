@@ -4,7 +4,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { TenantProvider } from './contexts/TenantContext'
 import { PermissionProvider } from './contexts/PermissionContext'
 import { OnboardingProvider } from './contexts/OnboardingContext'
-import { ToastProvider } from './contexts/ToastContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import FullScreenLoader from './components/FullScreenLoader'
 import Layout from './components/Layout'
@@ -91,6 +90,7 @@ import WardsList from './pages/WardsList'
 import BoothsList from './pages/BoothsList'
 import BoothsMap from './pages/BoothsMap'
 import WardsBoothsAnalytics from './pages/WardsBoothsAnalytics'
+import NewsMonitor from './pages/dashboards/NewsMonitor'
 
 // Inner component that uses auth context
 function AppRoutes() {
@@ -233,6 +233,15 @@ function AppRoutes() {
                 <ProtectedRoute>
                   <Layout>
                     <WardsBoothsAnalytics />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+
+              {/* News Monitor - AI-powered sentiment analysis */}
+              <Route path="/news-monitor" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <NewsMonitor />
                   </Layout>
                 </ProtectedRoute>
               } />
@@ -678,22 +687,20 @@ function AppRoutes() {
 function App() {
   return (
     <ErrorBoundary>
-      <ToastProvider>
-        <TenantProvider>
-          <AuthProvider>
-            <PermissionProvider>
-              <OnboardingProvider>
-                <RealTimeProvider>
-                  <ErrorBoundary>
-                    <AppRoutes />
-                    <MobileContactBar />
-                  </ErrorBoundary>
-                </RealTimeProvider>
-              </OnboardingProvider>
-            </PermissionProvider>
-          </AuthProvider>
-        </TenantProvider>
-      </ToastProvider>
+      <TenantProvider>
+        <AuthProvider>
+          <PermissionProvider>
+            <OnboardingProvider>
+              <RealTimeProvider>
+                <ErrorBoundary>
+                  <AppRoutes />
+                  <MobileContactBar />
+                </ErrorBoundary>
+              </RealTimeProvider>
+            </OnboardingProvider>
+          </PermissionProvider>
+        </AuthProvider>
+      </TenantProvider>
     </ErrorBoundary>
   );
 }

@@ -102,9 +102,9 @@ export default function SecondarySidebar({
 
         {/* Menu Items */}
         <nav className="menu-items">
-          {menuItems.map((item, index) => (
+          {menuItems.map((item) => (
             <MenuItemButton
-              key={`${activeCategory}-${item.href}-${index}`}
+              key={item.href}
               item={item}
               isActive={location.pathname === item.href}
               onClick={() => handleItemClick(item.href)}

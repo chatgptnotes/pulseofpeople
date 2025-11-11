@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Login Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        h1 { color: #4ade80; }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background: #333;
+            color: #fff;
+        }
+        button {
+            background: #4ade80;
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover { background: #22c55e; }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success { background: #065f46; color: #a7f3d0; }
+        .error { background: #7f1d1d; color: #fca5a5; }
+        .info { background: #1e3a8a; color: #93c5fd; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Direct Supabase Login Test</h1>
+
+        <div id="status" class="result info">
+            Initializing Supabase...
+        </div>
+
+        <h2>Test Login</h2>
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Email" value="testadmin@tvk.com">
+            <input type="password" id="password" placeholder="Password" value="TestAdmin123!">
+            <button type="submit">Login</button>
+            <button type="button" onclick="useAdmin()">Use admin@tvk.com</button>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://iwtgbseaoztjbnvworyq.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3dGdic2Vhb3p0amJudndvcnlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNjAzOTksImV4cCI6MjA3NjczNjM5OX0.xA4B0XZJE_4MdjFCkw2yVsf4vlHmHfpeV6Bk5tG2T94';
+
+        const { createClient } = supabase;
+        const client = createClient(supabaseUrl, supabaseKey);
+
+        document.getElementById('status').innerHTML = '✅ Supabase initialized\nURL: ' + supabaseUrl;
+
+        function useAdmin() {
+            document.getElementById('email').value = 'admin@tvk.com';
+            document.getElementById('password').value = 'Admin@123456';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = '<div class="result info">Logging in...</div>';
+
+            try {
+                console.log('Attempting login with:', email);
+
+                const { data, error } = await client.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    console.error('Login error:', error);
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <strong>❌ Login Failed</strong>
+
+Error: ${error.message}
+Status: ${error.status || 'N/A'}
+Code: ${error.code || 'N/A'}
+
+Possible Solutions:
+${error.message.includes('Invalid login credentials') ?
+  '→ Email not confirmed in Supabase Auth\n→ Go to: https://supabase.com/dashboard/project/iwtgbseaoztjbnvworyq/auth/users\n→ Find user and click "Confirm Email"' :
+  '→ Check email and password\n→ Verify user exists in Supabase Auth'}
+                        </div>
+                    `;
+                } else if (data.user) {
+                    console.log('Login successful:', data);
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <strong>✅ Login Successful!</strong>
+
+User ID: ${data.user.id}
+Email: ${data.user.email}
+Email Confirmed: ${data.user.email_confirmed_at ? '✅ YES' : '❌ NO'}
+Created: ${new Date(data.user.created_at).toLocaleString()}
+
+Session Token: ${data.session.access_token.substring(0, 50)}...
+
+<strong>✅ YOU CAN NOW LOGIN IN THE APP!</strong>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error('Exception:', err);
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>❌ Exception Occurred</strong>
+
+${err.message}
+
+This might be a network error or CORS issue.
+                    </div>
+                `;
+            }
+        });
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
