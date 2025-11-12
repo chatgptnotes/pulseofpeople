@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, ArrowLeft, AlertCircle, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ArrowLeft, AlertCircle, CheckCircle, ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import Logo from '../components/Logo';
@@ -15,6 +15,7 @@ export default function Login() {
   });
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [showTestCreds, setShowTestCreds] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
@@ -374,34 +375,161 @@ export default function Login() {
 
             {/* Test Credentials (only in login mode) */}
             {mode === 'login' && (
-              <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-400/40 rounded-xl p-4 shadow-lg">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-400/40 rounded-xl p-3 shadow-lg">
+                <button
+                  type="button"
+                  onClick={() => setShowTestCreds(!showTestCreds)}
+                  className="w-full flex items-center justify-between"
+                >
                   <p className="text-blue-100 text-sm font-bold flex items-center gap-2">
                     <span className="inline-block w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
                     Developer Test Credentials
                   </p>
-                  <span className="text-xs text-blue-200 bg-blue-500/30 px-2 py-0.5 rounded-full">
-                    For Development Only
-                  </span>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2.5 border border-white/10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-blue-200 text-xs font-medium">Admin Account</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-blue-200 bg-blue-500/30 px-2 py-0.5 rounded-full">
+                      {showTestCreds ? 'Hide' : 'Show'}
+                    </span>
+                    <ChevronRight
+                      className={`w-4 h-4 text-blue-200 transition-transform ${showTestCreds ? 'rotate-90' : ''}`}
+                    />
                   </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-3 h-3 text-blue-300 flex-shrink-0" />
-                      <span className="text-white font-mono text-xs">admin@tvk.com</span>
+                </button>
+
+                {showTestCreds && (
+                  <>
+                    {/* Scrollable Credentials Grid */}
+                    <div className="mt-3 max-h-64 overflow-y-auto pr-1">
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Superadmin */}
+                        <div className="bg-white/10 backdrop-blur-sm rounded-lg px-2.5 py-2 border border-white/10">
+                          <span className="text-blue-200 text-xs font-medium">SUPERADMIN</span>
+                          <div className="space-y-1 mt-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">testadmin@tvk.com</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Lock className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">Admin@2024</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Admin */}
+                        <div className="bg-white/10 backdrop-blur-sm rounded-lg px-2.5 py-2 border border-white/10">
+                          <span className="text-blue-200 text-xs font-medium">ADMIN</span>
+                          <div className="space-y-1 mt-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">admin1@tvk.com</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Lock className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">Admin@2024</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Manager */}
+                        <div className="bg-white/10 backdrop-blur-sm rounded-lg px-2.5 py-2 border border-white/10">
+                          <span className="text-blue-200 text-xs font-medium">MANAGER</span>
+                          <div className="space-y-1 mt-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">manager@tvk.com</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Lock className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">Manager@2024</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Analyst */}
+                        <div className="bg-white/10 backdrop-blur-sm rounded-lg px-2.5 py-2 border border-white/10">
+                          <span className="text-blue-200 text-xs font-medium">ANALYST</span>
+                          <div className="space-y-1 mt-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">analyst@tvk.com</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Lock className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">Analyst@2024</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* User */}
+                        <div className="bg-white/10 backdrop-blur-sm rounded-lg px-2.5 py-2 border border-white/10">
+                          <span className="text-blue-200 text-xs font-medium">USER</span>
+                          <div className="space-y-1 mt-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">user@tvk.com</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Lock className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">User@2024</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Volunteer */}
+                        <div className="bg-white/10 backdrop-blur-sm rounded-lg px-2.5 py-2 border border-white/10">
+                          <span className="text-blue-200 text-xs font-medium">VOLUNTEER</span>
+                          <div className="space-y-1 mt-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">volunteer1@tvk.com</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Lock className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">Volunteer@2024</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Viewer */}
+                        <div className="bg-white/10 backdrop-blur-sm rounded-lg px-2.5 py-2 border border-white/10">
+                          <span className="text-blue-200 text-xs font-medium">VIEWER</span>
+                          <div className="space-y-1 mt-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">viewer@tvk.com</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Lock className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">Viewer@2024</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* VIP Demo Account */}
+                        <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 backdrop-blur-sm rounded-lg px-2.5 py-2 border border-amber-400/40 col-span-2">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-amber-200 text-xs font-bold">VIP DEMO ACCOUNT</span>
+                            <span className="text-[9px] text-amber-200 bg-amber-500/30 px-1.5 py-0.5 rounded">Presentation</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 mt-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="w-3 h-3 text-amber-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">vijay@tvk.com</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Lock className="w-3 h-3 text-amber-300 flex-shrink-0" />
+                              <span className="text-white font-mono text-[10px]">Vijay@2026</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Lock className="w-3 h-3 text-blue-300 flex-shrink-0" />
-                      <span className="text-white font-mono text-xs">Admin@123</span>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-blue-200/70 text-xs mt-3 text-center italic">
-                  Use these credentials to test the application
-                </p>
+
+                    <p className="text-blue-200/70 text-xs mt-3 text-center italic">
+                      Total: 507 users synced
+                    </p>
+                  </>
+                )}
               </div>
             )}
           </form>
